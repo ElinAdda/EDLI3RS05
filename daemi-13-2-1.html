@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dæmi 13.2.1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false },
+  startup: { typeset: true }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+/* Layout: one narrow reading column; charge diagram opens, then step cards for part a) and b) revealed one at a time */
+:root {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --fg: #1b2233;
+  --muted: #5b6478;
+  --line: #dde1ec;
+  --accent: #2f4fb3;
+  --accent-soft: #e6ebfa;
+  --pos: #c23a2b;
+  --neg: #2a62c9;
+  --ok: #1f7a4d;
+  --ok-soft: #e3f3ea;
+  --warn-soft: #fbf1df;
+  --warn: #8a5a10;
+  --display: "Literata", Georgia, "Times New Roman", serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+    --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+    --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+  --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+  --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+}
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px;
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent);
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: 2rem; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.3rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.problem {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+}
+.problem p { max-width: 62ch; }
+.problem ol { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.diagram { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; }
+.diagram text { font-family: var(--mono); fill: var(--fg); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button {
+  font: inherit; font-weight: 700; cursor: pointer; border-radius: 8px;
+  padding: 10px 18px; border: 1px solid var(--accent);
+}
+button.primary { background: var(--accent); color: var(--surface); }
+button.ghost { background: transparent; color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.progress { font-family: var(--mono); font-size: 14px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.partlabel {
+  font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: var(--accent);
+  padding-top: 8px; border-top: 1px solid var(--line);
+}
+.step {
+  display: grid; grid-template-columns: 40px 1fr; gap: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px;
+}
+.step.new { animation: rise .35s ease; }
+@keyframes rise { from { opacity: .3; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.num {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); font-family: var(--mono); font-size: 16px;
+}
+.content { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.math { overflow-x: auto; overflow-y: hidden; }
+.note { color: var(--muted); font-size: 15px; }
+.tip { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; font-size: 15px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.answer { background: var(--ok-soft); border-color: transparent; }
+.answer .num { background: var(--ok); color: var(--surface); }
+.answer h2 { color: var(--ok); }
+.mistakes { background: var(--warn-soft); border-radius: 10px; padding: 16px 20px; }
+.mistakes h2 { color: var(--warn); font-size: 1.1rem; margin-bottom: 8px; }
+.mistakes ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  .step { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
+  .progress { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step.new { animation: none; }
+  .bar span { transition: none; }
+}
+</style>
+</head>
+<body style="margin:0">
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">EÐLI · Rafsvið</div>
+    <h1>Dæmi 13.2.1</h1>
+  </header>
+
+  <section class="problem" aria-label="Dæmið">
+    <p>Reiknaðu styrk rafsviðsins í <strong>15 cm</strong> fjarlægð frá <strong>42 µC</strong> punkthleðslu.</p>
+    <svg class="diagram" viewBox="0 0 520 130" role="img" aria-label="Punkthleðsla 42 µC og punktur P í 15 cm fjarlægð">
+      <line x1="110" y1="60" x2="400" y2="60" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 5"/>
+      <line x1="110" y1="102" x2="400" y2="102" stroke="var(--muted)" stroke-width="1.5"/>
+      <line x1="110" y1="94" x2="110" y2="110" stroke="var(--muted)" stroke-width="1.5"/>
+      <line x1="400" y1="94" x2="400" y2="110" stroke="var(--muted)" stroke-width="1.5"/>
+      <text x="255" y="124" text-anchor="middle" font-size="14">r = 15 cm</text>
+      <circle cx="110" cy="60" r="26" fill="var(--pos)"/>
+      <text x="110" y="68" text-anchor="middle" font-size="24" style="fill:#fff">+</text>
+      <text x="110" y="20" text-anchor="middle" font-size="14">q = 42 µC</text>
+      <circle cx="400" cy="60" r="6" fill="var(--fg)"/>
+      <text x="400" y="38" text-anchor="middle" font-size="16" font-style="italic">P</text>
+      <text x="470" y="66" text-anchor="middle" font-size="16">E<tspan baseline-shift="sub" font-size="11">punkt</tspan> = ?</text>
+    </svg>
+  </section>
+
+  <div class="controls">
+    <button class="primary" id="next">Sýna fyrsta skref</button>
+    <button class="ghost" id="all">Sýna allt</button>
+    <button class="ghost" id="reset">Byrja aftur</button>
+    <span class="progress" id="progress">0 / 6 skref</span>
+  </div>
+  <div class="bar" aria-hidden="true"><span id="barfill"></span></div>
+
+  <div class="steps" id="steps">
+    <article class="step" hidden>
+      <div class="num">1</div>
+      <div class="content">
+        <h2>Skrifa niður það sem er gefið</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Stærð</th><th>Gildi</th><th>Í SI-einingum</th></tr></thead>
+            <tbody>
+              <tr><td>Hleðsla</td><td>\(q = 42\ \mu\text{C}\)</td><td>\(42 \cdot 10^{-6}\ \text{C}\)</td></tr>
+              <tr><td>Fjarlægð</td><td>\(r = 15\ \text{cm}\)</td><td>\(0{,}15\ \text{m}\)</td></tr>
+              <tr><td>Fasti Coulombs</td><td>\(k_{\text{raf}}\)</td><td>\(9{,}00 \cdot 10^{9}\ \text{N·m}^2/\text{C}^2\)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Óþekkt:</strong> styrkur rafsviðsins \(E_{\text{punkt}}\)</p>
+        <p class="tip">Munið: forskeytið <strong>µ</strong> (míkró) þýðir \(10^{-6}\) og 1 cm = 0,01 m.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">2</div>
+      <div class="content">
+        <h2>Velja jöfnu: rafsvið punkthleðslu</h2>
+        <div class="math">\[E_{\text{punkt}} = k_{\text{raf}}\,\frac{|q|}{r^2}\]</div>
+        <p>Rafsviðið segir til um hve mikill kraftur verkar á hverja hleðslueiningu sem sett er í punktinn P. Jafnan er því eins og lögmál Coulombs, nema aðeins með einni hleðslu: hleðslunni sem býr til sviðið.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">3</div>
+      <div class="content">
+        <h2>Setja inn í jöfnuna og reikna</h2>
+        <div class="math">\[E_{\text{punkt}} = \frac{(9{,}00 \cdot 10^{9})\,(42 \cdot 10^{-6})}{(0{,}15)^2}\]</div>
+        <div class="math">\[E_{\text{punkt}} = \frac{3{,}78 \cdot 10^{5}}{0{,}0225} = 1{,}68 \cdot 10^{7}\ \text{N/C}\]</div>
+        <p class="note">Munið að setja fjarlægðina í annað veldi: \((0{,}15)^2 = 0{,}0225\).</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">4</div>
+      <div class="content">
+        <h2>Athuga einingar</h2>
+        <div class="math">\[\frac{\text{N·m}^2/\text{C}^2 \cdot \text{C}}{\text{m}^2} = \frac{\text{N}}{\text{C}}\]</div>
+        <p>Rafsvið er mælt í N/C, þ.e. kraftur á hverja hleðslueiningu. ✓</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">5</div>
+      <div class="content">
+        <h2>Finna stefnuna</h2>
+        <svg class="diagram" viewBox="0 0 520 170" role="img" aria-label="Sviðslínur vísa beint út frá jákvæðri hleðslu, líka í punktinum P">
+          <g stroke="var(--accent)" stroke-width="2" fill="var(--accent)">
+            <line x1="150" y1="50" x2="150" y2="14"/><polygon points="150,6 144,18 156,18"/>
+            <line x1="150" y1="120" x2="150" y2="156"/><polygon points="150,164 144,152 156,152"/>
+            <line x1="115" y1="85" x2="72" y2="85"/><polygon points="64,85 76,79 76,91"/>
+            <line x1="125" y1="60" x2="98" y2="33"/><polygon points="92,27 96,40 105,31"/>
+            <line x1="125" y1="110" x2="98" y2="137"/><polygon points="92,143 105,139 96,130"/>
+            <line x1="175" y1="60" x2="202" y2="33"/><polygon points="208,27 195,31 204,40"/>
+            <line x1="175" y1="110" x2="202" y2="137"/><polygon points="208,143 204,130 195,139"/>
+            <line x1="185" y1="85" x2="384" y2="85"/>
+            <line x1="406" y1="85" x2="470" y2="85" stroke-width="3"/><polygon points="482,85 466,77 466,93"/>
+          </g>
+          <circle cx="150" cy="85" r="26" fill="var(--pos)"/>
+          <text x="150" y="93" text-anchor="middle" font-size="24" style="fill:#fff">+</text>
+          <circle cx="395" cy="85" r="6" fill="var(--fg)"/>
+          <text x="395" y="66" text-anchor="middle" font-size="16" font-style="italic">P</text>
+          <text x="445" y="112" text-anchor="middle" font-size="15">E<tspan baseline-shift="sub" font-size="10">punkt</tspan></text>
+        </svg>
+        <p>Hleðslan er <strong>jákvæð</strong>, svo rafsviðið vísar <strong>beint út frá hleðslunni</strong>. Í punktinum P vísar sviðið því burt frá hleðslunni, eftir línunni sem tengir þau.</p>
+        <p class="note">Ef hleðslan væri neikvæð myndi sviðið vísa inn að hleðslunni.</p>
+      </div>
+    </article>
+
+    <article class="step answer" hidden>
+      <div class="num">6</div>
+      <div class="content">
+        <h2>Svar</h2>
+        <div class="math">\[\boxed{E_{\text{punkt}} = 1{,}68 \cdot 10^{7}\ \text{N/C}}\]</div>
+        <p>Styrkur rafsviðsins í 15 cm fjarlægð er <strong>1,68 · 10⁷ N/C</strong> og sviðið vísar <strong>beint út frá hleðslunni</strong>.</p>
+      </div>
+    </article>
+  </div>
+
+  <aside class="mistakes" id="mistakes" hidden>
+    <h2>Algeng mistök</h2>
+    <ul>
+      <li>Að gleyma að breyta cm í m og µC í C</li>
+      <li>Að gleyma að setja fjarlægðina í annað veldi</li>
+      <li>Að rugla saman rafsviði og krafti: rafsvið er í N/C, ekki N</li>
+      <li>Að halda að það þurfi aðra hleðslu í punktinum P. Sviðið er til staðar hvort sem eitthvað er þar eða ekki</li>
+    </ul>
+  </aside>
+</main>
+
+
+<script>
+(function () {
+  const items = Array.from(document.querySelectorAll('#steps > *'));
+  const total = document.querySelectorAll('#steps .step').length;
+  const next = document.getElementById('next');
+  const all = document.getElementById('all');
+  const reset = document.getElementById('reset');
+  const progress = document.getElementById('progress');
+  const barfill = document.getElementById('barfill');
+  const mistakes = document.getElementById('mistakes');
+  let idx = 0, shown = 0;
+
+  function update() {
+    progress.textContent = shown + ' / ' + total + ' skref';
+    barfill.style.width = (shown / total * 100) + '%';
+    const done = shown >= total;
+    next.disabled = done; all.disabled = done;
+    next.textContent = shown === 0 ? 'Sýna fyrsta skref' : (done ? 'Lausn lokið' : 'Næsta skref');
+    mistakes.hidden = !done;
+  }
+  function revealNext(scroll) {
+    while (idx < items.length) {
+      const el = items[idx++];
+      el.hidden = false;
+      if (el.classList.contains('step')) {
+        el.classList.remove('new'); void el.offsetWidth; el.classList.add('new');
+        shown++;
+        if (scroll) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+        return;
+      }
+    }
+  }
+  next.addEventListener('click', function () { revealNext(true); update(); });
+  all.addEventListener('click', function () { while (shown < total) revealNext(false); update(); });
+  reset.addEventListener('click', function () {
+    items.forEach(function (el) { el.hidden = true; el.classList.remove('new'); });
+    idx = 0; shown = 0; update();
+    window.scrollTo({ top: 0 });
+  });
+  update();
+})();
+</script>
+</body>
+</html>
