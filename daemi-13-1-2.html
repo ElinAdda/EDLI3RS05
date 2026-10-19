@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sýnidæmi 13.1.2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false },
+  startup: { typeset: true }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+/* Layout: one narrow reading column; a charge diagram opens, then numbered step cards revealed one at a time */
+:root {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --fg: #1b2233;
+  --muted: #5b6478;
+  --line: #dde1ec;
+  --accent: #2f4fb3;
+  --accent-soft: #e6ebfa;
+  --pos: #c23a2b;
+  --neg: #2a62c9;
+  --ok: #1f7a4d;
+  --ok-soft: #e3f3ea;
+  --warn-soft: #fbf1df;
+  --warn: #8a5a10;
+  --display: "Literata", Georgia, "Times New Roman", serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+    --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+    --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+  --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+  --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+}
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px;
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent);
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: 2rem; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.3rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.problem {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+}
+.problem p { max-width: 62ch; }
+.diagram { width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto; }
+.diagram text { font-family: var(--mono); fill: var(--fg); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button {
+  font: inherit; font-weight: 700; cursor: pointer; border-radius: 8px;
+  padding: 10px 18px; border: 1px solid var(--accent);
+}
+button.primary { background: var(--accent); color: var(--surface); }
+button.ghost { background: transparent; color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.progress { font-family: var(--mono); font-size: 14px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.step {
+  display: grid; grid-template-columns: 40px 1fr; gap: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px;
+}
+.step.new { animation: rise .35s ease; }
+@keyframes rise { from { opacity: .3; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.num {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); font-family: var(--mono); font-size: 16px;
+}
+.content { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.math { overflow-x: auto; overflow-y: hidden; }
+.note { color: var(--muted); font-size: 15px; }
+.tip { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; font-size: 15px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.answer { background: var(--ok-soft); border-color: transparent; }
+.answer .num { background: var(--ok); color: var(--surface); }
+.answer h2 { color: var(--ok); }
+.mistakes { background: var(--warn-soft); border-radius: 10px; padding: 16px 20px; }
+.mistakes h2 { color: var(--warn); font-size: 1.1rem; margin-bottom: 8px; }
+.mistakes ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  .step { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
+  .progress { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step.new { animation: none; }
+  .bar span { transition: none; }
+}
+</style>
+</head>
+<body style="margin:0">
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">EÐLI · Lögmál Coulombs</div>
+    <h1>Sýnidæmi 13.1.2</h1>
+  </header>
+
+  <section class="problem" aria-label="Dæmið">
+    <p>Lítil kúla hefur hleðsluna <strong>5 nC</strong>. Hún er nærri annarri lítilli kúlu sem hefur hleðsluna <strong>−3 nC</strong>. Krafturinn milli þeirra reynist vera <strong>16 nN</strong>. Hver er fjarlægðin milli þeirra?</p>
+    <svg class="diagram" viewBox="0 0 520 150" role="img" aria-label="Tvær kúlur, jákvæð og neikvæð, með fjarlægðina r á milli og krafta sem vísa hvor að annarri">
+      <line x1="90" y1="120" x2="430" y2="120" stroke="var(--muted)" stroke-width="1.5"/>
+      <line x1="90" y1="112" x2="90" y2="128" stroke="var(--muted)" stroke-width="1.5"/>
+      <line x1="430" y1="112" x2="430" y2="128" stroke="var(--muted)" stroke-width="1.5"/>
+      <rect x="240" y="108" width="40" height="24" fill="var(--surface)"/>
+      <text x="260" y="126" text-anchor="middle" font-size="18" font-style="italic">r = ?</text>
+      <line x1="122" y1="60" x2="190" y2="60" stroke="var(--fg)" stroke-width="2.5"/>
+      <polygon points="200,60 186,53 186,67" fill="var(--fg)"/>
+      <line x1="398" y1="60" x2="330" y2="60" stroke="var(--fg)" stroke-width="2.5"/>
+      <polygon points="320,60 334,53 334,67" fill="var(--fg)"/>
+      <circle cx="90" cy="60" r="28" fill="var(--pos)"/>
+      <text x="90" y="68" text-anchor="middle" font-size="26" style="fill:#fff">+</text>
+      <circle cx="430" cy="60" r="28" fill="var(--neg)"/>
+      <text x="430" y="68" text-anchor="middle" font-size="26" style="fill:#fff">−</text>
+      <text x="90" y="18" text-anchor="middle" font-size="14">q₁ = 5 nC</text>
+      <text x="430" y="18" text-anchor="middle" font-size="14">q₂ = −3 nC</text>
+      <text x="260" y="40" text-anchor="middle" font-size="14">F = 16 nN</text>
+    </svg>
+  </section>
+
+  <div class="controls">
+    <button class="primary" id="next">Sýna fyrsta skref</button>
+    <button class="ghost" id="all">Sýna allt</button>
+    <button class="ghost" id="reset">Byrja aftur</button>
+    <span class="progress" id="progress">0 / 6 skref</span>
+  </div>
+  <div class="bar" aria-hidden="true"><span id="barfill"></span></div>
+
+  <div class="steps" id="steps">
+    <article class="step" hidden>
+      <div class="num">1</div>
+      <div class="content">
+        <h2>Skrifa niður það sem er gefið</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Stærð</th><th>Gildi</th><th>Í SI-einingum</th></tr></thead>
+            <tbody>
+              <tr><td>Hleðsla 1</td><td>\(q_1 = 5\ \text{nC}\)</td><td>\(5 \cdot 10^{-9}\ \text{C}\)</td></tr>
+              <tr><td>Hleðsla 2</td><td>\(q_2 = -3\ \text{nC}\)</td><td>\(-3 \cdot 10^{-9}\ \text{C}\)</td></tr>
+              <tr><td>Kraftur</td><td>\(F = 16\ \text{nN}\)</td><td>\(1{,}6 \cdot 10^{-8}\ \text{N}\)</td></tr>
+              <tr><td>Fasti Coulombs</td><td>\(k_{\text{raf}}\)</td><td>\(9{,}00 \cdot 10^{9}\ \text{N·m}^2/\text{C}^2\)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Óþekkt:</strong> fjarlægðin \(r\)</p>
+        <p class="tip">Munið: forskeytið <strong>n</strong> (nanó) þýðir \(10^{-9}\).</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">2</div>
+      <div class="content">
+        <h2>Velja jöfnu: lögmál Coulombs</h2>
+        <div class="math">\[F = k_{\text{raf}}\,\frac{|q_1 \cdot q_2|}{r^2}\]</div>
+        <p>Hleðslurnar hafa gagnstæð formerki, svo krafturinn er <strong>aðdráttarkraftur</strong>. Til að finna stærð kraftsins notum við tölugildi hleðslnanna, svo mínusinn hverfur úr reikningunum.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">3</div>
+      <div class="content">
+        <h2>Einangra \(r\)</h2>
+        <p>Margföldum báðum megin með \(r^2\) og deilum með \(F\):</p>
+        <div class="math">\[r^2 = \frac{k_{\text{raf}}\,|q_1 \cdot q_2|}{F}\]</div>
+        <p>Tökum kvaðratrót báðum megin:</p>
+        <div class="math">\[r = \sqrt{\frac{k_{\text{raf}}\,|q_1 \cdot q_2|}{F}}\]</div>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">4</div>
+      <div class="content">
+        <h2>Setja inn í jöfnuna og reikna</h2>
+        <p>Setjum öll gildin inn í einu og reiknum:</p>
+        <div class="math">\[r = \sqrt{\frac{(9{,}00 \cdot 10^{9})\,(5 \cdot 10^{-9})\,(3 \cdot 10^{-9})}{1{,}6 \cdot 10^{-8}}}\]</div>
+        <div class="math">\[r = \sqrt{8{,}44\ \text{m}^2} \approx 2{,}9\ \text{m}\]</div>
+        <p class="note">Gætið þess að setja allt undir rótina inn í reiknivélina í einu, eða reikna fyrst gildið undir rótinni og taka svo rótina.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">5</div>
+      <div class="content">
+        <h2>Athuga einingar</h2>
+        <div class="math">\[\sqrt{\frac{\text{N·m}^2/\text{C}^2 \cdot \text{C}^2}{\text{N}}} = \sqrt{\text{m}^2} = \text{m}\]</div>
+        <p>Svarið kemur út í metrum, eins og fjarlægð á að gera. ✓</p>
+      </div>
+    </article>
+
+    <article class="step answer" hidden>
+      <div class="num">6</div>
+      <div class="content">
+        <h2>Svar</h2>
+        <div class="math">\[\boxed{r \approx 2{,}9\ \text{m}}\]</div>
+        <p>Kúlurnar eru um <strong>2,9 metra</strong> frá hvor annarri og þær <strong>dragast hvor að annarri</strong>, því hleðslurnar hafa gagnstæð formerki.</p>
+      </div>
+    </article>
+  </div>
+
+  <aside class="mistakes" id="mistakes" hidden>
+    <h2>Algeng mistök</h2>
+    <ul>
+      <li>Að gleyma að breyta nC og nN í C og N</li>
+      <li>Að gleyma að taka kvaðratrótina í lokin og svara 8,4 m</li>
+      <li>Að láta mínusinn fylgja með inn í reikningana, en þá kemur neikvæð tala undir rótina</li>
+    </ul>
+  </aside>
+</main>
+
+<script>
+(function () {
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const next = document.getElementById('next');
+  const all = document.getElementById('all');
+  const reset = document.getElementById('reset');
+  const progress = document.getElementById('progress');
+  const barfill = document.getElementById('barfill');
+  const mistakes = document.getElementById('mistakes');
+  let shown = 0;
+
+  function update() {
+    progress.textContent = shown + ' / ' + steps.length + ' skref';
+    barfill.style.width = (shown / steps.length * 100) + '%';
+    next.disabled = shown >= steps.length;
+    all.disabled = shown >= steps.length;
+    next.textContent = shown === 0 ? 'Sýna fyrsta skref' : (shown >= steps.length ? 'Lausn lokið' : 'Næsta skref');
+    mistakes.hidden = shown < steps.length;
+  }
+  function reveal(i, scroll) {
+    const s = steps[i];
+    s.hidden = false;
+    s.classList.remove('new'); void s.offsetWidth; s.classList.add('new');
+    if (scroll) s.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+  }
+  next.addEventListener('click', function () {
+    if (shown < steps.length) { reveal(shown, true); shown++; update(); }
+  });
+  all.addEventListener('click', function () {
+    while (shown < steps.length) { reveal(shown, false); shown++; }
+    update();
+  });
+  reset.addEventListener('click', function () {
+    steps.forEach(function (s) { s.hidden = true; s.classList.remove('new'); });
+    shown = 0; update();
+    window.scrollTo({ top: 0 });
+  });
+  update();
+})();
+</script>
+</body>
+</html>
