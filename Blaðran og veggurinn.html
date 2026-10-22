@@ -1,0 +1,403 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Blaðran og veggurinn</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: kennslustofu-hermir — stór myndflötur með stjórnborði til hliðar, skýringar fyrir neðan */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --ink:#1b2430; --muted:#5b6778; --line:#d7dde6;
+  --wall:#e9e3d7; --wall-line:#d6ccb9;
+  --electron:#2563c9; --proton:#d2452f; --net:#1d8a5b; --accent:#2563c9;
+  --font-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --surface:#1a2029; --ink:#e7ebf1; --muted:#9aa5b5; --line:#2c3440;
+  --wall:#2a2620; --wall-line:#3b3529;
+  --electron:#6aa0ff; --proton:#ff7a63; --net:#4fd08f; --accent:#6aa0ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --surface:#1a2029; --ink:#e7ebf1; --muted:#9aa5b5; --line:#2c3440;
+  --wall:#2a2620; --wall-line:#3b3529;
+  --electron:#6aa0ff; --proton:#ff7a63; --net:#4fd08f; --accent:#6aa0ff; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:20px}
+h1,h2{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);font-weight:700}
+h2{font-size:1.25rem;font-weight:700}
+.lede{color:var(--muted);max-width:68ch;margin:6px 0 0}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media (max-width:820px){.stage{grid-template-columns:1fr}}
+.canvas-box{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative;min-width:0}
+canvas{display:block;width:100%;touch-action:none;cursor:grab}
+canvas.dragging{cursor:grabbing}
+.status{font-size:.95rem;padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--net)} .dot.warn{background:var(--proton)}
+.panel{display:grid;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.group{display:grid;gap:8px}
+.label{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;font-weight:700;font-size:.95rem;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:active{transform:translateY(1px)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;border-radius:0;background:transparent;font-weight:400}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);font-weight:700}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.charge-read{font-family:var(--font-mono);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.check{display:flex;gap:8px;align-items:center;font-size:.95rem}
+.bars{display:grid;gap:10px}
+.bar-row{display:grid;gap:3px}
+.bar-top{display:flex;justify-content:space-between;font-size:.85rem;gap:8px}
+.bar-top span:last-child{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.track{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;width:0;border-radius:5px;transition:width .12s}
+.track.tall{height:16px;position:relative}
+.mark{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.mark-lbl{font-family:var(--font-body)!important;color:var(--muted);font-size:.8rem}
+.fill.p{background:var(--proton)} .fill.e{background:var(--electron)} .fill.n{background:var(--net)}
+.note{font-size:.8rem;color:var(--muted);margin:0}
+.explain{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:6px;align-content:start}
+.step h3{margin:0;font-family:var(--font-display);font-size:1.05rem;display:flex;gap:10px;align-items:baseline}
+.step h3 b{font-family:var(--font-mono);color:var(--accent);font-size:.9rem}
+.step p{margin:0;color:var(--ink);font-size:.95rem}
+.formula{font-family:var(--font-mono);background:var(--bg);border-radius:6px;padding:6px 10px;font-size:.9rem;overflow-x:auto}
+.qs{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.qs ol{margin:0;padding-left:1.3em;display:grid;gap:8px;max-width:75ch}
+details summary{cursor:pointer;color:var(--accent);font-size:.9rem}
+details p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.p-col{color:var(--proton);font-weight:700}.e-col{color:var(--electron);font-weight:700}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Hlaðin blaðra og hlutlaus veggur</h1>
+    <p class="lede">Nuddaðu blöðrunni við hár og dragðu hana svo að veggnum. Fylgstu með hvernig <span class="e-col">rafeindaský</span> atómanna í veggnum hliðrast frá <span class="p-col">kjörnunum (róteindunum)</span> og hvers vegna það veldur aðdráttarkrafti.</p>
+  </header>
+
+  <section class="stage">
+    <div class="canvas-box">
+      <canvas id="sim" aria-label="Hermir: blaðra við vegg"></canvas>
+      <div class="status" aria-live="polite"><span class="dot" id="dot"></span><span id="status">Dragðu blöðruna að veggnum.</span></div>
+    </div>
+
+    <aside class="panel">
+      <div class="group">
+        <span class="label">Hleðsla blöðrunnar</span>
+        <div class="charge-read" id="chargeRead">0 e</div>
+        <input type="range" id="charge" min="0" max="30" step="1" value="0" aria-label="Fjöldi umframhleðslna">
+        <div class="btns">
+          <button class="primary" id="rub">Nudda við hár</button>
+          <button id="discharge">Afhlaða</button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="label">Formerki hleðslu</span>
+        <div class="seg" role="group" aria-label="Formerki">
+          <button id="neg" aria-pressed="true">Neikvæð (−)</button>
+          <button id="pos" aria-pressed="false">Jákvæð (+)</button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="label">Kraftar á blöðruna (í átt að vegg)</span>
+        <div class="bars">
+          <div class="bar-row"><div class="bar-top"><span id="pLabel">Aðdráttur að kjörnum (+)</span></div><div class="track"><div class="fill p" id="pBar"></div></div></div>
+          <div class="bar-row"><div class="bar-top"><span id="eLabel">Fráhrinding frá rafeindum (−)</span></div><div class="track"><div class="fill e" id="eBar"></div></div></div>
+          </div>
+        <p class="note">Kraftarnir eru næstum jafn stórir og vinna hvor á móti öðrum. Munurinn á þeim er heildarkrafturinn.</p>
+      </div>
+      <div class="group">
+        <span class="label">Heildarkraftur að vegg</span>
+        <div class="track tall"><div class="fill n" id="nBar"></div><div class="mark"></div></div>
+        <div class="bar-top"><span id="nText">Enginn</span><span class="mark-lbl">| nóg til að halda uppi</span></div>
+      </div>
+      <div class="group">
+        <label class="check"><input type="checkbox" id="arrows" checked> Sýna kraftörvar</label>
+        <label class="check"><input type="checkbox" id="labels" checked> Sýna + og − á atómum</label>
+      </div>
+    </aside>
+  </section>
+
+  <section class="explain" aria-label="Skýring">
+    <div class="step"><h3><b>1</b>Blaðran hlaðin</h3><p>Þegar blöðrunni er nuddað við hár flytjast rafeindir úr hárinu yfir á blöðruna. Blaðran fær neikvæða hleðslu og hárið jafnstóra jákvæða hleðslu.</p></div>
+    <div class="step"><h3><b>2</b>Veggurinn er hlutlaus</h3><p>Í veggnum eru jafnmargar róteindir og rafeindir. Hann er einangrari, svo rafeindirnar geta ekki ferðast um hann. Hvert atóm getur samt aflagast örlítið.</p></div>
+    <div class="step"><h3><b>3</b>Skautun</h3><p>Rafeindir blöðrunnar ýta rafeindaskýjum atómanna frá sér. Kjarnarnir sitja eftir, nær blöðrunni. Atómin verða skautuð og yfirborðið næst blöðrunni verður örlítið jákvætt.</p></div>
+    <div class="step"><h3><b>4</b>Fjarlægðin ræður</h3><p>Jákvæðu kjarnarnir eru nær blöðrunni en rafeindaskýin. Krafturinn minnkar með fjarlægðinni í öðru veldi, svo aðdrátturinn verður sterkari en fráhrindingin.</p><div class="formula">F = k_raf · |q₁·q₂| / r²</div></div>
+    <div class="step"><h3><b>5</b>Enn hlutlaus</h3><p>Veggurinn hefur hvorki fengið né misst hleðslu. Hleðslurnar hafa aðeins færst til innan hvers atóms. Ef heildarkrafturinn er nógu mikill heldur núningurinn blöðrunni uppi.</p></div>
+  </section>
+
+  <section class="qs">
+    <h2>Spurningar fyrir nemendur</h2>
+    <ol>
+      <li>Hvers vegna laðast blaðran að veggnum þótt veggurinn sé óhlaðinn?
+        <details><summary>Svar</summary><p>Atómin skautast. Jákvæðu kjarnarnir lenda nær blöðrunni en rafeindaskýin, og þar sem kraftur minnkar með r² er aðdrátturinn sterkari en fráhrindingin.</p></details></li>
+      <li>Skiptu yfir í jákvæða hleðslu. Laðast blaðran enn að veggnum? Hvað gerist við rafeindaskýin?
+        <details><summary>Svar</summary><p>Já. Nú dragast rafeindaskýin að blöðrunni og lenda nær henni en kjarnarnir, svo aðdráttur að rafeindunum verður sterkari en fráhrinding frá kjörnunum.</p></details></li>
+      <li>Hvað er minnsta hleðsla sem dugar til að blaðran haldist uppi á veggnum? Hvers vegna þarf lágmarkshleðslu?
+        <details><summary>Svar</summary><p>Heildarkrafturinn þarf að vera nógu mikill til að núningurinn vegi upp á móti þyngd blöðrunnar. Meiri hleðsla gefur bæði meiri skautun og meiri kraft.</p></details></li>
+      <li>Af hverju dettur blaðran að lokum af veggnum ef hún er látin hanga lengi?
+        <details><summary>Svar</summary><p>Hleðslan lekur smám saman af blöðrunni, t.d. út í rakt loftið, svo krafturinn minnkar.</p></details></li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+  const cv = document.getElementById('sim');
+  const ctx = cv.getContext('2d');
+  const $ = id => document.getElementById(id);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W=600,H=440,dpr=1,wallX=400,R=52,RY=60;
+  let atoms=[];
+  let n=0, sign=-1;           // number of excess charges, sign of balloon charge
+  let bx=150, by=180, vx=0, vy=0;
+  let state='free';           // 'free' | 'drag' | 'stuck' | 'rest'
+  let weight=1, Fscale=1;
+  let showArrows=true, showLabels=true;
+  const K=1, A_DISP=1800, MAXD=10, MU=1;
+  let marks=[];
+  let rubFlash=0;
+
+  function makeMarks(){
+    marks=[]; let s=7;
+    const rnd=()=>{s=(s*9301+49297)%233280;return s/233280};
+    for(let i=0;i<30;i++){
+      const a=rnd()*Math.PI*2, r=Math.sqrt(rnd())*0.78;
+      marks.push([Math.cos(a)*r, Math.sin(a)*r]);
+    }
+  }
+  makeMarks();
+
+  function layout(){
+    const box=cv.parentElement.getBoundingClientRect();
+    W=Math.max(320,box.width);
+    H=W<520?380:460;
+    dpr=window.devicePixelRatio||1;
+    cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    R=W<520?40:52; RY=R*1.15;
+    wallX=Math.round(W*(W<520?0.62:0.66));
+    atoms=[];
+    const sp=W<520?28:32;
+    for(let x=wallX+sp*0.55; x<W+sp; x+=sp)
+      for(let y=sp*0.55; y<H-24; y+=sp)
+        atoms.push({x,y,dx:0,dy:0});
+    // calibrate weight: net force at contact with 12 charges holds the balloon
+    weight = netAt(wallX-R, H*0.45, 12, -1).fx * MU;
+    Fscale = netAt(wallX-R, H*0.45, 30, -1).px;
+    bx=Math.min(bx,wallX-R); by=Math.min(by,floorY()-RY);
+  }
+  const floorY=()=>H-14;
+
+  // compute forces on balloon (point charge at its centre)
+  function netAt(x,y,nn,sg,store){
+    let px=0,ex=0,fx=0,fy=0;
+    const Q=sg*nn;
+    for(const a of atoms){
+      let ux=a.x-x, uy=a.y-y; const r2=ux*ux+uy*uy, r=Math.sqrt(r2);
+      if(r>320){ if(store){a.dx=0;a.dy=0;} continue; }
+      ux/=r; uy/=r;
+      const d=Math.min(MAXD, A_DISP*nn/r2);
+      // electron cloud moves away from a negative balloon, toward a positive one
+      const dx=-sg*ux*d, dy=-sg*uy*d;
+      if(store){a.dx=dx;a.dy=dy;}
+      // nucleus (+1) at a.x,a.y ; cloud (-1) at a.x+dx
+      const fN=force(x,y,Q,a.x,a.y,+1);
+      const fE=force(x,y,Q,a.x+dx,a.y+dy,-1);
+      px+=fN[0]; ex+=fE[0]; fx+=fN[0]+fE[0]; fy+=fN[1]+fE[1];
+    }
+    return {px,ex,fx,fy};
+  }
+  // force on balloon (charge Q at x,y) from charge q at (sx,sy)
+  function force(x,y,Q,sx,sy,q){
+    const rx=x-sx, ry=y-sy, r2=rx*rx+ry*ry, r=Math.sqrt(r2);
+    const f=K*Q*q/r2; // >0 repulsive
+    return [f*rx/r, f*ry/r];
+  }
+
+  function col(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+
+  let last=performance.now(), F={px:0,ex:0,fx:0,fy:0};
+  function step(now){
+    const dt=Math.min(0.033,(now-last)/1000); last=now;
+    F = n>0 ? netAt(bx,by,n,sign,true) : (atoms.forEach(a=>{a.dx=0;a.dy=0}), {px:0,ex:0,fx:0,fy:0});
+    const contact = bx+R >= wallX-1;
+    const holds = contact && F.fx*MU >= weight && n>0;
+
+    if(state==='stuck' && !holds) state='free';
+    if(state==='free'){
+      if(holds){ state='stuck'; vx=0; vy=0; }
+      else{
+        const g=320;
+        vx += g*(F.fx/weight)*0.5*dt;
+        vy += g*dt;
+        if(contact && n>0) vy -= Math.min(vy, g*(F.fx*MU/weight))*dt*2; // friction slows the slide
+        vx*=0.985; vy*=0.985;
+        bx+=vx*dt; by+=vy*dt;
+        if(bx+R>wallX){bx=wallX-R; vx=0;}
+        if(bx-R<4){bx=R+4; vx=0;}
+        if(by+RY>floorY()-40){by=floorY()-40-RY; vy=-vy*0.25; if(Math.abs(vy)<12){vy=0; state='rest';}}
+      }
+    } else if(state==='rest'){
+      if(holds) state='stuck';
+      else if(n>0 && Math.abs(F.fx)>weight*0.15){ state='free'; }
+    }
+    if(rubFlash>0) rubFlash-=dt;
+    draw();
+    updateUI(contact,holds);
+    requestAnimationFrame(step);
+  }
+
+  function draw(){
+    const cE=col('--electron'), cP=col('--proton'), cInk=col('--ink'), cMut=col('--muted'),
+          cWall=col('--wall'), cWL=col('--wall-line'), cNet=col('--net'), cSurf=col('--surface');
+    ctx.clearRect(0,0,W,H);
+    // floor
+    ctx.strokeStyle=cWL; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(0,floorY()); ctx.lineTo(wallX,floorY()); ctx.stroke();
+    // wall
+    ctx.fillStyle=cWall; ctx.fillRect(wallX,0,W-wallX,H);
+    ctx.fillStyle=cWL; ctx.fillRect(wallX,0,2,H);
+    ctx.fillStyle=cMut; ctx.font='600 12px '+getComputedStyle(document.body).fontFamily;
+    ctx.save(); ctx.translate(W-10,H-10); ctx.rotate(-Math.PI/2); ctx.textAlign='left';
+    ctx.fillText('Hlutlaus veggur (einangrari)',0,0); ctx.restore();
+
+    // atoms
+    const cr = W<520?9:11;
+    for(const a of atoms){
+      const ex=a.x+a.dx, ey=a.y+a.dy;
+      // cloud
+      const g=ctx.createRadialGradient(ex,ey,0,ex,ey,cr);
+      g.addColorStop(0,hexA(cE,0.55)); g.addColorStop(1,hexA(cE,0.08));
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(ex,ey,cr,0,7); ctx.fill();
+      // nucleus
+      ctx.fillStyle=cP; ctx.beginPath(); ctx.arc(a.x,a.y,3.2,0,7); ctx.fill();
+    }
+    if(showLabels){
+      ctx.font='700 9px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      for(const a of atoms){
+        const d=Math.hypot(a.dx,a.dy);
+        if(d<1.5) continue;
+        const ux=a.dx/d, uy=a.dy/d, k=Math.min(1,d/6);
+        ctx.globalAlpha=k;
+        ctx.fillStyle=cE; ctx.fillText('−',a.x+a.dx+ux*7,a.y+a.dy+uy*7);
+        ctx.fillStyle=cP; ctx.fillText('+',a.x-ux*7,a.y-uy*7);
+        ctx.globalAlpha=1;
+      }
+    }
+
+    // string
+    ctx.strokeStyle=cMut; ctx.lineWidth=1.3;
+    ctx.beginPath(); ctx.moveTo(bx,by+RY+6);
+    ctx.bezierCurveTo(bx-12,by+RY+18,bx+12,by+RY+28,bx-4,by+RY+40); ctx.stroke();
+    // balloon
+    const bg=ctx.createRadialGradient(bx-R*0.35,by-RY*0.4,R*0.1,bx,by,R*1.2);
+    bg.addColorStop(0,'#ffd27a'); bg.addColorStop(1,'#f0a020');
+    ctx.fillStyle=bg; ctx.beginPath(); ctx.ellipse(bx,by,R,RY,0,0,7); ctx.fill();
+    ctx.fillStyle='#e08d12'; ctx.beginPath();
+    ctx.moveTo(bx-6,by+RY+7); ctx.lineTo(bx+6,by+RY+7); ctx.lineTo(bx,by+RY-2); ctx.fill();
+    if(rubFlash>0){ctx.strokeStyle=hexA(cE,rubFlash*2);ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(bx,by,R+5,RY+5,0,0,7);ctx.stroke();}
+    // excess charges on balloon
+    ctx.font='700 '+(W<520?14:17)+'px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(let i=0;i<n;i++){
+      const [mx,my]=marks[i];
+      const x=bx+mx*R, y=by+my*RY;
+      ctx.fillStyle = sign<0?'#1846a0':'#a82812';
+      ctx.fillText(sign<0?'−':'+',x,y);
+    }
+
+    // arrows
+    if(showArrows && n>0){
+      const s=150/Fscale;
+      const y0=by-RY-16;
+      arrow(bx, y0-14, bx+F.px*s, y0-14, cP, (sign<0?'aðdráttur':'fráhrinding'));
+      arrow(bx, y0, bx+F.ex*s, y0, cE, (sign<0?'fráhrinding':'aðdráttur'));
+      const nl=F.fx*s, nd=Math.abs(nl)<16?16*Math.sign(nl||1):nl;
+      arrow(bx, by, bx+nd, by, cNet, 'heildarkraftur', 3);
+    }
+    if(n===0){
+      ctx.fillStyle=cMut; ctx.font='600 14px '+getComputedStyle(document.body).fontFamily; ctx.textAlign='center';
+      ctx.fillText('Blaðran er óhlaðin – nuddaðu henni við hár', wallX/2, 26);
+    }
+  }
+  function arrow(x1,y1,x2,y2,c,label,w){
+    const len=x2-x1; if(Math.abs(len)<3) return;
+    ctx.strokeStyle=c; ctx.fillStyle=c; ctx.lineWidth=w||2.4;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    const d=Math.sign(len);
+    ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-d*8,y2-5); ctx.lineTo(x2-d*8,y2+5); ctx.fill();
+    ctx.font='700 11px system-ui,sans-serif'; ctx.textAlign=d>0?'left':'right'; ctx.textBaseline='middle';
+    const tx=x2+d*6;
+    if(tx>8 && tx<W-8) ctx.fillText(label,tx,y2);
+  }
+  function hexA(c,a){
+    c=c.replace('#',''); if(c.length===3)c=c.split('').map(x=>x+x).join('');
+    const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);
+    return `rgba(${r},${g},${b},${Math.max(0,Math.min(1,a))})`;
+  }
+
+  let lastStatus='';
+  function updateUI(contact,holds){
+    $('chargeRead').textContent = n===0 ? '0 e' : (sign<0?'−':'+')+n+' e';
+    const s=100/Fscale;
+    $('pBar').style.width=Math.min(100,Math.abs(F.px)*s)+'%';
+    $('eBar').style.width=Math.min(100,Math.abs(F.ex)*s)+'%';
+    const ratio=n>0?Math.max(0,F.fx)/weight:0;
+    $('nBar').style.width=Math.min(100,ratio*50)+'%';
+    $('nText').textContent = n===0 ? 'Enginn' : (!contact ? (ratio>=1?'Mun duga við vegginn':'Lítill – færðu nær') : (holds?'Nægir':'Nægir ekki'));
+    $('pLabel').textContent = sign<0 ? 'Aðdráttur að kjörnum (+)' : 'Fráhrinding frá kjörnum (+)';
+    $('eLabel').textContent = sign<0 ? 'Fráhrinding frá rafeindum (−)' : 'Aðdráttur að rafeindum (−)';
+    let t, cls='';
+    if(state==='held') t='Dragðu blöðruna að veggnum og slepptu henni.';
+    else if(state==='drag') t = n===0 ? 'Blaðran er óhlaðin – ekkert gerist í veggnum.' : (contact?'Slepptu blöðrunni til að sjá hvort hún haldist uppi.':'Færðu blöðruna nær veggnum og fylgstu með atómunum.');
+    else if(state==='stuck'){t='Blaðran situr föst við vegginn. Núningurinn heldur henni uppi.'; cls='ok';}
+    else if(contact && n>0 && !holds){t='Of lítil hleðsla – krafturinn dugar ekki og blaðran rennur niður.'; cls='warn';}
+    else if(n===0) t='Nuddaðu blöðrunni við hár til að hlaða hana.';
+    else t='Dragðu blöðruna að veggnum og slepptu henni.';
+    if(t!==lastStatus){$('status').textContent=t; lastStatus=t; $('dot').className='dot '+cls;}
+  }
+
+  // pointer
+  let off=[0,0];
+  cv.addEventListener('pointerdown',e=>{
+    const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+    if(((x-bx)/R)**2+((y-by)/RY)**2<=1.15){
+      state='drag'; off=[x-bx,y-by]; vx=vy=0; cv.setPointerCapture(e.pointerId); cv.classList.add('dragging');
+    }
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(state!=='drag') return;
+    const r=cv.getBoundingClientRect();
+    bx=Math.max(R+4,Math.min(wallX-R,e.clientX-r.left-off[0]));
+    by=Math.max(RY+4,Math.min(floorY()-40-RY,e.clientY-r.top-off[1]));
+  });
+  const up=()=>{ if(state==='drag'){state='free'; cv.classList.remove('dragging');} };
+  cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+
+  function setN(v){ n=Math.max(0,Math.min(30,v)); $('charge').value=n; if(state==='rest'||state==='stuck') state='free'; }
+  $('rub').onclick=()=>{ setN(n+5); rubFlash=0.5; };
+  $('discharge').onclick=()=>setN(0);
+  $('charge').oninput=e=>setN(+e.target.value);
+  $('neg').onclick=()=>{sign=-1;$('neg').setAttribute('aria-pressed','true');$('pos').setAttribute('aria-pressed','false');};
+  $('pos').onclick=()=>{sign=1;$('pos').setAttribute('aria-pressed','true');$('neg').setAttribute('aria-pressed','false');};
+  $('arrows').onchange=e=>showArrows=e.target.checked;
+  $('labels').onchange=e=>showLabels=e.target.checked;
+
+  layout();
+  bx=R+40; by=H*0.35;
+  // start in a working state: charged balloon, near the wall
+  n=15; $('charge').value=15; bx=wallX-R-70; by=H*0.4; state='held';
+  new ResizeObserver(()=>layout()).observe(cv.parentElement);
+  requestAnimationFrame(t=>{last=t;step(t)});
+})();
+</script>
+
+</body></html>
