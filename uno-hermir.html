@@ -1,0 +1,2402 @@
+<title>UNO-hermir</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:wght@400;600;700;800&display=swap">
+<style>
+/* Útlit: vinnubekkur. Dökk ESD-motta í miðjunni með borðinu og brauðbrettinu, verkfæri til vinstri, kóði og raðskjár undir. */
+:root{
+  --bg:#e8edec; --panel:#fbfdfc; --panel-2:#f0f4f3; --ink:#142020; --muted:#566868; --line:#cfd9d7;
+  --accent:#0b767c; --accent-ink:#ffffff; --accent-soft:#d5ecec;
+  --mat:#24404a; --mat-2:#2c4b56; --mat-ink:#cde0e3;
+  --ok:#1d8048; --warn:#a86300; --danger:#bf3a22; --info:#2c68ab;
+  --ok-soft:#dcf1e4; --on-strong:#ffffff; --warn-soft:#fbecd2; --danger-soft:#f9e0da; --info-soft:#dde9f7;
+  --code-bg:#fbfdfc; --code-ink:#182726; --gutter:#edf2f1; --gutter-ink:#8a9a99;
+  --f-ui:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"Atkinson Hyperlegible Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1414; --panel:#142020; --panel-2:#1a2827; --ink:#e1ebe9; --muted:#93a6a3; --line:#293a38;
+    --accent:#3bb4b7; --accent-ink:#06201f; --accent-soft:#16393a;
+    --mat:#15282f; --mat-2:#1c333b; --mat-ink:#b6ccd0;
+    --ok:#4cc27e; --warn:#e6a23a; --danger:#ff7a5c; --info:#7fb2ff;
+    --ok-soft:#163525; --on-strong:#06201f; --warn-soft:#3a2c13; --danger-soft:#3d1d16; --info-soft:#172b44;
+    --code-bg:#101a19; --code-ink:#dbe7e5; --gutter:#142020; --gutter-ink:#5f7472;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1414; --panel:#142020; --panel-2:#1a2827; --ink:#e1ebe9; --muted:#93a6a3; --line:#293a38;
+  --accent:#3bb4b7; --accent-ink:#06201f; --accent-soft:#16393a;
+  --mat:#15282f; --mat-2:#1c333b; --mat-ink:#b6ccd0;
+  --ok:#4cc27e; --warn:#e6a23a; --danger:#ff7a5c; --info:#7fb2ff;
+  --ok-soft:#163525; --on-strong:#06201f; --warn-soft:#3a2c13; --danger-soft:#3d1d16; --info-soft:#172b44;
+  --code-bg:#101a19; --code-ink:#dbe7e5; --gutter:#142020; --gutter-ink:#5f7472;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:14px 32px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1520px;margin:0 auto}
+
+/* Haus */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-bottom:12px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.brand svg{flex:none}
+.brand h1{font-size:1.4rem;line-height:1.1;font-weight:800;letter-spacing:-.015em;margin:0;text-wrap:balance}
+.brand p{margin:0;color:var(--muted);font-size:.82rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:700;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.label-sm{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.boardpick{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.small{padding:4px 9px;font-size:.85rem}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.runbtn{border:0;background:var(--ok);color:var(--on-strong);border-radius:8px;padding:8px 18px;font-weight:800;display:inline-flex;align-items:center;gap:8px;min-width:118px;justify-content:center}
+.runbtn.stop{background:var(--danger)}
+.runstate{font-family:var(--f-mono);font-size:.82rem;color:var(--muted);min-width:76px;font-variant-numeric:tabular-nums}
+select.sel{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 8px;max-width:260px}
+
+/* Grind */
+.grid{display:grid;gap:12px;grid-template-columns:232px minmax(0,1fr) minmax(0,430px);
+  grid-template-areas:"parts bench bench" "parts code serial"}
+/* Borð ofan við brauðbrett: hærri teikning, kóði og raðskjár til hægri */
+.grid.tall{grid-template-columns:232px minmax(0,560px) minmax(0,1fr);grid-template-areas:"parts bench code" "parts bench serial"}
+.grid.tall .bench{align-self:start}
+.grid.tall .mat svg{max-height:86vh}
+@media (max-width:1180px){.grid,.grid.tall{grid-template-columns:216px minmax(0,1fr);grid-template-areas:"parts bench" "code code" "serial serial"}}
+@media (max-width:760px){.grid,.grid.tall{grid-template-columns:minmax(0,1fr);grid-template-areas:"bench" "parts" "code" "serial"}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:0}
+.ph{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line)}
+.ph h2{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;margin:0;font-weight:800;color:var(--muted)}
+.ph .sp{margin-left:auto;display:flex;gap:6px;align-items:center}
+
+/* Íhlutir */
+.parts{grid-area:parts;align-self:start;position:sticky;top:max(8px, env(safe-area-inset-top, 0px))}
+@media (max-width:760px){.parts{position:static}}
+.tools{display:flex;flex-direction:column;padding:6px}
+.tgroup{font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:800;padding:8px 8px 4px}
+.tool{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;border:1px solid transparent;background:transparent;border-radius:7px;padding:5px 7px;text-align:left}
+.tool:hover{background:var(--panel-2)}
+.tool[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.tool svg{background:#edf2f1;border-radius:6px}
+.tool .n{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.tool .n.zero{color:var(--danger)}
+.tool:disabled{opacity:.5}
+.resvals{display:flex;flex-wrap:wrap;gap:4px;padding:2px 8px 6px 43px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:2px 8px;font-size:.78rem;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+@media (max-width:760px){.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.tgroup,.resvals{grid-column:1/-1}.resvals{padding-left:8px}}
+
+.insp{border-top:1px solid var(--line);padding:10px 12px 12px}
+.insp h3{margin:0 0 6px;font-size:1rem;display:flex;align-items:center;gap:8px}
+.insp .empty{color:var(--muted);font-size:.86rem;margin:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:6px 0 10px;font-size:.88rem}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;min-width:0;overflow-wrap:anywhere}
+.irow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.swatches{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 8px}
+.sw{width:22px;height:22px;border-radius:50%;border:2px solid var(--line)}
+.sw[aria-pressed="true"]{border-color:var(--ink)}
+.ctl{display:flex;flex-direction:column;gap:3px;margin:6px 0;font-size:.85rem}
+.ctl input[type=range]{width:100%;accent-color:var(--accent)}
+.ctl select{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:4px}
+
+/* Bekkur */
+.bench{grid-area:bench}
+.hint{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:.9rem;min-height:40px}
+.hint .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.hint .msg{flex:1;min-width:0}
+.hint .flash{color:var(--danger);font-weight:700}
+.hint .flash.note{color:var(--accent)}
+.zoom{display:flex;gap:4px;margin-left:auto}
+.mat{background:var(--mat);overflow:auto;position:relative}
+.mat svg{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.mat svg.zoomed{width:auto}
+.sv text{font-family:var(--f-ui)}
+.sv .comp:hover .wc{stroke-width:5.4}
+.sv .comp:hover .wo{stroke-width:7.6}
+.sv .mono{font-family:var(--f-mono)}
+.status{display:flex;flex-wrap:wrap;gap:4px 14px;padding:6px 12px;font-size:.84rem;border-top:1px solid var(--line);color:var(--muted);min-height:32px;align-items:center}
+.status b{color:var(--ink);font-family:var(--f-mono);font-weight:600;font-variant-numeric:tabular-nums}
+.probe{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+.probe .val{font-family:var(--f-mono);font-weight:700;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);padding:2px 8px;border-radius:6px;font-variant-numeric:tabular-nums}
+.env{display:flex;flex-wrap:wrap;gap:10px 24px;padding:10px 12px;border-bottom:1px solid var(--line);align-items:center;background:var(--panel-2)}
+.envpots{display:contents}
+.env label b{font-weight:700;white-space:nowrap}
+.env label{display:flex;align-items:center;gap:10px;font-size:.88rem;flex:1 1 260px;min-width:0}
+.env input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+.env output{font-family:var(--f-mono);min-width:118px;text-align:right;font-variant-numeric:tabular-nums}
+.warns{border-top:1px solid var(--line);padding:8px 12px 10px}
+.warns ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.warns li{display:grid;grid-template-columns:auto 1fr;gap:8px;font-size:.88rem;padding:6px 9px;border-radius:7px;cursor:default}
+.warns li[data-cid]{cursor:pointer}
+.warns li.danger{background:var(--danger-soft)}
+.warns li.warn{background:var(--warn-soft)}
+.warns li.info{background:var(--info-soft)}
+.warns li .tag{font-size:.7rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding-top:2px}
+.warns li.danger .tag{color:var(--danger)}
+.warns li.warn .tag{color:var(--warn)}
+.warns li.info .tag{color:var(--info)}
+.warns .none{color:var(--ok);font-size:.88rem;margin:4px 0 0}
+.count{font-size:.75rem;font-weight:800;border-radius:999px;padding:1px 7px;background:var(--panel-2);color:var(--muted)}
+.count.bad{background:var(--danger);color:var(--on-strong)}
+
+/* Kóði */
+.code{grid-area:code;display:flex;flex-direction:column;min-height:420px}
+.ed{display:grid;grid-template-columns:auto minmax(0,1fr);flex:1;min-height:340px;background:var(--code-bg);overflow:hidden}
+.gut{background:var(--gutter);color:var(--gutter-ink);font-family:var(--f-mono);font-size:13.5px;line-height:1.55;padding:10px 8px 10px 10px;text-align:right;overflow:hidden;user-select:none;white-space:pre;font-variant-numeric:tabular-nums}
+.gut .err{color:var(--on-strong);background:var(--danger);border-radius:3px;padding:0 3px}
+#code{border:0;outline:0;resize:none;background:transparent;color:var(--code-ink);font-family:var(--f-mono);font-size:13.5px;line-height:1.55;padding:10px 12px;white-space:pre;overflow:auto;tab-size:2;min-width:0;width:100%;height:100%}
+#code:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--accent)}
+.err-box{border-top:1px solid var(--line);padding:9px 12px;font-size:.9rem;background:var(--danger-soft);display:flex;gap:10px;align-items:flex-start}
+.err-box b{color:var(--danger);white-space:nowrap}
+.err-box .x{margin-left:auto}
+.fname{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+
+/* Raðskjár */
+.serial{grid-area:serial;display:flex;flex-direction:column;min-height:420px}
+.tabs{display:flex;gap:2px}
+.tabs button{border:0;background:transparent;padding:4px 10px;border-radius:6px;font-weight:700;color:var(--muted);font-size:.85rem}
+.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--ink)}
+#out{flex:1;margin:0;padding:10px 12px;font-family:var(--f-mono);font-size:13px;line-height:1.5;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--code-bg);min-height:260px;max-height:520px}
+#out .sys{color:var(--muted);font-style:italic}
+.plotwrap{flex:1;background:var(--code-bg);min-height:260px;position:relative}
+#plot{width:100%;height:100%;display:block;min-height:260px}
+.plotlegend{position:absolute;left:12px;top:8px;display:flex;gap:10px;flex-wrap:wrap;font-size:.78rem;font-family:var(--f-mono)}
+.plotlegend span{display:inline-flex;align-items:center;gap:4px}
+.plotlegend i{width:10px;height:3px;border-radius:2px;display:inline-block}
+.sin{display:flex;gap:6px;padding:8px;border-top:1px solid var(--line);flex-wrap:wrap}
+.sin input{flex:1;min-width:120px;border:1px solid var(--line);border-radius:7px;padding:6px 8px;background:var(--panel)}
+.sin select{border:1px solid var(--line);border-radius:7px;background:var(--panel);padding:5px}
+
+/* Gluggar */
+.dlg{position:fixed;inset:0;background:rgba(5,12,12,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.dlg .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;max-width:560px;width:100%;display:flex;flex-direction:column;gap:10px}
+.dlg h3{margin:0}
+.dlg textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:8px;background:var(--code-bg);font-family:var(--f-mono);font-size:12px;padding:8px}
+.dlg p{margin:0;color:var(--muted);font-size:.9rem}
+.foot{max-width:1520px;margin:14px auto 0;color:var(--muted);font-size:.8rem}
+@media (prefers-reduced-motion: reduce){ .pulse{animation:none!important} }
+@keyframes pulse{0%,100%{opacity:.9}50%{opacity:.25}}
+.pulse{animation:pulse 1.1s ease-in-out infinite}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="5" width="32" height="24" rx="4" fill="#0e7c84"/><rect x="6" y="9" width="22" height="3" rx="1" fill="#111"/><rect x="10" y="22" width="18" height="3" rx="1" fill="#111"/><circle cx="9" cy="17" r="2.4" fill="#ffcf4a"/></svg>
+      <div><h1>UNO-hermir</h1><p>Arduino UNO · 400 pinna brauðbretti · íhlutir úr kennslupakkanum</p></div>
+    </div>
+    <div class="boardpick">
+      <span class="label-sm" id="bl">Borð</span>
+      <div class="seg" role="group" aria-labelledby="bl">
+        <button id="b-r3" aria-pressed="true">UNO R3</button>
+        <button id="b-r4" aria-pressed="false">UNO R4 Minima</button>
+      </div>
+    </div>
+    <div class="boardpick">
+      <span class="label-sm" id="ll">Uppröðun</span>
+      <div class="seg" role="group" aria-labelledby="ll">
+        <button id="l-top" aria-pressed="true" title="Arduino ofan við brauðbrettið – vírarnir dreifast betur">Borð ofan</button>
+        <button id="l-side" aria-pressed="false" title="Arduino vinstra megin við brauðbrettið">Hlið við hlið</button>
+      </div>
+    </div>
+    <div class="actions">
+      <select class="sel" id="examples" aria-label="Opna dæmi"></select>
+      <button class="btn" id="undo" title="Afturkalla (Ctrl+Z)">↶ Afturkalla</button>
+      <button class="btn" id="share">Vista / hlaða</button>
+      <button class="btn" id="mute" aria-pressed="false" title="Hljóð frá suðaranum">🔊 Hljóð á</button>
+      <span class="runstate" id="runstate">Stöðvað</span>
+      <button class="runbtn" id="run">▶ Keyra</button>
+    </div>
+  </header>
+
+  <main class="grid" id="grid">
+    <aside class="panel parts" aria-label="Íhlutir">
+      <div class="ph"><h2>Verkfæri og íhlutir</h2></div>
+      <div class="tools" id="tools"></div>
+      <div class="insp" id="insp"></div>
+    </aside>
+
+    <section class="panel bench" aria-label="Rafrás">
+      <div class="hint"><span class="dot"></span><span class="msg" id="hint"></span>
+        <div class="zoom"><button class="btn small" id="zout" aria-label="Minnka">−</button><button class="btn small" id="zfit">Passa</button><button class="btn small" id="zin" aria-label="Stækka">+</button></div>
+      </div>
+      <div class="env" id="env" hidden>
+        <div id="env-pots" class="envpots"></div>
+        <label id="env-lux" hidden><b>Birta</b> <input type="range" id="lux" min="0" max="100" step="1" value="62"><output id="luxo"></output></label>
+        <label id="env-temp" hidden><b>Hiti</b> <input type="range" id="temp" min="-10" max="100" step="0.5" value="22"><output id="tempo"></output></label>
+      </div>
+      <div class="mat" id="mat"></div>
+      <div class="status" id="status"><span id="hov">Færðu bendilinn yfir gat til að sjá hvað er tengt saman.</span><span class="probe" id="probe" hidden><span>Spennumælir</span><span class="val" id="probeval">—</span><button class="btn small" id="probeclr">Hreinsa</button></span></div>
+      <div class="warns"><div style="display:flex;align-items:center;gap:8px"><span class="label-sm">Athugasemdir um rásina</span><span class="count" id="wcount">0</span></div><div id="wlist"></div></div>
+    </section>
+
+    <section class="panel code" aria-label="Kóði">
+      <div class="ph"><h2>Kóði</h2><span class="fname">sketch.ino</span><div class="sp"><button class="btn small" id="fmt-reset">Tómur kóði</button></div></div>
+      <div class="ed"><div class="gut" id="gut">1</div><textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Arduino-kóði"></textarea></div>
+      <div class="err-box" id="err" hidden><b id="errh">Villa</b><span id="errm"></span><button class="btn small x" id="errx">Loka</button></div>
+    </section>
+
+    <section class="panel serial" aria-label="Raðskjár">
+      <div class="ph"><div class="tabs" role="tablist"><button role="tab" id="t-mon" aria-selected="true">Raðskjár</button><button role="tab" id="t-plot" aria-selected="false">Línurit</button></div>
+        <div class="sp"><select id="baud" aria-label="Flutningshraði"><option>9600</option><option>19200</option><option>57600</option><option>115200</option></select><button class="btn small" id="sclear">Hreinsa</button></div></div>
+      <pre id="out"></pre>
+      <div class="plotwrap" id="plotwrap" hidden><canvas id="plot"></canvas><div class="plotlegend" id="plotlegend"></div></div>
+      <div class="sin"><input id="sinput" placeholder="Senda texta til Arduino (Serial.read)" aria-label="Texti til að senda"><select id="snl" aria-label="Línulok"><option value="\n">Ný lína</option><option value="">Engin lok</option></select><button class="btn small" id="ssend">Senda</button></div>
+    </section>
+  </main>
+  <p class="foot">Hermirinn reiknar rafrásina með einfölduðum líkönum (díóður, smári, nemar). Tölurnar eru nálægt raunveruleikanum en ekki nákvæmar. Verkið vistast sjálfkrafa í þessum vafra.</p>
+</div>
+<div id="dlgroot"></div>
+
+<script>
+/*CORE-START*/
+const Core = (() => {
+"use strict";
+/* ---------- Rúmfræði ---------- */
+const P = 14, S = P / 2.54;
+const BW = 68.58 * S, BH = 53.34 * S;
+// Uppröðun: 'side' = borð vinstra megin, 'top' = borð (snúið 180°) ofan við brauðbrettið
+let ROT = false, BX = 40, BY = 40, QX = 0, QY = 26, BAT = {x:0, y:0}, VIEW_W = 0, VIEW_H = 0;
+const BB_W = 20 + 29 * P + 20, BB_H = 274;
+const ROWS = ['a','b','c','d','e','f','g','h','i','j'];
+const ROW_Y = {tp:16, tn:30, a:60, b:74, c:88, d:102, e:116, f:158, g:172, h:186, i:200, j:214, bn:244, bp:258};
+const RAILS = ['tp','tn','bn','bp'];
+const RAIL_NAME = {tp:'efri + rás', tn:'efri − rás', bn:'neðri − rás', bp:'neðri + rás'};
+const colX = c => QX + 20 + (c - 1) * P;
+const railX = k => QX + 27 + (Math.floor(k / 5) * 6 + (k % 5)) * P;
+const hx = mm => ROT ? BX + (68.58 - mm) * S : BX + mm * S;
+const hy = mm => ROT ? BY + mm * S : BY + (53.34 - mm) * S;
+
+// [auðkenni, áletrun á borði, x í mm, efri röð?, heiti]
+const HEADER = [
+  ['SCL','SCL',18.796,1,'SCL (A5)'],['SDA','SDA',21.336,1,'SDA (A4)'],['AREF','AREF',23.876,1,'AREF'],['GND_T','GND',26.416,1,'GND'],
+  ['D13','13',28.956,1,'D13'],['D12','12',31.496,1,'D12'],['D11','~11',34.036,1,'D11 (PWM)'],['D10','~10',36.576,1,'D10 (PWM)'],['D9','~9',39.116,1,'D9 (PWM)'],['D8','8',41.656,1,'D8'],
+  ['D7','7',45.72,1,'D7'],['D6','~6',48.26,1,'D6 (PWM)'],['D5','~5',50.8,1,'D5 (PWM)'],['D4','4',53.34,1,'D4'],['D3','~3',55.88,1,'D3 (PWM)'],['D2','2',58.42,1,'D2'],['D1','TX→1',60.96,1,'D1 (TX)'],['D0','RX←0',63.5,1,'D0 (RX)'],
+  ['NC','',27.94,0,'ótengdur pinni'],['IOREF','IOREF',30.48,0,'IOREF'],['RESET','RESET',33.02,0,'RESET'],['3V3','3.3V',35.56,0,'3.3V'],['5V','5V',38.1,0,'5V'],['GND_B1','GND',40.64,0,'GND'],['GND_B2','GND',43.18,0,'GND'],['VIN','VIN',45.72,0,'VIN'],
+  ['A0','A0',50.8,0,'A0'],['A1','A1',53.34,0,'A1'],['A2','A2',55.88,0,'A2'],['A3','A3',58.42,0,'A3'],['A4','A4',60.96,0,'A4 (SDA)'],['A5','A5',63.5,0,'A5 (SCL)'],
+];
+const PWM_PINS = [3,5,6,9,10,11];
+function headerNode(id){
+  if (id.startsWith('GND')) return 'GND';
+  if (id === 'IOREF') return '5V';
+  if (id === 'SDA') return 'D18';
+  if (id === 'SCL') return 'D19';
+  if (/^A\d$/.test(id)) return 'D' + (14 + +id[1]);
+  return id;
+}
+const POINTS = new Map();
+function setLayout(mode){
+  ROT = mode === 'top';
+  if (!ROT){ BX = 40; BY = 40; QX = Math.round(BX + BW + 44); QY = 26; BAT = {x: QX + 36, y: QY + BB_H + 26}; VIEW_W = QX + BB_W + 24; }
+  else { QX = 20; BX = 68; BY = 64; QY = Math.round(BY + BH + 48); BAT = {x: QX + 36, y: QY + BB_H + 26}; VIEW_W = Math.round(Math.max(QX + BB_W, BX + 74.8 * S)) + 16; }
+  VIEW_H = BAT.y + 52 + 16;
+  POINTS.clear();
+  for (const r of ROWS) for (let c = 1; c <= 30; c++)
+    POINTS.set(`h:${r}:${c}`, {x: colX(c), y: QY + ROW_Y[r], node: `col:${c}:${ROWS.indexOf(r) < 5 ? 'A' : 'B'}`, label: r + c, kind: 'hole', row: r, col: c});
+  for (const r of RAILS) for (let k = 0; k < 25; k++)
+    POINTS.set(`h:${r}:${k}`, {x: railX(k), y: QY + ROW_Y[r], node: 'rail:' + r, label: RAIL_NAME[r], kind: 'rail', row: r});
+  for (const [id, silk, mm, top, human] of HEADER)
+    POINTS.set('p:' + id, {x: hx(mm), y: top ? hy(50.8) : hy(2.54), node: headerNode(id), label: human, silk, kind: 'pin', pin: id, top: !!top});
+  POINTS.set('b:+', {x: BAT.x + 156, y: BAT.y + 14, node: 'BAT+', label: '9 V rafhlaða (+)', kind: 'bat'});
+  POINTS.set('b:-', {x: BAT.x + 156, y: BAT.y + 40, node: 'BAT-', label: '9 V rafhlaða (−)', kind: 'bat'});
+}
+setLayout('side');
+const nodeOf = pid => POINTS.get(pid).node;
+
+/* ---------- Íhlutir ---------- */
+const TYPES = {
+  wire:{two:true, name:'Vír'}, res:{two:true, name:'Viðnám'}, led:{two:true, name:'LED'},
+  ldr:{two:true, name:'Ljósnemi (LDR)'}, piezo:{two:true, name:'Suðari (piezo)'},
+  rgb:{n:4, name:'RGB LED'}, pot:{n:3, name:'Stilliviðnám 50 kΩ'}, lm35:{n:3, name:'Hitanemi LM35'},
+  bc547:{n:3, name:'Smári BC547'}, btn:{n:4, name:'Takki'},
+};
+const LEDP = {
+  red:{vth:1.75, rd:15, hex:'#ff3b2f', off:'#c9493f', name:'Rauð'},
+  yellow:{vth:1.85, rd:15, hex:'#ffd21a', off:'#d2b13a', name:'Gul'},
+  green:{vth:1.95, rd:15, hex:'#3ee26b', off:'#4ba862', name:'Græn'},
+  blue:{vth:2.7, rd:15, hex:'#3d86ff', off:'#4a73c4', name:'Blá'},
+};
+const RGBP = {r:{vth:1.8, rd:15}, g:{vth:2.6, rd:15}, b:{vth:2.7, rd:15}};
+const RES_VALUES = [100, 1000, 4700, 10000, 47000, 100000, 1000000];
+const KIT = {'led:red':5, 'led:yellow':5, 'led:green':5, 'led:blue':4, rgb:1, btn:6, pot:4, ldr:1, lm35:1, piezo:1, bc547:2};
+const kitKey = c => c.type === 'led' ? 'led:' + c.color : c.type === 'res' ? 'res:' + c.value : c.type;
+const kitLimit = k => k.startsWith('res:') ? 30 : (k in KIT ? KIT[k] : Infinity);
+
+const BOARDS = {
+  r3:{key:'r3', name:'UNO R3', rOut:25, pinWarn:0.020, pinMax:0.040, pullup:35000, dac:false, setRes:false, v33Max:0.05, mcu:'ATmega328P'},
+  r4:{key:'r4', name:'UNO R4 Minima', rOut:45, pinWarn:0.008, pinMax:0.008, pullup:40000, dac:true, setRes:true, v33Max:0.10, mcu:'RA4M1'},
+};
+
+function parseAt(at){ const [r, c] = at.split(':'); return {ri: ROWS.indexOf(r), c: +c}; }
+function hole(ri, c){ return (ri < 0 || ri > 9 || c < 1 || c > 30) ? null : 'h:' + ROWS[ri] + ':' + c; }
+function fixedOffsets(type, o){
+  if (type === 'btn') return o === 'v' ? [[0,0],[2,0],[0,1],[2,1]] : [[0,0],[0,2],[1,0],[1,2]];
+  const n = TYPES[type].n, out = [];
+  for (let i = 0; i < n; i++) out.push(o === 'h' ? [0,i] : o === 'h2' ? [0,-i] : o === 'v' ? [i,0] : [-i,0]);
+  return out;
+}
+function fixedPins(type, at, o){
+  const {ri, c} = parseAt(at);
+  const out = fixedOffsets(type, o).map(([dr, dc]) => hole(ri + dr, c + dc));
+  return out.some(x => !x) ? null : out;
+}
+function pinsOf(c){ return TYPES[c.type].two ? [c.a, c.b] : fixedPins(c.type, c.at, c.o); }
+function ldrR(lux){ if (lux <= 0.05) return 1e6; return Math.min(1e6, Math.max(150, 15000 * Math.pow(lux / 10, -0.7))); }
+
+/* ---------- Sameiningarleit (vírar = sami punktur) ---------- */
+function makeUF(){
+  const p = new Map();
+  const find = k => { let r = k; while (p.has(r) && p.get(r) !== r) r = p.get(r); let x = k; while (p.has(x) && p.get(x) !== r){ const n = p.get(x); p.set(x, r); x = n; } return r; };
+  const union = (a, b) => { const ra = find(a), rb = find(b); if (ra === rb) return; if (ra === 'GND') p.set(rb, ra); else p.set(ra, rb); };
+  return {find, union};
+}
+function buildNet(comps){
+  const uf = makeUF();
+  for (const c of comps) if (c.type === 'wire') uf.union(nodeOf(c.a), nodeOf(c.b));
+  return uf;
+}
+
+/* ---------- Lausn rafrásar (hnútajöfnur, bútlínuleg líkön) ---------- */
+const VBE = 0.65, RBE = 25, BETA = 200, VSAT = 0.08, RSAT = 4;
+function stampG(A, a, b, g){ if (a >= 0) A[a][a] += g; if (b >= 0) A[b][b] += g; if (a >= 0 && b >= 0){ A[a][b] -= g; A[b][a] -= g; } }
+// straumur frá a til b gegnum stakið: i = g (Va - Vb - vs)
+function stampN(A, z, a, b, g, vs){ stampG(A, a, b, g); if (a >= 0) z[a] += g * vs; if (b >= 0) z[b] -= g * vs; }
+// straumur frá c til e: i = gm (Vp - Vq) + i0
+function stampVCCS(A, z, c, e, p, q, gm, i0){
+  if (c >= 0){ if (p >= 0) A[c][p] += gm; if (q >= 0) A[c][q] -= gm; z[c] -= i0; }
+  if (e >= 0){ if (p >= 0) A[e][p] -= gm; if (q >= 0) A[e][q] += gm; z[e] += i0; }
+}
+function gauss(A, z, n){
+  for (let k = 0; k < n; k++){
+    let piv = k, m = Math.abs(A[k][k]);
+    for (let i = k + 1; i < n; i++){ const v = Math.abs(A[i][k]); if (v > m){ m = v; piv = i; } }
+    if (m < 1e-20) continue;
+    if (piv !== k){ const t = A[k]; A[k] = A[piv]; A[piv] = t; const tz = z[k]; z[k] = z[piv]; z[piv] = tz; }
+    const Ak = A[k], akk = Ak[k];
+    for (let i = k + 1; i < n; i++){
+      const Ai = A[i], f = Ai[k] / akk;
+      if (f !== 0){ for (let j = k; j < n; j++) Ai[j] -= f * Ak[j]; z[i] -= f * z[k]; }
+    }
+  }
+  const x = new Float64Array(n);
+  for (let i = n - 1; i >= 0; i--){
+    let s = z[i]; const Ai = A[i];
+    for (let j = i + 1; j < n; j++) s -= Ai[j] * x[j];
+    x[i] = Math.abs(Ai[i]) < 1e-20 ? 0 : s / Ai[i];
+  }
+  return x;
+}
+
+function solveOnce(W, high){
+  const B = BOARDS[W.board];
+  const idx = new Map(); let n = 0;
+  const N = key => { const r = W.uf.find(key); if (r === 'GND') return -1; let i = idx.get(r); if (i === undefined){ i = n++; idx.set(r, i); } return i; };
+  const lin = [], devs = [];
+  const add = (a, b, g, vs = 0, tag = null) => lin.push({a, b, g, vs, tag});
+  add(N('5V'), -1, 10, 5, 'src:5V');
+  add(N('3V3'), -1, 1, 3.3, 'src:3V3');
+  add(N('RESET'), N('5V'), 1 / 10000);
+  for (let p = 0; p < 20; p++){
+    const ps = W.pins[p], k = N('D' + p);
+    if (ps.dac != null) add(k, -1, 1 / 500, ps.dac, 'pin:' + p);
+    else if (ps.mode === 'OUTPUT'){
+      const lvl = (ps.pwm != null || ps.tone != null) ? high.has(p) : !!ps.level;
+      add(k, -1, 1 / B.rOut, lvl ? 5 : 0, 'pin:' + p);
+    } else if (ps.mode === 'INPUT_PULLUP' || ps.level) add(k, -1, 1 / B.pullup, 5, 'pull:' + p);
+  }
+  if (W.battery) add(N('BAT+'), N('BAT-'), 1 / 1.5, 9, 'src:BAT');
+  for (const c of W.comps){
+    if (c.type === 'wire') continue;
+    const pins = pinsOf(c); if (!pins) continue;
+    const nd = pins.map(pid => N(nodeOf(pid)));
+    switch (c.type){
+      case 'res': add(nd[0], nd[1], 1 / c.value); break;
+      case 'ldr': add(nd[0], nd[1], 1 / ldrR(W.env.lux)); break;
+      case 'piezo': add(nd[0], nd[1], 1e-7); break;
+      case 'pot': { const R = 50000, p = c.pos; add(nd[0], nd[1], 1 / Math.max(1, (1 - p) * R)); add(nd[1], nd[2], 1 / Math.max(1, p * R)); break; }
+      case 'btn': { const g = 20; add(nd[0], nd[2], g); add(nd[1], nd[3], g); if (W.pressed.has(c.id)) add(nd[0], nd[1], g); break; }
+      case 'led': { const L = LEDP[c.color]; devs.push({k:'led', a:nd[0], b:nd[1], vth:L.vth, rd:L.rd, on:false, cid:c.id, ch:'x'}); break; }
+      case 'rgb': {
+        const ca = c.common === 'A';
+        for (const [ch, pi] of [['r',0],['g',2],['b',3]]){
+          const L = RGBP[ch];
+          devs.push({k:'led', a: ca ? nd[1] : nd[pi], b: ca ? nd[pi] : nd[1], vth:L.vth, rd:L.rd, on:false, cid:c.id, ch});
+        }
+        break;
+      }
+      case 'lm35': add(nd[0], nd[2], 1 / 80000); devs.push({k:'lm35', vs:nd[0], out:nd[1], gnd:nd[2], pw:false, cid:c.id}); break;
+      case 'bc547': add(nd[0], nd[2], 1e-9); devs.push({k:'bjt', c:nd[0], b:nd[1], e:nd[2], be:false, sat:false, cid:c.id}); break;
+    }
+  }
+  for (let p = 0; p < 20; p++) N('D' + p);
+  N('5V'); N('3V3'); N('VIN'); N('AREF');
+  if (W.battery){ N('BAT+'); N('BAT-'); }
+
+  let x = new Float64Array(n);
+  const v = i => i < 0 ? 0 : x[i];
+  for (let it = 0; it < 60; it++){
+    const A = []; for (let i = 0; i < n; i++){ const r = new Float64Array(n); r[i] = 1e-9; A.push(r); }
+    const z = new Float64Array(n);
+    for (const e of lin) stampN(A, z, e.a, e.b, e.g, e.vs);
+    for (const d of devs){
+      if (d.k === 'led'){ if (d.on) stampN(A, z, d.a, d.b, 1 / d.rd, d.vth); else stampG(A, d.a, d.b, 1e-10); }
+      else if (d.k === 'lm35'){ if (d.pw) stampN(A, z, d.out, d.gnd, 1 / 10, W.env.lm35V); }
+      else if (d.k === 'bjt' && d.be){
+        const g = 1 / RBE;
+        stampN(A, z, d.b, d.e, g, VBE);
+        if (d.sat) stampN(A, z, d.c, d.e, 1 / RSAT, VSAT);
+        else stampVCCS(A, z, d.c, d.e, d.b, d.e, BETA * g, -BETA * g * VBE);
+      }
+    }
+    x = gauss(A, z, n);
+    let changed = 0;
+    const allow = () => it < 30 || changed === 0;
+    for (const d of devs){
+      if (d.k === 'led'){
+        const vd = v(d.a) - v(d.b);
+        const want = d.on ? vd > d.vth - 1e-9 : vd > d.vth + 1e-6;
+        if (want !== d.on && allow()){ d.on = want; changed++; }
+      } else if (d.k === 'lm35'){
+        const want = v(d.vs) - v(d.gnd) >= 4.0;
+        if (want !== d.pw && allow()){ d.pw = want; changed++; }
+      } else if (d.k === 'bjt'){
+        const vbe = v(d.b) - v(d.e);
+        const be = d.be ? vbe > VBE - 1e-9 : vbe > VBE + 1e-6;
+        let sat = d.sat;
+        if (be){
+          const ib = (vbe - VBE) / RBE;
+          if (!d.be) sat = false;
+          else if (!sat){ if (v(d.c) - v(d.e) < 0.15) sat = true; }
+          else { const ic = (v(d.c) - v(d.e) - VSAT) / RSAT; if (BETA * ib < ic - 1e-9) sat = false; }
+        } else sat = false;
+        if ((be !== d.be || sat !== d.sat) && allow()){ d.be = be; d.sat = sat; changed++; }
+      }
+    }
+    if (!changed) break;
+  }
+  // Hvaða hnútar tengjast jörð (GND) eftir einhverri leið?
+  const adj = Array.from({length: n + 1}, () => []);
+  const ed = (a, b) => { const A = a < 0 ? n : a, Bb = b < 0 ? n : b; if (A !== Bb){ adj[A].push(Bb); adj[Bb].push(A); } };
+  for (const e of lin) if (e.g > 1e-7) ed(e.a, e.b);
+  for (const d of devs){
+    if (d.k === 'led' && d.on) ed(d.a, d.b);
+    if (d.k === 'lm35' && d.pw) ed(d.out, d.gnd);
+    if (d.k === 'bjt' && d.be){ ed(d.b, d.e); ed(d.c, d.e); }
+  }
+  const reached = new Uint8Array(n + 1); const q = [n]; reached[n] = 1;
+  while (q.length){ const u = q.pop(); for (const w of adj[u]) if (!reached[w]){ reached[w] = 1; q.push(w); } }
+  const volt = key => { const r = W.uf.find(key); if (r === 'GND') return 0; const i = idx.get(r); return i === undefined ? 0 : x[i]; };
+  const floating = key => { const r = W.uf.find(key); if (r === 'GND') return false; const i = idx.get(r); return i === undefined ? true : !reached[i]; };
+  return {x, idx, n, lin, devs, vi: v, volt, floating};
+}
+
+// PWM og tónar: skipt í tímabil þar sem hver pinni er annað hvort HIGH eða LOW.
+function evaluate(W){
+  const ds = [];
+  for (let p = 0; p < 20; p++){
+    const ps = W.pins[p];
+    if (ps.dac != null || ps.mode !== 'OUTPUT') continue;
+    if (ps.tone != null) ds.push([p, 0.5]); else if (ps.pwm != null) ds.push([p, ps.pwm]);
+  }
+  const cuts = [...new Set(ds.map(d => d[1]))].filter(d => d > 0 && d < 1).sort((a, b) => a - b);
+  const bounds = [0, ...cuts, 1], ivs = [];
+  for (let i = 0; i < bounds.length - 1; i++){
+    const a = bounds[i], b = bounds[i + 1];
+    if (b - a < 1e-9) continue;
+    const high = new Set(ds.filter(d => d[1] > a).map(d => d[0]));
+    ivs.push({w: b - a, sol: solveOnce(W, high), high});
+  }
+  return ivs;
+}
+
+function compData(W, sol, c){
+  const pins = pinsOf(c); if (!pins) return null;
+  const V = pins.map(p => sol.volt(nodeOf(p)));
+  const devs = sol.devs.filter(d => d.cid === c.id);
+  switch (c.type){
+    case 'res': return {v: V[0] - V[1], i: (V[0] - V[1]) / c.value};
+    case 'ldr': { const R = ldrR(W.env.lux); return {v: V[0] - V[1], i: (V[0] - V[1]) / R}; }
+    case 'piezo': return {v: V[0] - V[1]};
+    case 'led': { const d = devs[0]; const vd = V[0] - V[1]; return {v: vd, i: d && d.on ? (vd - d.vth) / d.rd : 0}; }
+    case 'rgb': { const o = {}; for (const d of devs){ const vd = sol.vi(d.a) - sol.vi(d.b); o['i' + d.ch] = d.on ? (vd - d.vth) / d.rd : 0; o['v' + d.ch] = vd; } return o; }
+    case 'pot': return {v1: V[0], vw: V[1], v3: V[2]};
+    case 'btn': return {v: V[0] - V[1]};
+    case 'lm35': { const d = devs[0]; return {vs: V[0] - V[2], vo: V[1] - V[2], pw: d && d.pw ? 1 : 0}; }
+    case 'bc547': {
+      const d = devs[0], vbe = V[1] - V[2], vce = V[0] - V[2];
+      let ib = 0, ic = 0, mode = 0;
+      if (d && d.be){ ib = (vbe - VBE) / RBE; if (d.sat){ ic = (vce - VSAT) / RSAT; mode = 2; } else { ic = BETA * ib; mode = 1; } }
+      return {vbe, vce, ib, ic, mode};
+    }
+  }
+  return null;
+}
+
+function measure(W, ivs){
+  const vsum = new Map();
+  for (const iv of ivs) for (const [r, i] of iv.sol.idx) vsum.set(r, (vsum.get(r) || 0) + iv.w * iv.sol.x[i]);
+  const volt = key => { const r = W.uf.find(key); if (r === 'GND') return 0; return vsum.get(r) || 0; };
+  const floating = key => ivs.every(iv => iv.sol.floating(key));
+  const comp = new Map();
+  for (const c of W.comps){
+    if (c.type === 'wire') continue;
+    const acc = {avg:{}, pk:{}, min:{}, max:{}};
+    for (const iv of ivs){
+      const d = compData(W, iv.sol, c); if (!d) continue;
+      for (const k in d){
+        acc.avg[k] = (acc.avg[k] || 0) + iv.w * d[k];
+        if (!(k in acc.pk) || Math.abs(d[k]) > Math.abs(acc.pk[k])) acc.pk[k] = d[k];
+        acc.min[k] = k in acc.min ? Math.min(acc.min[k], d[k]) : d[k];
+        acc.max[k] = k in acc.max ? Math.max(acc.max[k], d[k]) : d[k];
+      }
+    }
+    comp.set(c.id, acc);
+  }
+  const pinI = new Float64Array(20), src = {'5V':0, '3V3':0, 'BAT':0};
+  for (const iv of ivs) for (const e of iv.sol.lin){
+    if (!e.tag) continue;
+    const i = Math.abs(e.g * (iv.sol.vi(e.a) - iv.sol.vi(e.b) - e.vs));
+    const [kind, id] = e.tag.split(':');
+    if (kind === 'pin' || kind === 'pull'){ if (i > pinI[+id]) pinI[+id] = i; }
+    else if (kind === 'src'){ if (i > src[id]) src[id] = i; }
+  }
+  return {volt, floating, comp, pinI, src, ivs};
+}
+
+/* ---------- Greining: hvað er að rásinni? ---------- */
+const pinName = p => p < 14 ? 'D' + p : 'A' + (p - 14);
+function fmtNum(x, d){ return x.toFixed(d).replace('.', ','); }
+function fmtV(v){ if (Math.abs(v) < 0.005) v = 0; return fmtNum(v, 2) + ' V'; }
+function fmtI(i){ i = Math.abs(i); if (i < 1e-7) return '0 mA'; if (i < 1e-3) return Math.round(i * 1e6) + ' µA'; if (i < 1) return fmtNum(i * 1e3, 1) + ' mA'; return fmtNum(i, 2) + ' A'; }
+function fmtR(r){ if (r >= 1e6) return fmtNum(r / 1e6, r % 1e6 ? 1 : 0) + ' MΩ'; if (r >= 1e3) return (r % 1000 ? fmtNum(r / 1e3, 1) : String(r / 1e3)) + ' kΩ'; return Math.round(r) + ' Ω'; }
+function compLabel(c){
+  if (c.type === 'led') return LEDP[c.color].name + ' LED';
+  if (c.type === 'res') return 'Viðnám ' + fmtR(c.value);
+  return TYPES[c.type].name;
+}
+function analyze(W, M, flags){
+  const out = [], B = BOARDS[W.board];
+  const push = (sev, text, cid) => out.push({sev, text, cid});
+  const root = k => W.uf.find(k);
+  if (W.battery && (root('BAT+') === root('5V') || root('BAT+') === root('3V3')))
+    push('danger', '9 V rafhlaðan er tengd beint í 5V- eða 3.3V-pinnann. Það myndi eyðileggja borðið. Notaðu VIN eða láttu smára stýra 9 V rásinni.');
+  else {
+    if (M.src['5V'] > 0.5) push('danger', `Skammhlaup: 5V tengist GND (${fmtI(M.src['5V'])}). Á alvöru borði slær öryggið í USB-tenginu út.`);
+    if (M.src['3V3'] > B.v33Max) push('danger', `3.3V-pinninn gefur ${fmtI(M.src['3V3'])}, en ${B.name} þolir mest ${fmtI(B.v33Max)} þar. Er skammhlaup í GND?`);
+  }
+  if (W.battery && M.src.BAT > 0.4) push('danger', `Skammhlaup í 9 V rafhlöðunni (${fmtI(M.src.BAT)}). Rafhlaðan hitnar hratt.`);
+  for (let p = 0; p < 20; p++){
+    const v = M.volt('D' + p);
+    if (v > 5.5 || v < -0.5){ push('danger', `${pinName(p)} fær ${fmtV(v)}, en pinnar á Arduino þola aðeins 0–5 V. Þetta myndi skemma borðið.`); continue; }
+    const i = M.pinI[p];
+    if (i > B.pinMax) push('danger', `${pinName(p)} gefur ${fmtI(i)}. Hámarkið á ${B.name} er ${fmtI(B.pinMax)} á pinna. Settu stærra viðnám í röð.`);
+    else if (i > B.pinWarn) push('warn', `${pinName(p)} gefur ${fmtI(i)}, sem er yfir ráðlögðum ${fmtI(B.pinWarn)} á ${B.name}. Stærra viðnám hlífir pinnanum.`);
+  }
+  for (const c of W.comps){
+    if (c.type === 'wire') continue;
+    const pins = pinsOf(c); if (!pins) continue;
+    const roots = pins.map(p => root(nodeOf(p)));
+    const d = M.comp.get(c.id);
+    if (c.type === 'btn'){
+      if (roots[0] === roots[1]) push('warn', 'Takkinn er alltaf tengdur, því báðar hliðar hans lenda í sömu röð. Láttu hann brúa rennuna í miðju brauðbrettisins eða snúðu honum.', c.id);
+    } else if (TYPES[c.type].two){
+      if (roots[0] === roots[1] && c.type !== 'piezo') push('warn', `${compLabel(c)}: báðir fæturnir eru tengdir saman (í sömu röð á brauðbrettinu), svo straumurinn fer framhjá.`, c.id);
+    } else {
+      const seen = new Set(roots);
+      if (seen.size < roots.length) push('warn', `${compLabel(c)}: tveir fætur lenda í sömu röð og eru því tengdir saman. Snúðu íhlutnum þannig að hver fótur fái sína röð.`, c.id);
+    }
+    if (!d) continue;
+    if (c.type === 'led'){
+      const i = Math.abs(d.pk.i || 0), L = LEDP[c.color];
+      if (i > 0.030) push('danger', `${L.name} LED: ${fmtI(i)} er allt of mikill straumur og díóðan getur brunnið. Settu viðnám í röð við hana.`, c.id);
+      else if (i > 0.020) push('warn', `${L.name} LED: ${fmtI(i)} er yfir 20 mA. Stærra viðnám lengir líftíma díóðunnar.`, c.id);
+      if ((d.min.v ?? 0) < -L.vth) push('info', `${L.name} LED snýr öfugt. Langi fóturinn (+) á að snúa að hærri spennunni. Veldu díóðuna og smelltu á „Snúa við“.`, c.id);
+    }
+    if (c.type === 'rgb'){
+      for (const ch of ['r','g','b']){ const i = Math.abs(d.pk['i' + ch] || 0); if (i > 0.030) push('danger', `RGB LED (${ch === 'r' ? 'rauð' : ch === 'g' ? 'græn' : 'blá'}): ${fmtI(i)}, allt of mikill straumur. Hver litur þarf sitt viðnám.`, c.id); }
+    }
+    if (c.type === 'lm35'){
+      if ((d.max.vs ?? 0) < -1) push('danger', 'LM35 snýr öfugt (+V og GND víxlast). Hann hitnar og getur skemmst.', c.id);
+      else if (!(d.max.pw)) push('info', 'LM35 fær ekki straum. Tengdu +V-fótinn í 5V og GND-fótinn í GND.', c.id);
+    }
+    if (c.type === 'bc547'){
+      const ib = Math.abs(d.pk.ib || 0), ic = Math.abs(d.pk.ic || 0);
+      if (ib > 0.005) push('warn', `BC547: grunnstraumurinn er ${fmtI(ib)}, sem er of mikið. Settu grunnviðnám (t.d. 1–10 kΩ) milli Arduino og B-fótarins.`, c.id);
+      if (ic > 0.1) push('danger', `BC547: ${fmtI(ic)} í gegnum smárann. Hann þolir mest 100 mA.`, c.id);
+    }
+  }
+  if (flags){
+    const now = flags.now || 0;
+    for (const p of flags.inputHigh) push('info', `${pinName(p)}: digitalWrite(HIGH) án pinMode(${pinName(p).startsWith('A') ? pinName(p) : p}, OUTPUT). Pinninn kveikir þá aðeins á innra uppdráttarviðnámi og gefur örlítinn straum.`);
+    for (const [p, t] of flags.floatRead) if (now - t < 1500) push('warn', `${pinName(p)} er lesinn en er ekki tengdur neinu („fljótandi“). Lesturinn verður tilviljanakenndur. Notaðu INPUT_PULLUP eða viðnám í GND.`);
+    for (const p of flags.nonPwm) push('info', `analogWrite á ${pinName(p)}: þessi pinni hefur ekki PWM (~), svo hann verður bara HIGH eða LOW. PWM-pinnarnir eru 3, 5, 6, 9, 10 og 11.`);
+    if (flags.noBegin) push('info', 'Serial.print() var kallað án Serial.begin(9600) í setup(), svo ekkert birtist á raðskjánum.');
+    if (flags.serialUsed){
+      for (const p of [0, 1]){
+        const r = root('D' + p);
+        if (W.comps.some(c => pinsOf(c)?.some(pid => root(nodeOf(pid)) === r))) push('info', `D${p} er tengdur, en hann er líka notaður af Serial (${p ? 'TX' : 'RX'}). Notaðu frekar aðra pinna.`);
+      }
+    }
+  }
+  const rank = {danger:0, warn:1, info:2};
+  return out.sort((a, b) => rank[a.sev] - rank[b.sev]);
+}
+
+/* ---------- Túlkur: Arduino-C yfir í JavaScript ---------- */
+const TYPE = '(?:unsigned\\s+long\\s+long|unsigned\\s+long|unsigned\\s+int|unsigned\\s+char|unsigned\\s+short|unsigned|signed\\s+char|signed|long\\s+long|long\\s+int|long|int|short|byte|word|float|double|bool|boolean|char|String|size_t|uint8_t|uint16_t|uint32_t|uint64_t|int8_t|int16_t|int32_t|int64_t)';
+function wrapperFor(t, board){
+  t = t.replace(/\s+/g, ' ');
+  if (/^(float|double|bool|boolean|String)$/.test(t)) return null;
+  if (/^(byte|uint8_t|unsigned char)$/.test(t)) return '__u8';
+  if (/^(char|int8_t|signed char)$/.test(t)) return '__i8';
+  if (/^(short|int16_t)$/.test(t)) return '__i16';
+  if (/^(int|signed)$/.test(t)) return board === 'r3' ? '__i16' : '__i32';
+  if (/^(word|uint16_t|unsigned short)$/.test(t)) return '__u16';
+  if (/^(unsigned int|unsigned)$/.test(t)) return board === 'r3' ? '__u16' : '__u32';
+  if (/^(long|long int|int32_t|long long|int64_t)$/.test(t)) return '__i32';
+  if (/^(unsigned long|uint32_t|size_t|unsigned long long|uint64_t)$/.test(t)) return '__u32';
+  return null;
+}
+function decodeChar(lit){
+  const s = lit.slice(1, -1);
+  if (!s) return 0;
+  if (s[0] === '\\'){ const m = {n:10, t:9, r:13, '0':0, '\\':92, "'":39, '"':34, a:7, b:8, f:12, v:11}; return s[1] in m ? m[s[1]] : s.charCodeAt(1); }
+  return s.charCodeAt(0);
+}
+function lexProtect(src){
+  let out = '', i = 0; const strs = [], n = src.length;
+  while (i < n){
+    const ch = src[i], nx = src[i + 1];
+    if (ch === '/' && nx === '/'){ while (i < n && src[i] !== '\n') i++; continue; }
+    if (ch === '/' && nx === '*'){ i += 2; while (i < n && !(src[i] === '*' && src[i + 1] === '/')){ if (src[i] === '\n') out += '\n'; i++; } i += 2; continue; }
+    if (ch === '"'){
+      let j = i + 1; while (j < n && src[j] !== '"' && src[j] !== '\n'){ if (src[j] === '\\') j++; j++; }
+      strs.push(src.slice(i, j + 1).replace(/\n$/, '"')); out += '\u0001' + (strs.length - 1) + '\u0001';
+      i = src[j] === '\n' ? j : j + 1; continue;
+    }
+    if (ch === "'"){
+      let j = i + 1; while (j < n && src[j] !== "'" && src[j] !== '\n'){ if (src[j] === '\\') j++; j++; }
+      const val = decodeChar(src.slice(i, j + 1));
+      if (/Serial\s*\.\s*(print|println|write)\s*\(\s*$/.test(out) && /^\s*\)/.test(src.slice(j + 1))){
+        strs.push(JSON.stringify(String.fromCharCode(val))); out += '\u0001' + (strs.length - 1) + '\u0001';
+      } else out += String(val);
+      i = j + 1; continue;
+    }
+    out += ch; i++;
+  }
+  return {code: out, strs};
+}
+const restore = (code, strs) => code.replace(/\u0001(\d+)\u0001/g, (m, k) => strs[+k]);
+const nl = s => (s.match(/\n/g) || []).length;
+function keepNL(orig, repl){ const d = nl(orig) - nl(repl); return d > 0 ? repl + '\n'.repeat(d) : repl; }
+
+function lint(code){
+  const lines = code.split('\n');
+  const stack = [];
+  const pairs = {')':'(', ']':'[', '}':'{'};
+  for (let li = 0; li < lines.length; li++){
+    for (const ch of lines[li]){
+      if ('([{'.includes(ch)) stack.push({ch, line: li + 1});
+      else if (ch in pairs){
+        const top = stack.pop();
+        if (!top) return {line: li + 1, msg: `Svigi „${ch}“ lokar engu – það er einum of mikið af honum.`};
+        if (top.ch !== pairs[ch]) return {line: li + 1, msg: `„${ch}“ passar ekki við „${top.ch}“ í línu ${top.line}.`};
+      }
+    }
+  }
+  if (stack.length){ const t = stack[stack.length - 1]; return {line: t.line, msg: `„${t.ch}“ í línu ${t.line} er aldrei lokað. Vantar „${t.ch === '{' ? '}' : t.ch === '(' ? ')' : ']'}“?`}; }
+  // semíkommur
+  const header = new RegExp('^(?:(?:static|inline|const)\\s+)*(?:' + TYPE + '|void)\\b[\\w\\s*&]*\\(.*\\)$');
+  let paren = 0; const braceKind = [];
+  for (let li = 0; li < lines.length; li++){
+    const raw = lines[li], t = raw.trim();
+    const startParen = paren, inInit = braceKind.includes('init');
+    let prev = '';
+    for (const ch of raw){
+      if (ch === '(') paren++; else if (ch === ')') paren--;
+      else if (ch === '{') braceKind.push(/[=,{[]\s*$/.test(prev) || braceKind[braceKind.length - 1] === 'init' && /[,{]\s*$/.test(prev) ? 'init' : 'blk');
+      else if (ch === '}') braceKind.pop();
+      prev += ch;
+    }
+    if (!t || t.startsWith('#') || startParen > 0 || paren > 0 || inInit) continue;
+    if (/(\+\+|--)$/.test(t) && !/^(for|while|if)\b/.test(t)) return {line: li + 1, msg: 'Það vantar líklega semíkommu (;) í lok línunnar.'};
+    if (/[;{},(\[:\\]$|&&$|\|\|$|[+\-*\/%=<>!?&|^~]$/.test(t)) continue;
+    if (/^(\}\s*)?(else|do)$/.test(t)) continue;
+    if (/\)$/.test(t)){
+      if (/^(\}\s*)?(if|for|while|switch|else\s+if)\b/.test(t) || header.test(t)) continue;
+      return {line: li + 1, msg: 'Það vantar líklega semíkommu (;) í lok línunnar.'};
+    }
+    if (/^(\}\s*)?else\b/.test(t)) continue;
+    const next = (lines.slice(li + 1).find(l => l.trim()) || '').trim();
+    if (next.startsWith('{') || next.startsWith('=') || /^[+\-*\/%&|?:.<>]/.test(next)) continue;
+    return {line: li + 1, msg: 'Það vantar líklega semíkommu (;) í lok línunnar.'};
+  }
+  if (!/\bvoid\s+setup\s*\(/.test(code)) return {line: null, msg: 'Það vantar fallið void setup() { … }. Hvert Arduino-forrit þarf bæði setup() og loop().'};
+  if (!/\bvoid\s+loop\s*\(/.test(code)) return {line: null, msg: 'Það vantar fallið void loop() { … }. Hvert Arduino-forrit þarf bæði setup() og loop().'};
+  return null;
+}
+
+function splitTop(s, sep){
+  const out = []; let d = 0, cur = '';
+  for (const ch of s){ if ('([{'.includes(ch)) d++; else if (')]}'.includes(ch)) d--; if (ch === sep && d === 0){ out.push(cur); cur = ''; } else cur += ch; }
+  out.push(cur); return out;
+}
+function convParams(ps, board, typed){
+  ps = ps.trim(); if (!ps || ps === 'void') return '';
+  return splitTop(ps, ',').map(p => {
+    const [left, ...def] = p.split('=');
+    const clean = left.replace(/\[\s*\]/g, '').replace(/[&*]/g, ' ').trim();
+    const m = clean.match(/^(?:const\s+)?(.*?)\s*(\w+)$/);
+    if (!m) return '_';
+    const w = wrapperFor(m[1].trim(), board); if (w) typed.set(m[2], w);
+    return m[2] + (def.length ? ' = ' + def.join('=').trim() : '');
+  }).join(', ');
+}
+function convDeclarator(d, t, board, typed){
+  const m = d.match(/^\s*(\w+)\s*((?:\[[^\]]*\])*)\s*(?:=\s*([\s\S]*))?$/);
+  if (!m) return d;
+  const name = m[1], arr = m[2], init = m[3];
+  if (arr){
+    const dims = [...arr.matchAll(/\[([^\]]*)\]/g)].map(x => x[1].trim());
+    if (init !== undefined){
+      const s = init.trim();
+      if (s.startsWith('{')){ const lit = s.replace(/\{/g, '[').replace(/\}/g, ']'); return dims.length === 1 && dims[0] ? `${name} = __pad(${lit}, ${dims[0]})` : `${name} = ${lit}`; }
+      return `${name} = ${s}`;
+    }
+    return dims.length >= 2 ? `${name} = __arr2(${dims[0]}, ${dims[1]})` : `${name} = __arr(${dims[0] || 0})`;
+  }
+  const w = wrapperFor(t, board);
+  if (w) typed.set(name, w); else typed.delete(name);
+  if (init === undefined) return `${name} = ${t === 'String' ? '""' : /^bool/.test(t) ? 'false' : '0'}`;
+  return w ? `${name} = ${w}(${init.trim()})` : `${name} = ${init.trim()}`;
+}
+function convertFunctions(code, board, typed, fns){
+  code = code.replace(new RegExp('(^|[\\n;}])([ \\t]*)(?:(?:static|inline)\\s+)*(?:const\\s+)?(?:' + TYPE + '|void)\\s*[*&]?\\s+(\\w+)\\s*\\(([^()]*)\\)\\s*;', 'g'),
+    (m, pre, sp) => pre + sp);
+  return code.replace(new RegExp('(^|[\\n;}])([ \\t]*)(?:(?:static|inline)\\s+)*(?:const\\s+)?(?:' + TYPE + '|void)\\s*[*&]?\\s+(\\w+)\\s*\\(([^()]*)\\)(\\s*)\\{', 'g'),
+    (m, pre, sp, name, params, ws) => { fns.push(name); return pre + sp + `async function ${name}(${convParams(params, board, typed)})${ws}{`; });
+}
+function convertDecls(code, board, typed){
+  const re = new RegExp('(^|[\\n;{}(])([ \\t]*)((?:(?:const|static|volatile)\\s+)*)(' + TYPE + ')(?=\\s+[A-Za-z_])\\s+', 'g');
+  let out = '', last = 0, m;
+  while ((m = re.exec(code))){
+    const start = m.index + m[1].length + m[2].length;
+    let j = re.lastIndex, depth = 0;
+    for (; j < code.length; j++){
+      const ch = code[j];
+      if ('([{'.includes(ch)) depth++;
+      else if (')]}'.includes(ch)){ if (depth === 0) break; depth--; }
+      else if (ch === ';' && depth === 0) break;
+    }
+    if (code[j] !== ';') continue;
+    const body = code.slice(re.lastIndex, j);
+    const t = m[4].replace(/\s+/g, ' ');
+    const decls = splitTop(body, ',').map(d => convDeclarator(d, t, board, typed)).join(', ');
+    const kw = /\bconst\b/.test(m[3]) ? 'const ' : 'let ';
+    out += code.slice(last, start) + keepNL(code.slice(start, j), kw + decls);
+    last = j; re.lastIndex = j;
+  }
+  return out + code.slice(last);
+}
+function convertCasts(code){
+  code = code.replace(/\(\s*(?:float|double)\s*\)\s*/g, '');
+  return code.replace(/\(\s*(?:unsigned\s+)?(?:int|long|byte|short|word|char|uint8_t|int16_t|uint16_t|int32_t|uint32_t)\s*\)\s*(\(|[A-Za-z_][\w.]*(?:\[[^\]]*\])?(?:\([^()]*\))?|\d+(?:\.\d+)?)/g,
+    (m, g) => g === '(' ? '__trunc(' : `__trunc(${g})`);
+}
+const balanced = s => { let d = 0; for (const ch of s){ if (ch === '(') d++; else if (ch === ')'){ d--; if (d < 0) return false; } } return d === 0; };
+function convertAssigns(code, typed){
+  for (const [name, w] of typed){
+    const re = new RegExp('(^|[^\\w.\\]$])(' + name + ')\\s*(\\+|-|\\*|\\/|%|&|\\||\\^|<<|>>)?=(?!=)([^;{}]*);', 'g');
+    code = code.replace(re, (m, pre, nm, op, expr) => {
+      if (!balanced(expr) || /^\s*$/.test(expr)) return m;
+      return op ? `${pre}${nm} = ${w}(${nm} ${op} (${expr}));` : `${pre}${nm} = ${w}(${expr});`;
+    });
+  }
+  return code;
+}
+function addAwaits(code, fns){
+  const names = [...new Set([...fns, 'delay'])].filter(n => /^\w+$/.test(n));
+  code = code.replace(new RegExp('(?<![\\w.$]|function\\s{1,20})(' + names.join('|') + ')\\s*\\(', 'g'), 'await $1(');
+  return code.replace(/\bSerial\s*\.\s*(parseInt|parseFloat|readString|readStringUntil|readBytes)\s*\(/g, 'await Serial.$1(');
+}
+function matchClose(code, open){
+  const o = code[open], c = o === '(' ? ')' : o === '{' ? '}' : ']';
+  let d = 0;
+  for (let i = open; i < code.length; i++){ if (code[i] === o) d++; else if (code[i] === c){ d--; if (d === 0) return i; } }
+  return -1;
+}
+function stmtEnd(code, k){
+  let d = 0;
+  for (let i = k; i < code.length; i++){ const ch = code[i]; if ('([{'.includes(ch)) d++; else if (')]}'.includes(ch)){ d--; if (d < 0) return -1; } else if (ch === ';' && d === 0) return i; }
+  return -1;
+}
+function addTicks(code){
+  const doEnds = new Set(); let m;
+  const doRe = /\bdo\s*\{/g;
+  while ((m = doRe.exec(code))){ const close = matchClose(code, m.index + m[0].length - 1); if (close > 0) doEnds.add(close); }
+  const ins = [];
+  const re = /\b(while|for)\s*\(|\bdo\s*\{/g;
+  while ((m = re.exec(code))){
+    if (m[0].startsWith('do')){ ins.push({pos: m.index + m[0].length, del: 0, text: ' await __t();'}); continue; }
+    const open = m.index + m[0].length - 1, close = matchClose(code, open);
+    if (close < 0) continue;
+    if (m[1] === 'while'){ let k = m.index - 1; while (k >= 0 && /\s/.test(code[k])) k--; if (k >= 0 && code[k] === '}' && doEnds.has(k)) continue; }
+    let k = close + 1; while (k < code.length && /\s/.test(code[k])) k++;
+    if (code[k] === '{') ins.push({pos: k + 1, del: 0, text: ' await __t();'});
+    else if (code[k] === ';') ins.push({pos: k, del: 1, text: '{ await __t(); }'});
+    else { const end = stmtEnd(code, k); if (end < 0) continue; ins.push({pos: k, del: 0, text: '{ await __t(); '}); ins.push({pos: end + 1, del: 0, text: ' }'}); }
+  }
+  ins.sort((a, b) => b.pos - a.pos);
+  for (const x of ins) code = code.slice(0, x.pos) + x.text + code.slice(x.pos + x.del);
+  return code;
+}
+const API_NAMES = ['pinMode','digitalWrite','digitalRead','analogRead','analogWrite','analogReadResolution','analogWriteResolution','analogReference',
+  'delay','delayMicroseconds','millis','micros','tone','noTone','map','constrain','min','max','abs','sq','sqrt','pow','sin','cos','tan','atan2','exp','log','floor','ceil','round',
+  'random','randomSeed','Serial','HIGH','LOW','INPUT','OUTPUT','INPUT_PULLUP','A0','A1','A2','A3','A4','A5','LED_BUILTIN','PI','HALF_PI','TWO_PI','DEG_TO_RAD','RAD_TO_DEG',
+  'DEC','HEX','BIN','OCT','DEFAULT','INTERNAL','EXTERNAL','AR_DEFAULT','DAC','MSBFIRST','LSBFIRST','RISING','FALLING','CHANGE',
+  '__t','__i8','__u8','__i16','__u16','__i32','__u32','__trunc','__arr','__arr2','__pad',
+  'int','float','double','long','byte','word','char','bool','boolean','F','bitRead','bitWrite','bitSet','bitClear','bit','lowByte','highByte','isDigit','isAlpha','isSpace',
+  'pulseIn','shiftOut','attachInterrupt','detachInterrupt','digitalPinToInterrupt','noInterrupts','interrupts'];
+const PRELUDE = '"use strict";const {' + API_NAMES.join(',') + '} = __api;';
+function compile(src, board){
+  const {code: prot, strs} = lexProtect(src);
+  const le = lint(prot); if (le) return {error: le};
+  let c = prot.split('\n').map(l => {
+    let m;
+    if ((m = l.match(/^\s*#\s*define\s+(\w+)\(([^)]*)\)\s+(.*)$/))) return `const ${m[1]} = (${m[2]}) => (${m[3].trim()});`;
+    if ((m = l.match(/^\s*#\s*define\s+(\w+)\s*(.*)$/))) return `const ${m[1]} = ${m[2].trim() || '1'};`;
+    if (/^\s*#/.test(l)) return '';
+    return l;
+  }).join('\n');
+  const typed = new Map(), fns = [];
+  c = convertFunctions(c, board, typed, fns);
+  c = convertDecls(c, board, typed);
+  c = convertCasts(c);
+  c = convertAssigns(c, typed);
+  c = addAwaits(c, fns);
+  c = addTicks(c);
+  c = c.replace(/\bNULL\b/g, 'null');
+  c = restore(c, strs);
+  return {body: PRELUDE + c + '\n;return {setup: typeof setup === "function" ? setup : null, loop: typeof loop === "function" ? loop : null};', fns};
+}
+class SimError extends Error {}
+const KNOWN = API_NAMES.filter(n => !n.startsWith('__')).concat(['setup','loop']);
+const SERIAL_M = ['begin','end','print','println','write','available','read','peek','parseInt','parseFloat','readString','readStringUntil','flush','setTimeout'];
+function syntaxMsg(msg){
+  let m;
+  if (/Unexpected end of input|end of script/i.test(msg)) return 'Kóðinn endar óvænt. Vantar „}“ eða „)“?';
+  if (/missing \) after argument list/i.test(msg)) return 'Það vantar „)“ eða kommu milli gilda í fallakalli.';
+  if ((m = msg.match(/Identifier '(\w+)' has already been declared|redeclaration of \w+ (\w+)/))) return `Breytan „${m[1] || m[2]}“ er skilgreind tvisvar á sama stað.`;
+  if ((m = msg.match(/Unexpected identifier(?: '(\w+)')?/))) return `Óvænt nafn${m[1] ? ` „${m[1]}“` : ''}. Vantar semíkommu, kommu eða virkja (t.d. + eða =)?`;
+  if (/Unexpected number/.test(msg)) return 'Óvænt tala. Vantar kommu eða virkja á undan henni?';
+  if (/Unexpected string/.test(msg)) return 'Óvæntur texti. Vantar kommu á undan honum?';
+  if (/Invalid left-hand side in assignment/.test(msg)) return 'Ógild úthlutun (=). Áttirðu við == til að bera saman?';
+  if ((m = msg.match(/Unexpected token '?([^']+)'?/))) return `Óvænt tákn „${m[1]}“.`;
+  return 'Villa í kóðanum.';
+}
+function friendlyError(e, offset){
+  const st = String((e && e.stack) || '');
+  const lm = st.match(/(?:<anonymous>|AsyncFunction|> Function|> eval|VM\d*):(\d+):\d+/);
+  const line = lm ? Math.max(1, +lm[1] - offset) : null;
+  let msg = (e && e.message) || String(e);
+  if (e instanceof SimError) return {line, msg};
+  if (e instanceof ReferenceError){
+    const nm = (msg.match(/^(\w+) is not defined/) || msg.match(/variable: (\w+)/) || msg.match(/'(\w+)'/) || [])[1] || '';
+    const sug = KNOWN.find(k => k.toLowerCase() === nm.toLowerCase() && k !== nm);
+    if (/before initialization/.test(msg)) return {line, msg: `Breytan „${nm}“ er notuð áður en hún er skilgreind.`};
+    return {line, msg: `„${nm}“ er ekki skilgreint.` + (sug ? ` Áttirðu við „${sug}“? C gerir greinarmun á há- og lágstöfum.` : ' Athugaðu stafsetninguna, eða hvort breytan var skilgreind (t.d. int x = 0;).')};
+  }
+  if (e instanceof TypeError){
+    let m = msg.match(/(?:^|\s)([\w.]+) is not a function/);
+    if (m){
+      const nm = m[1];
+      const parts = nm.split('.');
+      let sug = null;
+      if (parts[0] === 'Serial' && parts[1]) { const s = SERIAL_M.find(k => k.toLowerCase() === parts[1].toLowerCase()); if (s && s !== parts[1]) sug = 'Serial.' + s; }
+      return {line, msg: `„${nm}“ er ekki fall sem hermirinn þekkir.` + (sug ? ` Áttirðu við „${sug}“?` : '')};
+    }
+    if (/Assignment to constant/.test(msg)) return {line, msg: 'Ekki má breyta gildi á const-breytu.'};
+    if (/Cannot read properties of undefined|undefined is not an object/.test(msg)) return {line, msg: 'Reynt var að lesa út fyrir fylki (vísir of stór?) eða nota eitthvað sem er ekki til.'};
+  }
+  if (e instanceof RangeError && /call stack/i.test(msg)) return {line, msg: 'Fall kallar á sjálft sig endalaust (endalaus endurkvæmni).'};
+  return {line, msg: 'Villa við keyrslu: ' + msg};
+}
+
+return {P, S, BW, BH, BB_W, BB_H, ROWS, ROW_Y, RAILS, HEADER, setLayout,
+  get ROT(){ return ROT; }, get BX(){ return BX; }, get BY(){ return BY; }, get QX(){ return QX; }, get QY(){ return QY; }, get BAT(){ return BAT; }, get VIEW_W(){ return VIEW_W; }, get VIEW_H(){ return VIEW_H; }, PWM_PINS, POINTS, TYPES, LEDP, RGBP, RES_VALUES,
+  KIT, BOARDS, kitKey, kitLimit, nodeOf, parseAt, hole, fixedOffsets, fixedPins, pinsOf, ldrR, buildNet, evaluate, measure, analyze, compile, lint,
+  friendlyError, syntaxMsg, SimError, fmtV, fmtI, fmtR, fmtNum, compLabel, pinName, hx, hy, colX, railX};
+})();
+/*CORE-END*/
+</script>
+
+<script>
+"use strict";
+/* =================== VIÐMÓT =================== */
+const C = Core;
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const WIRE_COLORS = [['#d33a2c','rauður'],['#1f1f22','svartur'],['#2f6fd6','blár'],['#e3ad00','gulur'],['#2e9d4f','grænn'],['#ef8424','appelsínugulur'],['#eeeeee','hvítur'],['#8a4fc0','fjólublár']];
+const BAND = ['#1b1b1b','#7a4a1d','#d02c20','#ef7d16','#f2c80f','#2f9e44','#1f5fd1','#7b3fb0','#8a8a8a','#f3f3f3'];
+const BAND_NAME = ['svartur','brúnn','rauður','appelsínugulur','gulur','grænn','blár','fjólublár','grár','hvítur'];
+const STORE_KEY = 'uno-hermir-v1';
+
+/* ---------- Ástand ---------- */
+const st = {board:'r3', layout:'top', comps:[], battery:false, nextId:1};
+const ui = {tool:'select', resVal:1000, orient:'h', first:null, pressStart:null, sel:null, hover:null, drag:null,
+  probe:{a:null, b:null}, pressed:new Set(), env:{lux:300, temp:22}, zoom:null, flash:'', flashT:0};
+const freshPins = () => Array.from({length:20}, () => ({mode:'INPUT', level:0, pwm:null, dac:null, tone:null, tok:0}));
+const run = {running:false, id:0, start:0, pins:freshPins(), aRes:10, wRes:8, floatWalk:new Array(20).fill(0.4),
+  serial:{begun:false, baud:9600, inbuf:'', pending:'', txT:0},
+  flags:{inputHigh:new Set(), floatRead:new Map(), nonPwm:new Set(), noBegin:false, serialUsed:false, now:0}};
+let uf = C.buildNet([]), groups = new Map(), occ = new Map();
+let solved = null, warnings = [], dirty = true, structVer = 0;
+const hist = [];
+
+function world(){
+  return {comps: st.comps, battery: st.battery, uf, board: st.board, pins: run.pins,
+    env: {lux: ui.env.lux, temp: ui.env.temp, lm35V: Math.min(1.5, Math.max(0, ui.env.temp * 0.01))}, pressed: ui.pressed};
+}
+function markDirty(){ dirty = true; }
+function recompute(){
+  const W = world();
+  const ivs = C.evaluate(W);
+  solved = {W, ivs, M: C.measure(W, ivs)};
+  run.flags.now = performance.now();
+  warnings = C.analyze(W, solved.M, run.flags);
+  dirty = false;
+}
+function ensureSolved(){ if (dirty || !solved) recompute(); }
+function structureChanged(){
+  uf = C.buildNet(st.comps);
+  groups = new Map(); occ = new Map();
+  for (const [pid, p] of C.POINTS){
+    if (p.kind === 'bat' && !st.battery) continue;
+    const r = uf.find(p.node); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(pid);
+  }
+  for (const c of st.comps){ const pins = C.pinsOf(c); if (pins) for (const pid of pins){ if (!occ.has(pid)) occ.set(pid, []); occ.get(pid).push(c.id); } }
+  structVer++;
+  markDirty(); renderComps(); renderTools(); renderInspector(); syncEnv(); save();
+}
+
+/* ---------- Saga og vistun ---------- */
+const snap = withCode => JSON.stringify({comps: st.comps, battery: st.battery, nextId: st.nextId, code: withCode ? editor.value : undefined});
+function pushHist(withCode){ hist.push(snap(withCode)); if (hist.length > 60) hist.shift(); $('undo').disabled = false; }
+function pushHistRaw(s){ hist.push(s); if (hist.length > 60) hist.shift(); $('undo').disabled = false; }
+function undo(){
+  const s = hist.pop(); if (!s) return;
+  const o = JSON.parse(s);
+  st.comps = o.comps; st.battery = o.battery; st.nextId = o.nextId;
+  if (o.code !== undefined){ editor.value = o.code; updateGutter(); }
+  ui.sel = null; renderBattery(); structureChanged();
+  $('undo').disabled = !hist.length;
+}
+let saveT = 0;
+function save(){ clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify({v:1, board: st.board, layout: st.layout, comps: st.comps, battery: st.battery, nextId: st.nextId, code: editor.value})); } catch (e) {} }, 400); }
+function loadData(o){
+  if (!o || !Array.isArray(o.comps)) throw new Error('Ógilt verkefni');
+  st.comps = o.comps.filter(c => c && C.TYPES[c.type]);
+  st.battery = !!o.battery; st.nextId = o.nextId || (Math.max(0, ...st.comps.map(c => c.id)) + 1);
+  if (o.board === 'r3' || o.board === 'r4') st.board = o.board;
+  if (o.layout === 'top' || o.layout === 'side') st.layout = o.layout;
+  if (typeof o.code === 'string'){ editor.value = o.code; updateGutter(); }
+}
+
+/* ---------- Teikning: borð, brauðbretti, rafhlaða ---------- */
+const sv = document.createElementNS(NS, 'svg');
+sv.setAttribute('viewBox', `0 0 ${C.VIEW_W} ${C.VIEW_H}`);
+sv.setAttribute('class', 'sv');
+sv.setAttribute('role', 'img');
+sv.setAttribute('aria-label', 'Arduino UNO og 400 pinna brauðbretti');
+sv.innerHTML = `<defs>
+  <radialGradient id="glow"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".35" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3e6e9"/><stop offset=".5" stop-color="#b7bdc3"/><stop offset="1" stop-color="#d4d8dc"/></linearGradient>
+  <linearGradient id="batg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34404c"/><stop offset="1" stop-color="#1b232b"/></linearGradient>
+</defs>
+<g id="L-board"></g><g id="L-bb"></g><g id="L-bat"></g><g id="L-comps"></g><g id="L-hl" pointer-events="none"></g><g id="L-wires"></g><g id="L-dyn" pointer-events="none"></g><g id="L-ghost" pointer-events="none"></g>`;
+$('mat').appendChild(sv);
+const L = id => sv.querySelector('#' + id);
+
+function boardSVG(bk){
+  const r4 = bk === 'r4', X = C.hx, Y = C.hy, S = C.S, ROT = C.ROT;
+  // box(x, y, b, h) í mm: x frá vinstri brún og y frá neðri brún borðsins (eins og á teikningum af UNO)
+  const box = (xm, ym, wm, hm) => { const xa = X(xm), xb = X(xm + wm), ya = Y(ym), yb = Y(ym + hm); return {x: Math.min(xa, xb), y: Math.min(ya, yb), w: Math.abs(xb - xa), h: Math.abs(yb - ya)}; };
+  const rect = (b, extra) => `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" ${extra}/>`;
+  let s = rect(box(0, 0, 68.58, 53.34), 'rx="7" fill="#0d7a82" stroke="#06585e" stroke-width="1.5"');
+  const pth = pts => 'M' + pts.map(([a, b]) => `${X(a)},${Y(b)}`).join(' L');
+  s += `<g stroke="#0a6870" stroke-width="1.2" fill="none" opacity=".9">
+    <path d="${pth([[20,40],[40,40],[44,36],[60,36]])}"/><path d="${pth([[12,30],[28,30],[31,27]])}"/>
+    <path d="${pth([[30,6],[30,12],[48,12]])}"/><path d="${pth([[52,6],[52,13]])}"/><path d="${pth([[8,22],[8,16],[26,16]])}"/></g>`;
+  for (const [mx, my] of [[13.97, 2.54], [15.24, 50.8], [66.04, 7.62], [66.04, 35.56]])
+    s += `<circle cx="${X(mx)}" cy="${Y(my)}" r="6" fill="#d8d2bd" stroke="#b2a780"/><circle cx="${X(mx)}" cy="${Y(my)}" r="3.4" fill="#1a2c33"/>`;
+  if (!r4) s += rect(box(-6.2, 31.8, 16, 12), 'rx="2" fill="url(#metal)" stroke="#7d848b"') + rect(box(-5, 34.1, 5, 7.4), 'rx="1" fill="#8f969d"');
+  else s += rect(box(-1.6, 33.4, 7.8, 9), 'rx="6" fill="url(#metal)" stroke="#7d848b"') + rect(box(-0.6, 35.2, 3.5, 5.4), 'rx="5" fill="#545b62"');
+  s += rect(box(-1.8, 3.4, 13.7, 9), 'rx="2" fill="#151719"') + `<circle cx="${X(4)}" cy="${Y(7.9)}" r="${2.4 * S}" fill="#26292c"/>`;
+  s += `<circle cx="${X(17.5)}" cy="${Y(8)}" r="${2.8 * S}" fill="#2a2e33" stroke="#555"/><circle cx="${X(23.2)}" cy="${Y(8)}" r="${2.8 * S}" fill="#2a2e33" stroke="#555"/>`;
+  if (!r4){
+    const b = box(31.2, 15.4, 34.6, 7.6);
+    s += rect(b, 'rx="2" fill="#18191b"');
+    for (let i = 0; i < 14; i++){ const px = b.x + 6 + i * (b.w - 12) / 13; s += `<rect x="${px - 2}" y="${b.y - 3}" width="4" height="3" fill="#b9bec3"/><rect x="${px - 2}" y="${b.y + b.h}" width="4" height="3" fill="#b9bec3"/>`; }
+    s += `<circle cx="${X(32.6)}" cy="${Y(19.2)}" r="3" fill="#2c2e31"/><text x="${b.x + b.w / 2}" y="${b.y + b.h / 2 + 3}" font-size="8" fill="#8b9096" text-anchor="middle" class="mono">ATMEGA328P</text>`;
+    s += rect(box(52, 28.6, 6, 2.4), 'rx="6" fill="url(#metal)"');
+  } else {
+    const cx = X(46), cy = Y(25), w = 10 * S;
+    s += `<rect x="${cx - w / 2}" y="${cy - w / 2}" width="${w}" height="${w}" rx="2" fill="#18191b"/>`;
+    for (let i = 0; i < 9; i++){ const o = -w / 2 + 8 + i * (w - 16) / 8; s += `<rect x="${cx + o - 1.2}" y="${cy - w / 2 - 3}" width="2.4" height="3" fill="#b9bec3"/><rect x="${cx + o - 1.2}" y="${cy + w / 2}" width="2.4" height="3" fill="#b9bec3"/><rect x="${cx - w / 2 - 3}" y="${cy + o - 1.2}" width="3" height="2.4" fill="#b9bec3"/><rect x="${cx + w / 2}" y="${cy + o - 1.2}" width="3" height="2.4" fill="#b9bec3"/>`; }
+    s += `<text x="${cx}" y="${cy + 3}" font-size="8" fill="#8b9096" text-anchor="middle" class="mono">RA4M1</text>`;
+  }
+  s += rect(box(3.6, 46.4, 5.6, 5.6), 'rx="2" fill="url(#metal)"') + `<circle cx="${X(6.4)}" cy="${Y(49.2)}" r="${1.7 * S}" fill="${r4 ? '#2b2b2b' : '#b33a2c'}"/><text x="${X(6.4)}" y="${Y(44.4) + 3}" font-size="6.5" fill="#e4f2f2" text-anchor="middle">RESET</text>`;
+  const strip = (a, b, ymm) => rect(box(a, ymm - 1.36, b - a, 2.72), 'rx="1.5" fill="#101112"');
+  s += strip(17.5, 42.9, 50.8) + strip(44.4, 64.8, 50.8) + strip(26.7, 47, 2.54) + strip(49.5, 64.8, 2.54);
+  for (const [pid, p] of C.POINTS){
+    if (p.kind !== 'pin') continue;
+    s += `<rect x="${p.x - 3.2}" y="${p.y - 3.2}" width="6.4" height="6.4" fill="#2c2d2f"/><rect x="${p.x - 1.8}" y="${p.y - 1.8}" width="3.6" height="3.6" fill="#050505"/>`;
+    if (p.silk){
+      const down = p.top !== ROT; // áletrun inn á borðið frá pinnanum
+      s += down ? `<text transform="translate(${p.x + 2.4},${p.y + 12}) rotate(-90)" text-anchor="end" font-size="6.6" fill="#e9f5f5">${p.silk}</text>`
+                : `<text transform="translate(${p.x + 2.4},${p.y - 12}) rotate(-90)" text-anchor="start" font-size="6.6" fill="#e9f5f5">${p.silk}</text>`;
+    }
+  }
+  const lab = (t, xm, ym, sz) => `<text x="${X(xm)}" y="${Y(ym) + sz / 3}" font-size="${sz}" fill="#e9f5f5" text-anchor="middle" letter-spacing="1">${t}</text>`;
+  s += lab('DIGITAL (PWM ~)', 41, 38.4, 7.5) + lab('POWER', 36.8, ROT ? 12.9 : 14.2, 7) + lab('ANALOG IN', 57.2, ROT ? 12.9 : 14.2, 7);
+  s += `<text x="${X(18.5)}" y="${Y(25.5)}" font-size="26" font-weight="800" fill="#f3fbfb" letter-spacing="1" text-anchor="middle">UNO</text>`;
+  s += `<text x="${X(18.5)}" y="${ROT ? Y(25.5) + 16 : Y(21)}" font-size="11" font-weight="700" fill="#bfe4e4" text-anchor="middle">${r4 ? 'R4 Minima' : 'R3'}</text>`;
+  for (const [id, lb, mx, my] of [['led-L','L',12.5,46],['led-TX','TX',12.5,43],['led-RX','RX',12.5,40],['led-ON','ON',58.5,34]]){
+    s += `<rect id="${id}" x="${X(mx) - 4}" y="${Y(my) - 2.5}" width="8" height="5" rx="1" fill="#e9e3c8" stroke="#8e8a72" stroke-width=".6"/><text x="${X(mx) + 7}" y="${Y(my) + 2.5}" font-size="6.5" fill="#e9f5f5">${lb}</text>`;
+  }
+  return s;
+}
+function bbSVG(){
+  const QX = C.QX, QY = C.QY, W = C.BB_W, H = C.BB_H;
+  let s = `<rect x="${QX}" y="${QY}" width="${W}" height="${H}" rx="8" fill="#f2f0e8" stroke="#cbc6b6"/>`;
+  s += `<rect x="${QX + 4}" y="${QY + 130}" width="${W - 8}" height="14" rx="2" fill="#e0ddd2"/>`;
+  s += `<line x1="${QX + 24}" x2="${QX + W - 24}" y1="${QY + 7}" y2="${QY + 7}" stroke="#d6453a" stroke-width="1.5"/>`;
+  s += `<line x1="${QX + 24}" x2="${QX + W - 24}" y1="${QY + 39}" y2="${QY + 39}" stroke="#2c62c0" stroke-width="1.5"/>`;
+  s += `<line x1="${QX + 24}" x2="${QX + W - 24}" y1="${QY + 235}" y2="${QY + 235}" stroke="#2c62c0" stroke-width="1.5"/>`;
+  s += `<line x1="${QX + 24}" x2="${QX + W - 24}" y1="${QY + 267}" y2="${QY + 267}" stroke="#d6453a" stroke-width="1.5"/>`;
+  for (const r of C.RAILS){
+    const y = QY + C.ROW_Y[r] + 4, plus = r.endsWith('p');
+    for (const x of [QX + 12, QX + W - 12]) s += `<text x="${x}" y="${y}" font-size="12" font-weight="800" text-anchor="middle" fill="${plus ? '#d6453a' : '#2c62c0'}">${plus ? '+' : '−'}</text>`;
+  }
+  for (const [pid, p] of C.POINTS){
+    if (p.kind !== 'hole' && p.kind !== 'rail') continue;
+    s += `<rect x="${p.x - 2.7}" y="${p.y - 2.7}" width="5.4" height="5.4" rx="1" fill="#46443d"/>`;
+  }
+  for (const c of [1, 5, 10, 15, 20, 25, 30]){
+    s += `<text x="${C.colX(c)}" y="${QY + 48}" font-size="7" fill="#958f7f" text-anchor="middle">${c}</text><text x="${C.colX(c)}" y="${QY + 229}" font-size="7" fill="#958f7f" text-anchor="middle">${c}</text>`;
+  }
+  for (const r of C.ROWS){ const y = QY + C.ROW_Y[r] + 2.5; s += `<text x="${QX + 9}" y="${y}" font-size="7" fill="#958f7f" text-anchor="middle">${r}</text><text x="${QX + W - 9}" y="${y}" font-size="7" fill="#958f7f" text-anchor="middle">${r}</text>`; }
+  return s;
+}
+function batSVG(){
+  if (!st.battery) return '';
+  const x = C.BAT.x, y = C.BAT.y, tp = C.POINTS.get('b:+'), tn = C.POINTS.get('b:-');
+  return `<g data-bat="1">
+    <rect x="${x}" y="${y}" width="100" height="52" rx="5" fill="url(#batg)" stroke="#0f1418"/>
+    <rect x="${x}" y="${y}" width="28" height="52" rx="5" fill="#c99a23"/><rect x="${x + 22}" y="${y}" width="8" height="52" fill="#c99a23"/>
+    <text x="${x + 62}" y="${y + 33}" font-size="18" font-weight="800" fill="#f4f6f8" text-anchor="middle">9 V</text>
+    <rect x="${x + 100}" y="${y + 9}" width="8" height="34" fill="#a3a9af"/>
+    <rect x="${x + 107}" y="${y + 6}" width="15" height="40" rx="3" fill="#141414"/>
+    <path d="M${x + 122},${y + 16} C${x + 136},${y + 16} ${x + 140},${tp.y} ${tp.x - 4},${tp.y}" stroke="#d33a2c" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path d="M${x + 122},${y + 36} C${x + 136},${y + 36} ${x + 140},${tn.y} ${tn.x - 4},${tn.y}" stroke="#1f1f22" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <circle cx="${tp.x}" cy="${tp.y}" r="4.6" fill="#c8cdd2" stroke="#6c737a"/><circle cx="${tn.x}" cy="${tn.y}" r="4.6" fill="#c8cdd2" stroke="#6c737a"/>
+    <text x="${tp.x + 10}" y="${tp.y + 4}" font-size="11" font-weight="800" fill="#ff8f84">+</text><text x="${tn.x + 10}" y="${tn.y + 4}" font-size="11" font-weight="800" fill="#cfe0e3">−</text>
+  </g>`;
+}
+function renderBoard(){ L('L-board').innerHTML = boardSVG(st.board); }
+function renderBattery(){ L('L-bat').innerHTML = batSVG(); if (typeof updateViewBox === 'function') updateViewBox(); }
+
+/* ---------- Teikning: íhlutir ---------- */
+const pt = pid => C.POINTS.get(pid);
+const ANG = {h:0, h2:180, v:90, v2:-90};
+function bandsOf(R){ const e = Math.floor(Math.log10(R)) - 1; const d = Math.round(R / Math.pow(10, e)); return [Math.floor(d / 10), d % 10, e]; }
+function legs(a, b){ return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#a9aeb4" stroke-width="2" stroke-linecap="round"/>`; }
+function compSVG(c, opts = {}){
+  const pins = C.pinsOf(c); if (!pins) return '';
+  const P = pins.map(pt), id = c.id, sel = opts.sel, ghost = opts.ghost;
+  const g0 = `<g data-id="${id}" class="comp"${ghost ? ` opacity=".6"${opts.bad ? ' filter="url(#none)"' : ''}` : ''}>`;
+  let s = '';
+  if (C.TYPES[c.type].two){
+    const [a, b] = P, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    if (sel) s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#5fe0e3" stroke-opacity=".45" stroke-width="13" stroke-linecap="round"/>`;
+    if (c.type === 'wire'){
+      let d;
+      if (opts.route) d = 'M' + opts.route.map(q => `${q.x},${q.y}`).join(' L');
+      else {
+        const bow = Math.min(18, len * 0.1) * (id % 2 ? 1 : -1), nx = -dy / len, ny = dx / len, cx = mx + nx * bow, cy = my + ny * bow;
+        d = `M${a.x},${a.y} Q${cx},${cy} ${b.x},${b.y}`;
+      }
+      s += `<path d="${d}" stroke="transparent" stroke-width="12" fill="none"/><path class="wo" d="${d}" stroke="rgba(0,0,0,.45)" stroke-width="5.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path class="wc" d="${d}" stroke="${c.color}" stroke-width="3.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+      s += `<circle cx="${a.x}" cy="${a.y}" r="2.4" fill="#c9cdd2"/><circle cx="${b.x}" cy="${b.y}" r="2.4" fill="#c9cdd2"/>`;
+    } else {
+      s += legs(a, b);
+      s += `<g transform="translate(${mx},${my}) rotate(${ang})">`;
+      if (c.type === 'res'){
+        const Lb = Math.max(14, Math.min(30, len - 10)), bd = bandsOf(c.value);
+        s += `<rect x="${-Lb / 2}" y="-4.8" width="${Lb}" height="9.6" rx="4.4" fill="#dcc596" stroke="#9e8658" stroke-width=".8"/>`;
+        const xs = [-Lb / 2 + 4.5, -Lb / 2 + 8.5, -Lb / 2 + 12.5];
+        bd.forEach((v, i) => { s += `<rect x="${xs[i] - 1.3}" y="-4.6" width="2.6" height="9.2" fill="${BAND[v]}"/>`; });
+        s += `<rect x="${Lb / 2 - 6}" y="-4.6" width="2.4" height="9.2" fill="#c9a227"/>`;
+      } else if (c.type === 'led'){
+        const Lc = C.LEDP[c.color];
+        s += `<circle id="glow-${id}" r="20" fill="url(#glow)" opacity="0"/>`;
+        s += `<circle r="8.6" fill="${Lc.off}" fill-opacity=".55" stroke="${Lc.off}" stroke-width="1.1"/>`;
+        s += `<circle id="dome-${id}" r="6.8" fill="${Lc.off}" fill-opacity=".7"/>`;
+        s += `<line x1="7.2" y1="-6" x2="7.2" y2="6" stroke="${Lc.off}" stroke-width="2.4"/>`;
+        s += `<circle cx="-2.6" cy="-2.6" r="1.8" fill="#fff" opacity=".55"/>`;
+        s += `<text x="-13" y="-6" font-size="8" font-weight="800" fill="#ffe08a" transform="rotate(${-ang},-13,-6)" text-anchor="middle">+</text>`;
+      } else if (c.type === 'ldr'){
+        s += `<circle r="8.5" fill="#efdeac" stroke="#b49a54"/><path d="M-5,-3 h3 v6 h3 v-6 h3 v6" stroke="#9c3b23" stroke-width="1.4" fill="none"/>`;
+      } else if (c.type === 'piezo'){
+        s += `<g id="wave-${id}" opacity="0"><circle r="18" fill="none" stroke="#ffcf4a" stroke-width="1.4"/><circle r="23" fill="none" stroke="#ffcf4a" stroke-width="1" opacity=".6"/></g>`;
+        s += `<circle r="13" fill="#1b1c1e" stroke="#000"/><circle r="9" fill="none" stroke="#333" /><circle r="2.4" fill="#000"/>`;
+        s += `<text x="-8" y="-1" font-size="7" font-weight="800" fill="#e9e9e9" transform="rotate(${-ang},-8,-1)" text-anchor="middle">+</text>`;
+      }
+      s += `</g>`;
+    }
+    if (sel && !ghost){
+      s += `<circle data-handle="a" cx="${a.x}" cy="${a.y}" r="6" fill="#5fe0e3" fill-opacity=".35" stroke="#5fe0e3" stroke-width="1.5"/>`;
+      s += `<circle data-handle="b" cx="${b.x}" cy="${b.y}" r="6" fill="#5fe0e3" fill-opacity=".35" stroke="#5fe0e3" stroke-width="1.5"/>`;
+    }
+    return g0 + s + '</g>';
+  }
+  // Fastir íhlutir
+  if (c.type === 'btn'){
+    const xs = P.map(p => p.x), ys = P.map(p => p.y);
+    const x0 = Math.min(...xs) - 7, x1 = Math.max(...xs) + 7, y0 = Math.min(...ys) - 7, y1 = Math.max(...ys) + 7;
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, r = Math.min(x1 - x0, y1 - y0) / 2 - 4;
+    if (sel) s += `<rect x="${x0 - 4}" y="${y0 - 4}" width="${x1 - x0 + 8}" height="${y1 - y0 + 8}" rx="6" fill="none" stroke="#5fe0e3" stroke-width="2.5" stroke-opacity=".8"/>`;
+    s += `<rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" rx="3" fill="#2a2d31" stroke="#111"/>`;
+    for (const p of P) s += `<rect x="${p.x - 2.5}" y="${p.y - 2.5}" width="5" height="5" fill="#b9bec3"/>`;
+    s += `<circle class="btn-cap" data-cap="${id}" id="cap-${id}" cx="${cx}" cy="${cy}" r="${r}" fill="#d0473c" stroke="#7d221b" stroke-width="1.5"/>`;
+    return g0 + s + '</g>';
+  }
+  const p0 = P[0], ang = ANG[c.o];
+  s += `<g transform="translate(${p0.x},${p0.y}) rotate(${ang})">`;
+  const Pp = C.P;
+  if (sel) s += `<rect x="-11" y="-34" width="${(C.TYPES[c.type].n - 1) * Pp + 22}" height="48" rx="6" fill="none" stroke="#5fe0e3" stroke-width="2.5" stroke-opacity=".8"/>`;
+  if (c.type === 'pot'){
+    const w = 2 * Pp + 14;
+    for (let i = 0; i < 3; i++) s += `<line x1="${i * Pp}" y1="0" x2="${i * Pp}" y2="-6" stroke="#a9aeb4" stroke-width="2"/>`;
+    s += `<rect x="-7" y="-31" width="${w}" height="26" rx="3" fill="#2d64c8" stroke="#1b4086"/>`;
+    s += `<circle cx="${Pp}" cy="-18" r="9.5" fill="#dfe3e8" stroke="#8b939b"/>`;
+    const a = (-135 + c.pos * 270) * Math.PI / 180;
+    s += `<line id="knob-${id}" x1="${Pp}" y1="-18" x2="${Pp + Math.sin(a) * 8}" y2="${-18 - Math.cos(a) * 8}" stroke="#2a2f35" stroke-width="2.2" stroke-linecap="round"/>`;
+    s += `<text x="0" y="11" font-size="6.5" fill="#cde0e3" text-anchor="middle">1</text><text x="${Pp}" y="11" font-size="6.5" fill="#cde0e3" text-anchor="middle">S</text><text x="${2 * Pp}" y="11" font-size="6.5" fill="#cde0e3" text-anchor="middle">3</text>`;
+  } else if (c.type === 'lm35' || c.type === 'bc547'){
+    const w = 2 * Pp, labs = c.type === 'lm35' ? ['+V','Ú','GND'] : ['C','B','E'];
+    for (let i = 0; i < 3; i++) s += `<line x1="${i * Pp}" y1="0" x2="${i * Pp}" y2="-5" stroke="#a9aeb4" stroke-width="2"/>`;
+    s += `<path d="M-7,-3 H${w + 7} V-7 C${w + 7},-30 -7,-30 -7,-7 Z" fill="#1d1f22" stroke="#000"/>`;
+    s += `<text x="${Pp}" y="-9" font-size="6.6" font-weight="700" fill="#c7ccd1" text-anchor="middle">${c.type === 'lm35' ? 'LM35' : 'BC547'}</text>`;
+    labs.forEach((t, i) => { s += `<text x="${i * Pp}" y="11" font-size="6.5" fill="#cde0e3" text-anchor="middle">${t}</text>`; });
+  } else if (c.type === 'rgb'){
+    const labs = ['R', c.common === 'A' ? '+' : '−', 'G', 'B'], cx = 1.5 * Pp;
+    for (let i = 0; i < 4; i++) s += `<line x1="${i * Pp}" y1="0" x2="${cx + (i - 1.5) * 4}" y2="-12" stroke="#a9aeb4" stroke-width="1.8"/>`;
+    s += `<circle id="glow-${id}" cx="${cx}" cy="-20" r="24" fill="url(#glow)" opacity="0"/>`;
+    s += `<circle id="dome-${id}" cx="${cx}" cy="-20" r="11" fill="#e8eef0" fill-opacity=".85" stroke="#b9c4c8"/>`;
+    s += `<circle cx="${cx - 3.5}" cy="-24" r="2.4" fill="#fff" opacity=".7"/>`;
+    labs.forEach((t, i) => { s += `<text x="${i * Pp}" y="11" font-size="6.5" fill="#cde0e3" text-anchor="middle">${t}</text>`; });
+  }
+  s += `</g>`;
+  return g0 + s + '</g>';
+}
+function wireRoutes(){
+  // Þegar borðið er ofan við brauðbrettið eru POWER/ANALOG-pinnarnir fjærst. Vírar frá þeim fara út fyrir borðið, hver á sinni braut.
+  const routes = new Map(); if (!C.ROT) return routes;
+  const far = q => q.kind === 'pin' && !q.top;
+  const list = st.comps.filter(c => c.type === 'wire' && far(pt(c.a)) !== far(pt(c.b)))
+    .map(c => { const fa = far(pt(c.a)); return {c, pin: pt(fa ? c.a : c.b), other: pt(fa ? c.b : c.a), fa}; })
+    .sort((u, v) => u.pin.x - v.pin.x);
+  list.forEach((w, k) => {
+    const yL = C.BY - 9 - k * 6, xL = Math.max(4, C.BX - 9 - k * 6);
+    const yEnd = w.other.kind === 'bat' ? w.other.y : Math.min(w.other.y, C.QY - 6 - (k % 3) * 3);
+    const pts = [w.pin, {x: w.pin.x, y: yL}, {x: xL, y: yL}, {x: xL, y: yEnd}, w.other];
+    routes.set(w.c.id, w.fa ? pts : pts.reverse());
+  });
+  return routes;
+}
+function renderComps(){
+  let comps = '', wires = '';
+  const routes = wireRoutes();
+  for (const c of st.comps){
+    const svg = compSVG(c, {sel: ui.sel === c.id, route: routes.get(c.id)});
+    if (c.type === 'wire') wires += svg; else comps += svg;
+  }
+  L('L-comps').innerHTML = comps;
+  L('L-wires').innerHTML = wires;
+  lastDyn = '';
+}
+
+/* ---------- Kvik uppfærsla (ljós, takkar, mælir) ---------- */
+let lastDyn = '';
+function ledLevel(i){ return Math.max(0, Math.min(1, Math.sqrt(Math.max(0, i) / 0.009))); }
+function updateDynamic(){
+  if (!solved) return;
+  const M = solved.M;
+  let soundFreq = 0;
+  for (const c of st.comps){
+    const d = M.comp.get(c.id);
+    if (c.type === 'led' && d){
+      const b = ledLevel(d.avg.i || 0), Lc = C.LEDP[c.color];
+      const gl = sv.getElementById('glow-' + c.id), dm = sv.getElementById('dome-' + c.id);
+      if (gl){ gl.setAttribute('opacity', (b * 0.95).toFixed(3)); gl.setAttribute('fill', b > 0.01 ? 'url(#glow)' : 'none'); gl.style.mixBlendMode = 'screen'; gl.setAttribute('r', 12 + b * 12); }
+      if (dm){ dm.setAttribute('fill', b > 0.04 ? Lc.hex : Lc.off); dm.setAttribute('fill-opacity', b > 0.04 ? (0.75 + 0.25 * b).toFixed(2) : '.7'); }
+    } else if (c.type === 'rgb' && d){
+      const r = ledLevel(d.avg.ir || 0), g = ledLevel(d.avg.ig || 0), bb = ledLevel(d.avg.ib || 0), m = Math.max(r, g, bb);
+      const col = `rgb(${Math.round(255 * r)},${Math.round(255 * g)},${Math.round(255 * bb)})`;
+      const gl = sv.getElementById('glow-' + c.id), dm = sv.getElementById('dome-' + c.id);
+      if (dm) dm.setAttribute('fill', m > 0.04 ? `rgb(${Math.round(150 + 105 * r)},${Math.round(150 + 105 * g)},${Math.round(150 + 105 * bb)})` : '#e8eef0');
+      if (gl){ gl.setAttribute('opacity', (m * 0.9).toFixed(3)); gl.style.color = col; gl.setAttribute('fill', m > 0.01 ? `url(#rg-${c.id})` : 'none'); ensureRGBGrad(c.id, col); }
+    } else if (c.type === 'btn'){
+      const cap = sv.getElementById('cap-' + c.id);
+      if (cap) cap.setAttribute('fill', ui.pressed.has(c.id) ? '#8e2c24' : '#d0473c');
+    } else if (c.type === 'piezo' && d){
+      const swing = (d.max.v ?? 0) - (d.min.v ?? 0);
+      let f = 0;
+      if (swing > 1) for (const ps of run.pins) if (ps.tone != null){ f = ps.tone; break; }
+      const w = sv.getElementById('wave-' + c.id);
+      if (w) w.setAttribute('opacity', f ? '1' : '0');
+      if (f) soundFreq = f;
+    }
+  }
+  setSound(soundFreq);
+  // Ljós á borðinu
+  const now = performance.now();
+  const v13 = M.volt('D13');
+  setFill('led-L', v13 > 2.5 ? '#ffb020' : '#e9e3c8');
+  setFill('led-ON', '#5be36a');
+  setFill('led-TX', now - run.serial.txT < 70 ? '#ffb020' : '#e9e3c8');
+  // Pinnastaða, mælir, viðvörunarhringir
+  let s = '';
+  if (run.running) for (let p = 0; p < 20; p++){
+    const ps = run.pins[p]; if (ps.mode !== 'OUTPUT' && ps.dac == null) continue;
+    const pid = p < 14 ? 'p:D' + p : 'p:A' + (p - 14), q = pt(pid);
+    const duty = ps.dac != null ? ps.dac / 5 : ps.tone != null ? 0.5 : ps.pwm != null ? ps.pwm : ps.level ? 1 : 0;
+    if (duty > 0.01) s += `<circle cx="${q.x}" cy="${q.y}" r="4.2" fill="#ffcf4a" opacity="${(0.35 + 0.65 * duty).toFixed(2)}"/>`;
+  }
+  if (ui.probe.a){ const q = pt(ui.probe.a); s += `<circle cx="${q.x}" cy="${q.y}" r="6" fill="none" stroke="#ff4d3d" stroke-width="2.4"/><circle cx="${q.x}" cy="${q.y}" r="2" fill="#ff4d3d"/>`; }
+  if (ui.probe.b){ const q = pt(ui.probe.b); s += `<circle cx="${q.x}" cy="${q.y}" r="6" fill="none" stroke="#f2f2f2" stroke-width="2.4"/><circle cx="${q.x}" cy="${q.y}" r="2" fill="#f2f2f2"/>`; }
+  const badIds = new Set(warnings.filter(w => w.cid && w.sev !== 'info').map(w => w.cid));
+  for (const id of badIds){
+    const c = st.comps.find(x => x.id === id); if (!c) continue;
+    const pins = C.pinsOf(c); if (!pins) continue;
+    const ps = pins.map(pt), cx = ps.reduce((a, p) => a + p.x, 0) / ps.length, cy = ps.reduce((a, p) => a + p.y, 0) / ps.length;
+    const sev = warnings.find(w => w.cid === id && w.sev === 'danger') ? '#ff4d3d' : '#ffb020';
+    s += `<circle class="pulse" cx="${cx}" cy="${cy}" r="18" fill="none" stroke="${sev}" stroke-width="2.5" stroke-dasharray="5 4"/>`;
+  }
+  if (s !== lastDyn){ L('L-dyn').innerHTML = s; lastDyn = s; }
+  // Mælir
+  if (ui.probe.a && ui.probe.b){
+    const v = M.volt(C.nodeOf(ui.probe.a)) - M.volt(C.nodeOf(ui.probe.b));
+    $('probeval').textContent = C.fmtV(v);
+  } else $('probeval').textContent = ui.probe.a ? 'veldu svarta oddinn' : 'veldu rauða oddinn';
+}
+function setFill(id, f){ const e = sv.getElementById(id); if (e && e.getAttribute('fill') !== f) e.setAttribute('fill', f); }
+function ensureRGBGrad(id, col){
+  let g = sv.getElementById('rg-' + id);
+  if (!g){ g = document.createElementNS(NS, 'radialGradient'); g.id = 'rg-' + id; g.innerHTML = '<stop offset="0" stop-opacity=".95"/><stop offset=".4" stop-opacity=".55"/><stop offset="1" stop-opacity="0"/>'; sv.querySelector('defs').appendChild(g); }
+  for (const s of g.children) s.setAttribute('stop-color', col);
+}
+
+/* ---------- Hljóð ---------- */
+const audio = {ctx:null, osc:null, gain:null, f:0, muted:false};
+function ensureAudio(){
+  try { if (!audio.ctx) audio.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (audio.ctx.state === 'suspended') audio.ctx.resume(); } catch (e) {}
+}
+function setSound(f){
+  if (!audio.ctx || audio.muted || !run.running) f = 0;
+  if (f === audio.f) return; audio.f = f;
+  try {
+    if (f > 0){
+      if (!audio.osc){ audio.osc = audio.ctx.createOscillator(); audio.osc.type = 'square'; audio.gain = audio.ctx.createGain(); audio.gain.gain.value = 0.035; audio.osc.connect(audio.gain).connect(audio.ctx.destination); audio.osc.start(); }
+      audio.osc.frequency.setValueAtTime(f, audio.ctx.currentTime);
+    } else if (audio.osc){ audio.osc.stop(); audio.osc.disconnect(); audio.osc = null; }
+  } catch (e) {}
+}
+
+/* ---------- Verkfæri ---------- */
+const ICONS = {
+  select:'<path d="M7 4l12 8-5.5 1.2L16 19l-2.2 1-2.6-5.6L7 18z" fill="currentColor"/>',
+  wire:'<path d="M4 18c4 0 5-12 9-12s4 8 7 8" stroke="#2f6fd6" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="4" cy="18" r="2" fill="#9aa"/><circle cx="20" cy="14" r="2" fill="#9aa"/>',
+  probe:'<rect x="6" y="3" width="12" height="18" rx="2.5" fill="#f2c94c" stroke="#8a6d10"/><rect x="8.5" y="5.5" width="7" height="4.5" rx="1" fill="#2b3a2e"/><circle cx="12" cy="15" r="3" fill="#333"/>',
+  res:'<line x1="2" y1="12" x2="22" y2="12" stroke="#9aa" stroke-width="1.8"/><rect x="6" y="8.5" width="12" height="7" rx="3.2" fill="#dcc596" stroke="#9e8658"/><rect x="8.5" y="8.6" width="1.6" height="6.8" fill="#7a4a1d"/><rect x="11" y="8.6" width="1.6" height="6.8" fill="#1b1b1b"/><rect x="13.5" y="8.6" width="1.6" height="6.8" fill="#d02c20"/>',
+  led:c => `<line x1="9" y1="15" x2="9" y2="22" stroke="#9aa" stroke-width="1.6"/><line x1="15" y1="15" x2="15" y2="20" stroke="#9aa" stroke-width="1.6"/><path d="M6 15V9a6 6 0 0 1 12 0v6z" fill="${c}" stroke="rgba(0,0,0,.3)"/><rect x="5" y="14" width="14" height="2.2" rx="1" fill="${c}"/>`,
+  rgb:'<path d="M6 15V9a6 6 0 0 1 12 0v6z" fill="#eef2f3" stroke="#aab"/><circle cx="9.5" cy="10" r="1.8" fill="#ff3b2f"/><circle cx="14.5" cy="10" r="1.8" fill="#3ee26b"/><circle cx="12" cy="13.4" r="1.8" fill="#3d86ff"/><line x1="8" y1="16" x2="8" y2="22" stroke="#9aa"/><line x1="11" y1="16" x2="11" y2="22" stroke="#9aa"/><line x1="13" y1="16" x2="13" y2="22" stroke="#9aa"/><line x1="16" y1="16" x2="16" y2="22" stroke="#9aa"/>',
+  btn:'<rect x="4" y="4" width="16" height="16" rx="2" fill="#2a2d31"/><circle cx="12" cy="12" r="5.5" fill="#d0473c"/>',
+  pot:'<rect x="4" y="5" width="16" height="13" rx="2" fill="#2d64c8"/><circle cx="12" cy="11.5" r="4.6" fill="#dfe3e8"/><line x1="12" y1="11.5" x2="15" y2="9" stroke="#333" stroke-width="1.6"/><line x1="7" y1="18" x2="7" y2="22" stroke="#9aa"/><line x1="12" y1="18" x2="12" y2="22" stroke="#9aa"/><line x1="17" y1="18" x2="17" y2="22" stroke="#9aa"/>',
+  ldr:'<circle cx="12" cy="12" r="8" fill="#efdeac" stroke="#b49a54"/><path d="M7.5 10h3v4h3v-4h3" stroke="#9c3b23" stroke-width="1.4" fill="none"/>',
+  lm35:'<path d="M5 16h14v-4a7 7 0 0 0-14 0z" fill="#1d1f22"/><text x="12" y="14.6" font-size="4.6" fill="#ccc" text-anchor="middle" font-weight="700">LM35</text><line x1="7" y1="16" x2="7" y2="22" stroke="#9aa"/><line x1="12" y1="16" x2="12" y2="22" stroke="#9aa"/><line x1="17" y1="16" x2="17" y2="22" stroke="#9aa"/>',
+  bc547:'<path d="M5 16h14v-4a7 7 0 0 0-14 0z" fill="#1d1f22"/><text x="12" y="14.6" font-size="4.4" fill="#ccc" text-anchor="middle" font-weight="700">547</text><line x1="7" y1="16" x2="7" y2="22" stroke="#9aa"/><line x1="12" y1="16" x2="12" y2="22" stroke="#9aa"/><line x1="17" y1="16" x2="17" y2="22" stroke="#9aa"/>',
+  piezo:'<circle cx="12" cy="12" r="8.5" fill="#1b1c1e"/><circle cx="12" cy="12" r="2" fill="#000"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="#444"/>',
+  bat:'<rect x="3" y="7" width="15" height="10" rx="1.6" fill="#26303a"/><rect x="3" y="7" width="4.5" height="10" rx="1.4" fill="#c99a23"/><rect x="18" y="9" width="3" height="6" fill="#9aa"/>',
+};
+const TOOLS = [
+  {grp:'Tengja'},
+  {id:'select', name:'Velja og færa', icon:'select'},
+  {id:'wire', name:'Vír', icon:'wire'},
+  {id:'probe', name:'Spennumælir', icon:'probe'},
+  {grp:'Íhlutir úr pakkanum'},
+  {id:'res', name:'Viðnám', icon:'res', kit:() => 'res:' + ui.resVal},
+  {id:'led:red', name:'Rauð LED', icon:'led', col:'#ff3b2f', kit:() => 'led:red'},
+  {id:'led:yellow', name:'Gul LED', icon:'led', col:'#ffd21a', kit:() => 'led:yellow'},
+  {id:'led:green', name:'Græn LED', icon:'led', col:'#3ee26b', kit:() => 'led:green'},
+  {id:'led:blue', name:'Blá LED', icon:'led', col:'#3d86ff', kit:() => 'led:blue'},
+  {id:'rgb', name:'RGB LED', icon:'rgb', kit:() => 'rgb'},
+  {id:'btn', name:'Takki', icon:'btn', kit:() => 'btn'},
+  {id:'pot', name:'Stilliviðnám 50 kΩ', icon:'pot', kit:() => 'pot'},
+  {id:'ldr', name:'Ljósnemi (LDR)', icon:'ldr', kit:() => 'ldr'},
+  {id:'lm35', name:'Hitanemi LM35', icon:'lm35', kit:() => 'lm35'},
+  {id:'piezo', name:'Suðari (piezo)', icon:'piezo', kit:() => 'piezo'},
+  {id:'bc547', name:'Smári BC547', icon:'bc547', kit:() => 'bc547'},
+  {id:'bat', name:'9 V rafhlaða', icon:'bat'},
+];
+function kitUsed(key){ return st.comps.filter(c => C.kitKey(c) === key).length; }
+function renderTools(){
+  let h = '';
+  for (const t of TOOLS){
+    if (t.grp){ h += `<div class="tgroup">${t.grp}</div>`; continue; }
+    const ic = typeof ICONS[t.icon] === 'function' ? ICONS[t.icon](t.col) : ICONS[t.icon];
+    let n = '';
+    if (t.kit){ const k = t.kit(), left = C.kitLimit(k) - kitUsed(k); n = `<span class="n${left <= 0 ? ' zero' : ''}">${left} eftir</span>`; }
+    if (t.id === 'bat') n = `<span class="n">${st.battery ? 'á bekk' : 'í kassa'}</span>`;
+    const pressed = t.id === 'bat' ? st.battery : ui.tool === t.id;
+    h += `<button class="tool" data-tool="${t.id}" aria-pressed="${pressed}"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">${ic}</svg><span>${t.name}</span>${n}</button>`;
+    if (t.id === 'res' && ui.tool === 'res'){
+      h += `<div class="resvals" role="group" aria-label="Gildi viðnáms">` + C.RES_VALUES.map(v => `<button class="chip" data-res="${v}" aria-pressed="${ui.resVal === v}">${C.fmtR(v)}</button>`).join('') + `</div>`;
+    }
+  }
+  $('tools').innerHTML = h;
+}
+$('tools').addEventListener('click', e => {
+  const r = e.target.closest('[data-res]');
+  if (r){ ui.resVal = +r.dataset.res; renderTools(); updateHint(); return; }
+  const b = e.target.closest('[data-tool]'); if (!b) return;
+  const id = b.dataset.tool;
+  if (id === 'bat'){ toggleBattery(); return; }
+  setTool(id);
+});
+function setTool(id){
+  ui.tool = id; ui.first = null; ui.pressStart = null;
+  if (id !== 'select'){ ui.sel = null; renderInspector(); renderComps(); }
+  if (id === 'probe') $('probe').hidden = false;
+  renderTools(); updateHint(); renderGhost();
+}
+function toggleBattery(){
+  pushHist();
+  if (st.battery){
+    st.comps = st.comps.filter(c => !(c.type === 'wire' && (c.a.startsWith('b:') || c.b.startsWith('b:'))));
+    for (const k of ['a','b']) if (ui.probe[k] && ui.probe[k].startsWith('b:')) ui.probe[k] = null;
+    st.battery = false;
+  } else st.battery = true;
+  renderBattery(); structureChanged();
+  flash(st.battery ? 'Rafhlaðan er komin á bekkinn. Tengdu víra frá + og − skautunum.' : '', true);
+}
+const toolKind = t => t === 'wire' || t === 'res' || t.startsWith('led:') || t === 'ldr' || t === 'piezo' ? 'two' : ['rgb','pot','lm35','bc547','btn'].includes(t) ? 'fixed' : t;
+function hintText(){
+  const t = ui.tool, f = ui.first;
+  if (t === 'select') return ui.sel ? 'Dragðu íhlutinn eða enda hans til að færa. Delete fjarlægir, R snýr. Esc hættir við.' : 'Veldu íhlut til vinstri og settu hann á brauðbrettið. Smelltu á íhlut til að sjá spennu og straum.';
+  if (t === 'probe') return ui.probe.a && !ui.probe.b ? 'Smelltu nú á punktinn fyrir svarta oddinn (COM), oftast GND.' : 'Spennumælir: smelltu á punktinn fyrir rauða oddinn (+).';
+  if (t === 'wire') return f ? 'Smelltu á hinn enda vírsins (Esc hættir við).' : 'Vír: smelltu á gat eða pinna þar sem vírinn á að byrja.';
+  if (t === 'res') return f ? `Smelltu á gatið fyrir hinn fót viðnámsins.` : `Viðnám ${C.fmtR(ui.resVal)}: smelltu á gatið fyrir fyrri fótinn. Gildið velurðu fyrir neðan.`;
+  if (t.startsWith('led:')) return f ? 'Smelltu nú á gatið fyrir stutta fótinn (−, bakskaut).' : `${C.LEDP[t.slice(4)].name} LED: smelltu fyrst á gatið fyrir langa fótinn (+, forskaut).`;
+  if (t === 'ldr') return f ? 'Smelltu á gatið fyrir hinn fótinn.' : 'Ljósnemi: smelltu á gatið fyrir fyrri fótinn. Hann snýr ekki á neinn veg.';
+  if (t === 'piezo') return f ? 'Smelltu á gatið fyrir − fótinn.' : 'Suðari: smelltu fyrst á gatið fyrir + fótinn.';
+  if (t === 'btn') return 'Takki: láttu hann brúa rennuna í miðjunni. R snýr honum. Smelltu til að setja hann.';
+  const nm = {rgb:'RGB LED (R, −, G, B)', pot:'Stilliviðnám (1, S, 3)', lm35:'LM35 (+V, Ú, GND)', bc547:'BC547 (C, B, E)'}[t];
+  return `${nm}: færðu bendilinn yfir brauðbrettið og smelltu. R snýr íhlutnum.`;
+}
+function updateHint(){
+  const m = $('hint');
+  if (ui.flash && performance.now() - ui.flashT < 3500){ m.innerHTML = ''; const s = document.createElement('span'); s.className = 'flash' + (ui.flashNote ? ' note' : ''); s.textContent = ui.flash; m.appendChild(s); }
+  else m.textContent = hintText();
+}
+function flash(msg, note){ ui.flash = msg; ui.flashNote = !!note; ui.flashT = performance.now(); updateHint(); if (msg) setTimeout(updateHint, 3600); }
+
+/* ---------- Bendill og staðsetning ---------- */
+function svgXY(ev){ const p = sv.createSVGPoint(); p.x = ev.clientX; p.y = ev.clientY; const m = sv.getScreenCTM(); return m ? p.matrixTransform(m.inverse()) : {x:0, y:0}; }
+function nearest(x, y, filter){
+  let best = null, bd = 81;
+  for (const [pid, p] of C.POINTS){
+    if (p.kind === 'bat' && !st.battery) continue;
+    if (filter && !filter(p)) continue;
+    const d = (p.x - x) ** 2 + (p.y - y) ** 2; if (d < bd){ bd = d; best = pid; }
+  }
+  return best;
+}
+function occupiedBy(pid, ignoreId){ const list = (occ.get(pid) || []).filter(id => id !== ignoreId); return list; }
+function isFree(pid, ignoreId){ const n = occupiedBy(pid, ignoreId).length; return pid.startsWith('b:') ? n < 4 : n === 0; }
+function newId(){ return st.nextId++; }
+function wireColorFor(a, b){
+  const roots = [a, b].map(p => uf.find(C.nodeOf(p)));
+  const kinds = [a, b].map(p => C.POINTS.get(p));
+  if (roots.includes('GND') || kinds.some(k => k.row === 'tn' || k.row === 'bn') || [a, b].includes('b:-')) return '#1f1f22';
+  if (roots.some(r => r === uf.find('5V') || r === uf.find('BAT+') || r === uf.find('3V3')) || kinds.some(k => k.row === 'tp' || k.row === 'bp') || [a, b].includes('b:+')) return '#d33a2c';
+  const cyc = ['#2f6fd6','#e3ad00','#2e9d4f','#ef8424','#8a4fc0'];
+  return cyc[st.comps.filter(c => c.type === 'wire').length % cyc.length];
+}
+function kitAllows(c){
+  const k = C.kitKey(c), lim = C.kitLimit(k);
+  if (kitUsed(k) >= lim){
+    const nm = k.startsWith('res:') ? `${lim} viðnám af gerðinni ${C.fmtR(c.value)}` : k.startsWith('led:') ? `${lim} ${C.LEDP[c.color].name.toLowerCase()}ar LED` : `${lim} stk. af ${C.TYPES[c.type].name.toLowerCase()}`;
+    flash(`Pakkinn inniheldur bara ${nm}.`); return false;
+  }
+  return true;
+}
+function makeTwo(a, b){
+  const t = ui.tool;
+  const c = {id: 0, type: t.startsWith('led:') ? 'led' : t, a, b};
+  if (c.type === 'led') c.color = t.slice(4);
+  if (c.type === 'res') c.value = ui.resVal;
+  if (c.type === 'wire') c.color = wireColorFor(a, b);
+  if (!kitAllows(c)) return;
+  pushHist(); c.id = newId(); st.comps.push(c); structureChanged();
+}
+function fixedCandidate(pid){
+  if (!pid) return null;
+  const p = C.POINTS.get(pid); if (p.kind !== 'hole') return null;
+  const t = ui.tool, o = t === 'btn' ? (ui.orient === 'v' || ui.orient === 'v2' ? 'v' : 'h') : ui.orient;
+  let at = p.row + ':' + p.col;
+  if (t === 'btn' && o === 'h' && p.row === 'f'){ at = 'e:' + p.col; }
+  const c = {id: 0, type: t, at, o};
+  if (t === 'pot') c.pos = 0.5;
+  if (t === 'rgb') c.common = 'K';
+  const pins = C.fixedPins(t, at, o);
+  return {c, ok: !!pins && pins.every(x => isFree(x))};
+}
+function renderGhost(){
+  const g = L('L-ghost'); let s = '';
+  const kind = toolKind(ui.tool), h = ui.hover;
+  if (kind === 'two' && ui.first){
+    const a = pt(ui.first); s += `<circle cx="${a.x}" cy="${a.y}" r="6" fill="none" stroke="#5fe0e3" stroke-width="2"/>`;
+    if (h && h !== ui.first){ const b = pt(h); s += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#5fe0e3" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>`; }
+  } else if (kind === 'fixed' && h){
+    const cand = fixedCandidate(h);
+    if (cand && C.pinsOf(cand.c)) s += compSVG(cand.c, {ghost: true}).replace('<g data-id="0" class="comp"', `<g class="comp"${cand.ok ? '' : ' style="filter:drop-shadow(0 0 3px #ff4d3d)"'}`);
+  }
+  if (h && kind !== 'fixed'){ const q = pt(h); s += `<circle cx="${q.x}" cy="${q.y}" r="5" fill="none" stroke="${isFree(h) || kind === 'probe' || kind === 'select' ? '#5fe0e3' : '#ff4d3d'}" stroke-width="1.6"/>`; }
+  g.innerHTML = s;
+}
+function renderHighlight(){
+  const h = ui.hover, g = L('L-hl');
+  if (!h){ g.innerHTML = ''; return; }
+  const r = uf.find(C.nodeOf(h)); const list = groups.get(r) || [h];
+  let s = '';
+  for (const pid of list){ const q = pt(pid); s += `<circle cx="${q.x}" cy="${q.y}" r="4.6" fill="#38d27a" fill-opacity=".35" stroke="#38d27a" stroke-width="1.2"/>`; }
+  g.innerHTML = s;
+}
+function describePoint(pid){
+  const p = C.POINTS.get(pid);
+  if (p.kind === 'hole') return `${p.label} – röð ${p.col}, ${C.ROWS.indexOf(p.row) < 5 ? 'a–e' : 'f–j'}`;
+  if (p.kind === 'rail') return p.label;
+  if (p.kind === 'pin') return 'Pinni ' + p.label;
+  return p.label;
+}
+function updateStatus(){
+  const h = ui.hover, el = $('hov');
+  if (!h){ return; }
+  ensureSolved();
+  const root = uf.find(C.nodeOf(h)), n = (groups.get(root) || []).length;
+  const fl = solved.M.floating(C.nodeOf(h));
+  el.innerHTML = '';
+  const a = document.createElement('span'); a.textContent = describePoint(h) + ' · ';
+  const b = document.createElement('b'); b.textContent = fl && root !== 'GND' ? 'ótengt' : C.fmtV(solved.M.volt(C.nodeOf(h)));
+  const c = document.createElement('span'); c.textContent = ` miðað við GND · ${n} punktar tengdir saman`;
+  el.append(a, b, c);
+}
+
+sv.addEventListener('pointermove', ev => {
+  const {x, y} = svgXY(ev);
+  const h = nearest(x, y);
+  if (ui.drag){ dragMove(h); return; }
+  if (h !== ui.hover){ ui.hover = h; renderHighlight(); renderGhost(); updateStatus(); }
+});
+sv.addEventListener('pointerleave', () => { if (ui.drag) return; ui.hover = null; renderHighlight(); renderGhost(); });
+sv.addEventListener('pointerdown', ev => {
+  const {x, y} = svgXY(ev);
+  const h = nearest(x, y); ui.hover = h;
+  const cap = ev.target.closest('[data-cap]');
+  if (cap){
+    const id = +cap.dataset.cap; ui.pressed.add(id); markDirty();
+    if (ui.tool === 'select'){ ui.sel = id; renderComps(); renderInspector(); }
+    sv.setPointerCapture(ev.pointerId); ui.drag = {kind:'press', id}; ev.preventDefault(); return;
+  }
+  const kind = toolKind(ui.tool);
+  if (kind === 'select'){
+    const hd = ev.target.closest('[data-handle]'), cg = ev.target.closest('[data-id]');
+    if (hd && cg){
+      const c = st.comps.find(c => c.id === +cg.dataset.id);
+      ui.drag = {kind:'end', id: c.id, which: hd.dataset.handle, orig: c[hd.dataset.handle], snap: snap(), moved:false};
+      sv.setPointerCapture(ev.pointerId); ev.preventDefault(); return;
+    }
+    if (cg){
+      const c = st.comps.find(c => c.id === +cg.dataset.id); if (!c) return;
+      ui.sel = c.id; renderComps(); renderInspector(); updateHint();
+      if (!C.TYPES[c.type].two){
+        const pins = C.pinsOf(c).map(pt);
+        let gi = 0, bd = 1e9; pins.forEach((p, i) => { const d = (p.x - x) ** 2 + (p.y - y) ** 2; if (d < bd){ bd = d; gi = i; } });
+        ui.drag = {kind:'move', id: c.id, grab: gi, orig:{at: c.at, o: c.o}, snap: snap(), moved:false};
+        sv.setPointerCapture(ev.pointerId); ev.preventDefault();
+      }
+      return;
+    }
+    if (ui.sel){ ui.sel = null; renderComps(); renderInspector(); updateHint(); }
+    return;
+  }
+  if (kind === 'probe'){
+    if (!h) return;
+    if (!ui.probe.a || ui.probe.b){ ui.probe.a = h; ui.probe.b = null; } else ui.probe.b = h;
+    $('probe').hidden = false; updateHint(); return;
+  }
+  if (kind === 'two'){
+    if (!h) return;
+    if (!ui.first){
+      if (!isFree(h)){ flash('Þetta gat er þegar notað. Í hvert gat fer aðeins einn fótur eða vír.'); return; }
+      ui.first = h; ui.pressStart = h; renderGhost(); updateHint(); return;
+    }
+    if (h === ui.first){ ui.first = null; renderGhost(); updateHint(); return; }
+    if (!isFree(h)){ flash('Þetta gat er þegar notað. Í hvert gat fer aðeins einn fótur eða vír.'); return; }
+    const a = ui.first; ui.first = null; ui.pressStart = null; makeTwo(a, h); renderGhost(); updateHint(); return;
+  }
+  if (kind === 'fixed'){
+    const cand = fixedCandidate(h);
+    if (!cand || !C.pinsOf(cand.c)){ flash('Settu íhlutinn á brauðbrettið sjálft, ekki á rásirnar eða borðið.'); return; }
+    if (!cand.ok){ flash('Það er ekki pláss þar. Einhver gatanna eru þegar notuð.'); return; }
+    if (!kitAllows(cand.c)) return;
+    pushHist(); cand.c.id = newId(); st.comps.push(cand.c); structureChanged(); renderGhost();
+  }
+});
+sv.addEventListener('pointerup', ev => {
+  const d = ui.drag;
+  if (d){
+    ui.drag = null;
+    if (d.kind === 'press'){ ui.pressed.delete(d.id); markDirty(); return; }
+    const c = st.comps.find(c => c.id === d.id);
+    if (d.kind === 'end' && c){
+      if (!d.moved) return;
+      if (c.a === c.b){ c[d.which] = d.orig; flash('Báðir endar geta ekki verið í sama gati.'); structureChanged(); return; }
+      pushHistRaw(d.snap); structureChanged(); return;
+    }
+    if (d.kind === 'move' && c){
+      if (!d.moved) return;
+      const pins = C.pinsOf(c);
+      if (!pins || !pins.every(p => isFree(p, c.id))){ c.at = d.orig.at; c.o = d.orig.o; flash('Það er ekki pláss þar.'); structureChanged(); return; }
+      pushHistRaw(d.snap); structureChanged(); return;
+    }
+    return;
+  }
+  if (toolKind(ui.tool) === 'two' && ui.first && ui.pressStart === ui.first){
+    const {x, y} = svgXY(ev); const h = nearest(x, y);
+    if (h && h !== ui.first && isFree(h)){ const a = ui.first; ui.first = null; ui.pressStart = null; makeTwo(a, h); renderGhost(); updateHint(); }
+    else ui.pressStart = null;
+  }
+});
+sv.addEventListener('pointercancel', () => { if (ui.drag && ui.drag.kind === 'press'){ ui.pressed.delete(ui.drag.id); markDirty(); } ui.drag = null; });
+function dragMove(h){
+  const d = ui.drag; if (!d || d.kind === 'press') return;
+  const c = st.comps.find(c => c.id === d.id); if (!c || !h) return;
+  if (d.kind === 'end'){
+    if (h === c[d.which]) return;
+    if (!isFree(h, c.id) && h !== d.orig) return;
+    c[d.which] = h; d.moved = true; renderComps(); return;
+  }
+  if (d.kind === 'move'){
+    const p = C.POINTS.get(h); if (p.kind !== 'hole') return;
+    const [dr, dc] = C.fixedOffsets(c.type, c.o)[d.grab];
+    const at = C.hole(C.ROWS.indexOf(p.row) - dr, p.col - dc); if (!at) return;
+    const nat = at.slice(2);
+    if (nat === c.at) return;
+    const old = c.at; c.at = nat;
+    if (!C.pinsOf(c)){ c.at = old; return; }
+    d.moved = true; renderComps();
+  }
+}
+
+/* ---------- Eiginleikar valins íhlutar ---------- */
+function compById(id){ return st.comps.find(c => c.id === id); }
+function renderInspector(){
+  const el = $('insp'), c = compById(ui.sel);
+  if (!c){ el.innerHTML = `<p class="empty">Smelltu á íhlut á brauðbrettinu til að sjá spennu, straum og stillingar hans.</p>`; return; }
+  const pins = C.pinsOf(c) || [];
+  const plab = pins.map(p => C.POINTS.get(p).label).join(' → ');
+  let h = `<h3>${esc(C.compLabel(c))}</h3>`;
+  if (c.type === 'res'){ const b = bandsOf(c.value); h += `<p class="empty">Litakóði: ${BAND_NAME[b[0]]}, ${BAND_NAME[b[1]]}, ${BAND_NAME[b[2]]}, gull</p>`; }
+  h += `<dl class="kv"><dt>Fætur</dt><dd>${esc(plab)}</dd>`;
+  const rows = INSP_ROWS[c.type] || [];
+  rows.forEach((r, i) => { h += `<dt>${r[0]}</dt><dd id="iv-${i}">—</dd>`; });
+  h += `</dl>`;
+  if (c.type === 'res'){
+    h += `<div class="ctl"><label for="ir-val">Gildi</label><select id="ir-val">${C.RES_VALUES.map(v => `<option value="${v}"${v === c.value ? ' selected' : ''}>${C.fmtR(v)}</option>`).join('')}</select></div>`;
+  }
+  if (c.type === 'wire'){
+    h += `<div class="swatches" role="group" aria-label="Litur vírs">${WIRE_COLORS.map(([col, nm]) => `<button class="sw" data-col="${col}" style="background:${col}" aria-label="${nm}" title="${nm}" aria-pressed="${c.color === col}"></button>`).join('')}</div>`;
+  }
+  if (c.type === 'pot'){
+    h += `<div class="ctl"><label for="ir-pos">Staða sleðans (líka ofan við teikninguna): <span id="ir-posv">${Math.round(c.pos * 100)} %</span></label><input type="range" id="ir-pos" min="0" max="100" value="${Math.round(c.pos * 100)}"></div>`;
+  }
+  if (c.type === 'rgb'){
+    h += `<div class="ctl"><label for="ir-com">Gerð</label><select id="ir-com"><option value="K"${c.common === 'K' ? ' selected' : ''}>Sameiginlegt bakskaut (−)</option><option value="A"${c.common === 'A' ? ' selected' : ''}>Sameiginlegt forskaut (+)</option></select></div>`;
+  }
+  if (c.type === 'btn') h += `<p class="empty">Haltu músarhnappnum niðri á takkanum til að ýta á hann.</p>`;
+  h += `<div class="irow">`;
+  if (C.TYPES[c.type].two && c.type !== 'wire') h += `<button class="btn small" id="ir-flip">Snúa við</button>`;
+  if (!C.TYPES[c.type].two) h += `<button class="btn small" id="ir-rot">Snúa 90° (R)</button>`;
+  h += `<button class="btn small danger" id="ir-del">Fjarlægja</button></div>`;
+  el.innerHTML = h;
+  const on = (id, ev, fn) => { const e = $(id); if (e) e.addEventListener(ev, fn); };
+  on('ir-val', 'change', e => { const v = +e.target.value; const test = {...c, value: v}; if (!kitAllows(test)){ e.target.value = c.value; return; } pushHist(); c.value = v; structureChanged(); });
+  on('ir-pos', 'input', e => setPot(c, +e.target.value / 100));
+  on('ir-com', 'change', e => { pushHist(); c.common = e.target.value; structureChanged(); });
+  on('ir-flip', 'click', () => { pushHist(); [c.a, c.b] = [c.b, c.a]; structureChanged(); });
+  on('ir-rot', 'click', () => rotateSel());
+  on('ir-del', 'click', () => deleteSel());
+  el.querySelectorAll('[data-col]').forEach(b => b.addEventListener('click', () => { pushHist(); c.color = b.dataset.col; structureChanged(); }));
+  lastInsp = 0;
+}
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[ch]));
+const pct = x => Math.round(x * 100) + ' %';
+const INSP_ROWS = {
+  wire: [['Spenna á vír', (d, c, M) => C.fmtV(M.volt(C.nodeOf(c.a)))]],
+  res: [['Spenna yfir (U)', d => C.fmtV(d.avg.v)], ['Straumur (I)', d => C.fmtI(d.avg.i)], ['Afl (P = U·I)', d => fmtP(Math.abs(d.avg.v * d.avg.i))]],
+  ldr: [['Viðnám núna', () => C.fmtR(C.ldrR(ui.env.lux))], ['Spenna yfir', d => C.fmtV(d.avg.v)], ['Straumur', d => C.fmtI(d.avg.i)]],
+  led: [['Spenna yfir', d => C.fmtV(d.avg.v)], ['Straumur (meðaltal)', d => C.fmtI(d.avg.i)], ['Staða', d => Math.abs(d.pk.i) > 2e-4 ? (Math.abs(d.avg.i - d.pk.i) > 1e-5 ? 'lýsir (PWM)' : 'lýsir') : 'slökkt']],
+  rgb: [['Rauð', d => C.fmtI(d.avg.ir)], ['Græn', d => C.fmtI(d.avg.ig)], ['Blá', d => C.fmtI(d.avg.ib)]],
+  pot: [['Spenna á sleða (S)', d => C.fmtV(d.avg.vw)], ['Viðnám 1–S', (d, c) => C.fmtR(Math.max(1, (1 - c.pos) * 50000))], ['Viðnám S–3', (d, c) => C.fmtR(Math.max(1, c.pos * 50000))]],
+  btn: [['Staða', (d, c) => ui.pressed.has(c.id) ? 'niðri (lokuð rás)' : 'uppi (opin rás)'], ['Spenna yfir rofa', d => C.fmtV(d.avg.v)]],
+  lm35: [['Hiti umhverfis', () => C.fmtNum(ui.env.temp, 1) + ' °C'], ['Úttaksspenna', d => C.fmtV(d.avg.vo)], ['Fæðispenna', d => C.fmtV(d.avg.vs)]],
+  bc547: [['Ástand', d => ['lokaður (af)', 'magnar', 'mettaður (rofi á)'][Math.round(d.max.mode || 0)]], ['Grunnstraumur I_B', d => C.fmtI(d.avg.ib)], ['Safnarastraumur I_C', d => C.fmtI(d.avg.ic)], ['U_CE', d => C.fmtV(d.avg.vce)]],
+  piezo: [['Spenna yfir', d => C.fmtV(d.avg.v)], ['Tónn', () => { const p = run.pins.find(p => p.tone != null); return p && audio.f ? Math.round(p.tone) + ' Hz' : '—'; }]],
+};
+function fmtP(p){ if (p < 1e-3) return Math.round(p * 1e6) + ' µW'; if (p < 1) return C.fmtNum(p * 1e3, 1) + ' mW'; return C.fmtNum(p, 2) + ' W'; }
+let lastInsp = 0;
+function updateInspectorLive(){
+  const c = compById(ui.sel); if (!c || !solved) return;
+  const d = solved.M.comp.get(c.id) || {avg:{}, pk:{}, min:{}, max:{}};
+  (INSP_ROWS[c.type] || []).forEach((r, i) => { const e = $('iv-' + i); if (e){ let t; try { t = r[1](d, c, solved.M); } catch (er) { t = '—'; } if (e.textContent !== t) e.textContent = t; } });
+}
+function deleteSel(){
+  const c = compById(ui.sel); if (!c) return;
+  pushHist(); st.comps = st.comps.filter(x => x.id !== c.id); ui.pressed.delete(c.id); ui.sel = null; structureChanged(); updateHint();
+}
+function rotateSel(){
+  const c = compById(ui.sel);
+  if (!c){ if (toolKind(ui.tool) === 'fixed'){ const order = ['h','v','h2','v2']; ui.orient = order[(order.indexOf(ui.orient) + 1) % 4]; renderGhost(); } return; }
+  if (C.TYPES[c.type].two) return;
+  const order = c.type === 'btn' ? ['h','v'] : ['h','v','h2','v2'];
+  const orig = c.o;
+  for (let k = 1; k <= order.length; k++){
+    const o = order[(order.indexOf(c.o) + k) % order.length]; const test = {...c, o};
+    const pins = C.pinsOf(test);
+    if (pins && pins.every(p => isFree(p, c.id))){ pushHist(); c.o = o; structureChanged(); return; }
+  }
+  c.o = orig; flash('Það er ekki pláss til að snúa íhlutnum hér.');
+}
+
+/* ---------- Viðvaranir og umhverfi ---------- */
+let lastWarnKey = null;
+function renderWarnings(){
+  const key = warnings.map(w => w.sev + w.text).join('|');
+  if (key === lastWarnKey) return; lastWarnKey = key;
+  const n = warnings.filter(w => w.sev !== 'info').length;
+  $('wcount').textContent = warnings.length; $('wcount').className = 'count' + (n ? ' bad' : '');
+  const box = $('wlist');
+  if (!warnings.length){ box.innerHTML = `<p class="none">Engar athugasemdir. Rásin lítur vel út.</p>`; return; }
+  const tag = {danger:'Hætta', warn:'Athugið', info:'Ábending'};
+  box.innerHTML = '<ul>' + warnings.map(w => `<li class="${w.sev}"${w.cid ? ` data-cid="${w.cid}"` : ''}><span class="tag">${tag[w.sev]}</span><span>${esc(w.text)}</span></li>`).join('') + '</ul>';
+}
+$('wlist').addEventListener('click', e => { const li = e.target.closest('[data-cid]'); if (!li) return; setTool('select'); ui.sel = +li.dataset.cid; renderComps(); renderInspector(); });
+function luxFromSlider(s){ return Math.round(Math.pow(10, s / 25) - 1); }
+function luxLabel(l){ const t = l < 5 ? 'myrkur' : l < 80 ? 'rökkur' : l < 600 ? 'stofuljós' : l < 3000 ? 'bjart' : 'sólskin'; return `${l} lx · ${t}`; }
+let potKey = null;
+function setPot(c, pos){
+  c.pos = Math.min(1, Math.max(0, pos));
+  const k = sv.getElementById('knob-' + c.id);
+  if (k){ const a = (-135 + c.pos * 270) * Math.PI / 180; k.setAttribute('x2', C.P + Math.sin(a) * 8); k.setAttribute('y2', -18 - Math.cos(a) * 8); }
+  const v = Math.round(c.pos * 100);
+  const e1 = $('pot-' + c.id); if (e1 && +e1.value !== v) e1.value = v;
+  const e2 = $('ir-pos'); if (e2 && ui.sel === c.id){ if (+e2.value !== v) e2.value = v; $('ir-posv').textContent = v + ' %'; }
+  markDirty(); save(); updatePotOutputs();
+}
+function updatePotOutputs(){
+  for (const c of st.comps){
+    if (c.type !== 'pot') continue;
+    const o = $('poto-' + c.id); if (!o) continue;
+    const d = solved && solved.M.comp.get(c.id);
+    const t = Math.round(c.pos * 100) + ' %' + (d ? ' · ' + C.fmtV(d.avg.vw || 0) : '');
+    if (o.textContent !== t) o.textContent = t;
+  }
+}
+$('env-pots').addEventListener('input', e => { const id = +e.target.dataset.pot; const c = compById(id); if (c) setPot(c, +e.target.value / 100); });
+function syncEnv(){
+  const hasL = st.comps.some(c => c.type === 'ldr'), hasT = st.comps.some(c => c.type === 'lm35');
+  const pots = st.comps.filter(c => c.type === 'pot');
+  const key = pots.map(c => c.id).join(',');
+  if (key !== potKey){
+    potKey = key;
+    $('env-pots').innerHTML = pots.map((c, i) => `<label><b>Stilliviðnám${pots.length > 1 ? ' ' + (i + 1) : ''}</b> <input type="range" id="pot-${c.id}" data-pot="${c.id}" min="0" max="100" step="1" value="${Math.round(c.pos * 100)}" aria-label="Staða sleðans á stilliviðnámi ${i + 1}"><output id="poto-${c.id}"></output></label>`).join('');
+  }
+  updatePotOutputs();
+  $('env').hidden = !(hasL || hasT || pots.length); $('env-lux').hidden = !hasL; $('env-temp').hidden = !hasT;
+  $('luxo').textContent = luxLabel(ui.env.lux); $('tempo').textContent = C.fmtNum(ui.env.temp, 1) + ' °C';
+}
+$('lux').addEventListener('input', e => { ui.env.lux = luxFromSlider(+e.target.value); syncEnv(); markDirty(); });
+$('temp').addEventListener('input', e => { ui.env.temp = +e.target.value; syncEnv(); markDirty(); });
+ui.env.lux = luxFromSlider(+$('lux').value);
+
+/* ---------- Ritill ---------- */
+const editor = $('code'), gut = $('gut');
+let errLine = null;
+function updateGutter(){
+  const n = editor.value.split('\n').length;
+  let s = ''; for (let i = 1; i <= n; i++) s += (i === errLine ? `<span class="err">${i}</span>` : i) + '\n';
+  gut.innerHTML = s;
+  gut.scrollTop = editor.scrollTop;
+}
+editor.addEventListener('input', () => { updateGutter(); save(); });
+editor.addEventListener('scroll', () => { gut.scrollTop = editor.scrollTop; });
+editor.addEventListener('keydown', e => {
+  if (e.key === 'Tab'){ e.preventDefault(); insertText(e.shiftKey ? '' : '  '); }
+  else if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey){
+    const v = editor.value, s = editor.selectionStart, ls = v.lastIndexOf('\n', s - 1) + 1, line = v.slice(ls, s);
+    const ind = (line.match(/^\s*/) || [''])[0] + (/\{\s*$/.test(line) ? '  ' : '');
+    e.preventDefault(); insertText('\n' + ind);
+  } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); toggleRun(); }
+});
+function insertText(t){
+  const s = editor.selectionStart, e = editor.selectionEnd;
+  editor.setRangeText(t, s, e, 'end'); editor.dispatchEvent(new Event('input'));
+}
+function showError(line, msg, kind){
+  errLine = line; updateGutter();
+  $('err').hidden = false;
+  $('errh').textContent = (kind === 'run' ? 'Villa við keyrslu' : 'Villa í kóða') + (line ? ` · lína ${line}` : '');
+  $('errm').textContent = msg;
+  if (line){
+    const lh = parseFloat(getComputedStyle(editor).lineHeight) || 20;
+    const top = (line - 3) * lh; if (top < editor.scrollTop || top > editor.scrollTop + editor.clientHeight - lh * 4) editor.scrollTop = Math.max(0, top);
+  }
+}
+function clearError(){ errLine = null; $('err').hidden = true; updateGutter(); }
+$('errx').addEventListener('click', clearError);
+$('fmt-reset').addEventListener('click', () => {
+  pushHist(true);
+  editor.value = 'void setup() {\n  // keyrir einu sinni í byrjun\n\n}\n\nvoid loop() {\n  // endurtekur sig aftur og aftur\n\n}\n';
+  updateGutter(); save();
+});
+
+/* ---------- Keyrsla ---------- */
+const STOP = {stop: true};
+const sleeps = new Set();
+let lastYield = 0;
+function sleep(ms){
+  return new Promise((res, rej) => { const o = {rej}; o.t = setTimeout(() => { sleeps.delete(o); lastYield = performance.now(); res(); }, ms); sleeps.add(o); });
+}
+const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+let evalOK = true; try { new Function('return 1'); } catch (e) { evalOK = false; }
+let injN = 0;
+function injectFn(body){
+  const name = '__unoProg' + (++injN); let err = null; const prev = window.onerror;
+  window.onerror = (msg, src, line) => { err = {msg: String(msg), line}; return true; };
+  const s = document.createElement('script'); s.textContent = 'window.' + name + ' = async function(__api){\n' + body + '\n};';
+  document.head.appendChild(s); s.remove(); window.onerror = prev;
+  if (err){ const e = new SyntaxError(err.msg.replace(/^Uncaught SyntaxError:\s*/, '')); e.__line = err.line ? err.line - 1 : null; throw e; }
+  const f = window[name]; if (!f) throw new Error('Ekki tókst að keyra kóðann í þessum vafra.'); return f;
+}
+function makeFn(body){ return evalOK ? new AsyncFunction('__api', body) : injectFn(body); }
+function syntaxLine(e, body){
+  if (e.__line) return e.__line;
+  try { injectFn(body); } catch (e2) { if (e2.__line) return e2.__line; }
+  return null;
+}
+const clampN = (x, a, b) => Math.max(a, Math.min(b, x));
+function pinCheck(p, fn){
+  if (typeof p === 'boolean') p = +p;
+  if (typeof p !== 'number' || !Number.isInteger(p) || p < 0 || p > 19) throw new C.SimError(`${fn}(): pinni ${p} er ekki til á UNO. Notaðu 0–13 eða A0–A5.`);
+  return p;
+}
+function serialOut(text){
+  if (!run.serial.begun){ run.flags.noBegin = true; return; }
+  run.flags.serialUsed = true;
+  if (+$('baud').value !== run.serial.baud){
+    const g = 'ÿ¿Ã¤þ?ð¬Ê×'; text = text.replace(/[^\n]/g, () => g[Math.floor(Math.random() * g.length)]);
+  }
+  run.serial.pending += text; run.serial.txT = performance.now();
+}
+function fmtArd(x, f){
+  if (typeof x === 'boolean') x = x ? 1 : 0;
+  if (typeof x === 'number'){
+    if (!isFinite(x)) return isNaN(x) ? 'nan' : 'inf';
+    if (f !== undefined && Number.isInteger(x) && [2, 8, 16].includes(f)) return (x < 0 ? x >>> 0 : x).toString(f).toUpperCase();
+    if (f === 10 && Number.isInteger(x)) return String(x);
+    if (!Number.isInteger(x) || f !== undefined) return x.toFixed(f === undefined ? 2 : Math.max(0, f | 0));
+    return String(x);
+  }
+  if (Array.isArray(x)) return String(x[0]);
+  return String(x);
+}
+let rngSeed = 0;
+function rng(){ if (!rngSeed) return Math.random(); rngSeed = (rngSeed * 1103515245 + 12345) & 0x7fffffff; return rngSeed / 0x80000000; }
+function makeAPI(myId){
+  const alive = () => { if (!run.running || run.id !== myId) throw STOP; };
+  const i16 = x => { x = Math.trunc(Number(x)); if (!isFinite(x)) return 0; x = ((x % 65536) + 65536) % 65536; return x >= 32768 ? x - 65536 : x; };
+  const intConv = st.board === 'r3' ? i16 : x => Number(x) | 0;
+  const waitInput = async (pred) => { const t0 = performance.now(); while (!pred() && performance.now() - t0 < 1000){ alive(); await sleep(10); } };
+  const Serial = {
+    begin(b){ alive(); run.serial.begun = true; run.serial.baud = +b || 9600; },
+    end(){ run.serial.begun = false; },
+    print(x, f){ alive(); serialOut(fmtArd(x, f)); return 1; },
+    println(x, f){ alive(); serialOut((x === undefined ? '' : fmtArd(x, f)) + '\n'); return 1; },
+    write(x){ alive(); serialOut(typeof x === 'number' ? String.fromCharCode(x) : String(x)); return 1; },
+    available(){ alive(); return run.serial.inbuf.length; },
+    read(){ alive(); if (!run.serial.inbuf.length) return -1; const c = run.serial.inbuf.charCodeAt(0); run.serial.inbuf = run.serial.inbuf.slice(1); return c; },
+    peek(){ alive(); return run.serial.inbuf.length ? run.serial.inbuf.charCodeAt(0) : -1; },
+    async parseInt(){ await waitInput(() => /-?\d/.test(run.serial.inbuf)); const m = run.serial.inbuf.match(/-?\d+/); if (!m){ run.serial.inbuf = ''; return 0; } run.serial.inbuf = run.serial.inbuf.slice(m.index + m[0].length); return parseInt(m[0], 10); },
+    async parseFloat(){ await waitInput(() => /-?\d/.test(run.serial.inbuf)); const m = run.serial.inbuf.match(/-?\d+(?:\.\d+)?/); if (!m){ run.serial.inbuf = ''; return 0; } run.serial.inbuf = run.serial.inbuf.slice(m.index + m[0].length); return parseFloat(m[0]); },
+    async readString(){ await waitInput(() => run.serial.inbuf.length > 0); await sleep(20); const s = run.serial.inbuf; run.serial.inbuf = ''; return s; },
+    async readStringUntil(ch){ const c = typeof ch === 'number' ? String.fromCharCode(ch) : String(ch); await waitInput(() => run.serial.inbuf.includes(c)); const i = run.serial.inbuf.indexOf(c); let s; if (i < 0){ s = run.serial.inbuf; run.serial.inbuf = ''; } else { s = run.serial.inbuf.slice(0, i); run.serial.inbuf = run.serial.inbuf.slice(i + 1); } return s; },
+    async readBytes(){ throw new C.SimError('Serial.readBytes() er ekki stutt í herminum.'); },
+    flush(){}, setTimeout(){},
+  };
+  const nope = nm => () => { throw new C.SimError(`${nm}() er ekki stutt í herminum.`); };
+  return {
+    HIGH:1, LOW:0, INPUT:'INPUT', OUTPUT:'OUTPUT', INPUT_PULLUP:'INPUT_PULLUP',
+    A0:14, A1:15, A2:16, A3:17, A4:18, A5:19, LED_BUILTIN:13, DAC:14,
+    PI:Math.PI, HALF_PI:Math.PI / 2, TWO_PI:Math.PI * 2, DEG_TO_RAD:Math.PI / 180, RAD_TO_DEG:180 / Math.PI,
+    DEC:10, HEX:16, OCT:8, BIN:2, DEFAULT:0, INTERNAL:1, EXTERNAL:2, AR_DEFAULT:0, MSBFIRST:1, LSBFIRST:0, RISING:3, FALLING:2, CHANGE:1,
+    Serial,
+    pinMode(p, m){
+      alive(); p = pinCheck(p, 'pinMode');
+      if (!['INPUT','OUTPUT','INPUT_PULLUP'].includes(m)) throw new C.SimError('pinMode(): hamurinn þarf að vera INPUT, OUTPUT eða INPUT_PULLUP.');
+      const ps = run.pins[p]; ps.mode = m; ps.pwm = null; ps.dac = null; ps.tone = null; if (m !== 'OUTPUT') ps.level = 0;
+      run.flags.inputHigh.delete(p); markDirty();
+    },
+    digitalWrite(p, v){
+      alive(); p = pinCheck(p, 'digitalWrite');
+      const ps = run.pins[p]; ps.pwm = null; ps.dac = null; ps.level = v ? 1 : 0;
+      if (ps.mode !== 'OUTPUT' && ps.level) run.flags.inputHigh.add(p); else run.flags.inputHigh.delete(p);
+      markDirty();
+    },
+    digitalRead(p){
+      alive(); p = pinCheck(p, 'digitalRead'); ensureSolved();
+      const key = 'D' + p;
+      if (solved.M.floating(key)){ run.flags.floatRead.set(p, performance.now()); return rng() < 0.5 ? 1 : 0; }
+      return instVolt(key) > 2.5 ? 1 : 0;
+    },
+    analogRead(p){
+      alive();
+      if (typeof p === 'number' && Number.isInteger(p) && p >= 0 && p <= 5) p += 14;
+      if (typeof p !== 'number' || p < 14 || p > 19) throw new C.SimError(`analogRead(): pinni ${p} er ekki hliðrænn inngangur. Notaðu A0–A5.`);
+      ensureSolved();
+      const max = (1 << run.aRes) - 1, key = 'D' + p;
+      if (solved.M.floating(key)){
+        run.flags.floatRead.set(p, performance.now());
+        run.floatWalk[p] = clampN(run.floatWalk[p] + (rng() - 0.5) * 0.08, 0.05, 0.95);
+        return Math.round(run.floatWalk[p] * max);
+      }
+      const v = clampN(instVolt(key), 0, 5);
+      return clampN(Math.round(v / 5 * max + (rng() - 0.5) * 1.6 * (max / 1023)), 0, max);
+    },
+    analogWrite(p, v){
+      alive(); p = pinCheck(p, 'analogWrite');
+      const ps = run.pins[p], max = (1 << run.wRes) - 1;
+      v = Math.round(clampN(+v || 0, 0, max));
+      ps.mode = 'OUTPUT'; ps.tone = null; run.flags.inputHigh.delete(p);
+      if (st.board === 'r4' && p === 14){ ps.dac = v / max * 5; ps.pwm = null; markDirty(); return; }
+      ps.dac = null;
+      if (C.PWM_PINS.includes(p)){ if (v <= 0){ ps.pwm = null; ps.level = 0; } else if (v >= max){ ps.pwm = null; ps.level = 1; } else ps.pwm = v / max; }
+      else { ps.pwm = null; ps.level = v >= (max + 1) / 2 ? 1 : 0; run.flags.nonPwm.add(p); }
+      markDirty();
+    },
+    analogReadResolution(b){
+      alive();
+      if (st.board !== 'r4') throw new C.SimError('analogReadResolution() er ekki til á UNO R3. Hann les alltaf 10 bita (0–1023). Á UNO R4 má velja allt að 14 bita.');
+      run.aRes = clampN(b | 0, 1, 14);
+    },
+    analogWriteResolution(b){
+      alive();
+      if (st.board !== 'r4') throw new C.SimError('analogWriteResolution() er ekki til á UNO R3. Þar er analogWrite alltaf 8 bita (0–255).');
+      run.wRes = clampN(b | 0, 1, 12);
+    },
+    analogReference(){ alive(); },
+    async delay(ms){ alive(); ms = Math.max(0, +ms || 0); await sleep(ms); alive(); },
+    delayMicroseconds(){ alive(); },
+    millis(){ return Math.floor(performance.now() - run.start); },
+    micros(){ return Math.floor((performance.now() - run.start) * 1000); },
+    tone(p, f, dur){
+      alive(); p = pinCheck(p, 'tone');
+      if (run.pins.some((q, i) => q.tone != null && i !== p)) return;
+      const ps = run.pins[p]; ps.mode = 'OUTPUT'; ps.pwm = null; ps.dac = null; ps.tone = Math.max(31, +f || 0);
+      const tok = ps.tok = Math.random(); markDirty();
+      if (dur){ setTimeout(() => { if (run.id === myId && ps.tok === tok){ ps.tone = null; ps.level = 0; markDirty(); } }, +dur); }
+    },
+    noTone(p){ alive(); p = pinCheck(p, 'noTone'); const ps = run.pins[p]; ps.tone = null; ps.level = 0; ps.tok = 0; markDirty(); },
+    map: (x, a, b, c, d) => Math.trunc((x - a) * (d - c) / (b - a)) + c,
+    constrain: (x, a, b) => Math.min(Math.max(x, a), b),
+    min: Math.min, max: Math.max, abs: Math.abs, sq: x => x * x, sqrt: Math.sqrt, pow: Math.pow, sin: Math.sin, cos: Math.cos, tan: Math.tan,
+    atan2: Math.atan2, exp: Math.exp, log: Math.log, floor: Math.floor, ceil: Math.ceil, round: Math.round,
+    random(a, b){ if (b === undefined){ b = a; a = 0; } a = Math.trunc(a); b = Math.trunc(b); if (b <= a) return a; return Math.floor(a + rng() * (b - a)); },
+    randomSeed(s){ rngSeed = (Math.abs(Math.trunc(+s || 0)) % 0x7fffffff) || 0; },
+    async __t(){ alive(); if (performance.now() - lastYield > 12){ await new Promise(r => setTimeout(r, 0)); lastYield = performance.now(); alive(); } },
+    __i8: x => (Number(x) << 24) >> 24, __u8: x => (Number(x) >>> 0) & 255, __i16: i16, __u16: x => (Number(x) >>> 0) & 0xffff,
+    __i32: x => Number(x) | 0, __u32: x => Number(x) >>> 0, __trunc: x => intConv(x),
+    __arr: n => new Array(Math.max(0, n | 0)).fill(0), __arr2: (a, b) => Array.from({length: a | 0}, () => new Array(b | 0).fill(0)),
+    __pad: (arr, n) => { n = +n; while (arr.length < n) arr.push(0); return arr; },
+    int: x => intConv(x), float: x => +x, double: x => +x, long: x => Number(x) | 0, byte: x => (Number(x) >>> 0) & 255, word: x => (Number(x) >>> 0) & 0xffff,
+    char: x => x, bool: x => !!x, boolean: x => !!x, F: x => x,
+    bitRead: (x, n) => (x >> n) & 1, bitSet: (x, n) => x | (1 << n), bitClear: (x, n) => x & ~(1 << n), bitWrite: (x, n, b) => b ? x | (1 << n) : x & ~(1 << n), bit: n => 1 << n,
+    lowByte: x => x & 255, highByte: x => (x >> 8) & 255, isDigit: c => c >= 48 && c <= 57, isAlpha: c => (c >= 65 && c <= 90) || (c >= 97 && c <= 122), isSpace: c => c === 32 || (c >= 9 && c <= 13),
+    pulseIn: nope('pulseIn'), shiftOut: nope('shiftOut'), attachInterrupt: nope('attachInterrupt'), detachInterrupt: nope('detachInterrupt'),
+    digitalPinToInterrupt: p => p, noInterrupts(){}, interrupts(){},
+  };
+}
+function instVolt(key){
+  const ivs = solved.ivs; let r = rng(), acc = 0;
+  for (const iv of ivs){ acc += iv.w; if (r <= acc) return iv.sol.volt(key); }
+  return ivs[ivs.length - 1].sol.volt(key);
+}
+function resetRuntime(){
+  run.pins = freshPins(); run.aRes = 10; run.wRes = 8; run.floatWalk.fill(0.4);
+  run.serial.begun = false; run.serial.inbuf = ''; run.serial.pending = '';
+  run.flags = {inputHigh:new Set(), floatRead:new Map(), nonPwm:new Set(), noBegin:false, serialUsed:false, now:0};
+  markDirty();
+}
+async function startRun(){
+  ensureAudio();
+  const comp = C.compile(editor.value, st.board);
+  if (comp.error){ showError(comp.error.line, comp.error.msg, 'compile'); return; }
+  let fn;
+  try { fn = makeFn(comp.body); }
+  catch (e){ showError(syntaxLine(e, comp.body), C.syntaxMsg(String(e.message)) + ` (${e.message})`, 'compile'); return; }
+  clearError(); resetRuntime();
+  sysLine(`Keyrsla hafin á ${C.BOARDS[st.board].name}`);
+  run.running = true; const myId = ++run.id; run.start = performance.now(); lastYield = performance.now();
+  updateRunUI();
+  try {
+    const api = makeAPI(myId);
+    const prog = await fn(api);
+    if (!prog.setup || !prog.loop) throw new C.SimError('Það vantar setup() eða loop().');
+    await prog.setup();
+    while (run.running && run.id === myId){ await prog.loop(); await api.__t(); }
+  } catch (e){
+    if (e !== STOP && run.id === myId){ const fe = C.friendlyError(e, evalOK ? 2 : 1); showError(fe.line, fe.msg, 'run'); }
+  } finally {
+    if (run.id === myId) stopRun();
+  }
+}
+function stopRun(){
+  if (!run.running) return;
+  run.running = false; run.id++;
+  for (const o of sleeps){ clearTimeout(o.t); o.rej(STOP); } sleeps.clear();
+  flushSerial();
+  sysLine('Keyrslu hætt');
+  run.pins = freshPins(); setSound(0); markDirty(); updateRunUI();
+}
+function toggleRun(){ if (run.running) stopRun(); else startRun(); }
+$('run').addEventListener('click', toggleRun);
+function updateRunUI(){
+  const b = $('run');
+  b.textContent = run.running ? '■ Stöðva' : '▶ Keyra'; b.classList.toggle('stop', run.running);
+  if (!run.running) $('runstate').textContent = 'Stöðvað';
+}
+
+/* ---------- Raðskjár og línurit ---------- */
+const out = $('out');
+let outLen = 0;
+function sysLine(t){ flushSerial(); const s = document.createElement('span'); s.className = 'sys'; s.textContent = (out.textContent && !out.textContent.endsWith('\n') ? '\n' : '') + '— ' + t + ' —\n'; out.appendChild(s); out.scrollTop = out.scrollHeight; }
+let plotBuf = '';
+const plot = {series: [], max: 400, dirty: false, labels: []};
+function flushSerial(){
+  const t = run.serial.pending; if (!t) return; run.serial.pending = '';
+  const atBottom = out.scrollTop + out.clientHeight >= out.scrollHeight - 30;
+  out.appendChild(document.createTextNode(t)); outLen += t.length;
+  if (outLen > 40000){ out.textContent = out.textContent.slice(-24000); outLen = out.textContent.length; }
+  if (atBottom) out.scrollTop = out.scrollHeight;
+  plotBuf += t;
+  let i;
+  while ((i = plotBuf.indexOf('\n')) >= 0){
+    const line = plotBuf.slice(0, i); plotBuf = plotBuf.slice(i + 1);
+    const nums = (line.match(/-?\d+(?:\.\d+)?/g) || []).slice(0, 6).map(Number);
+    if (!nums.length) continue;
+    const labs = (line.match(/([A-Za-zÁ-ÿ_][\wÁ-ÿ]*)\s*[:=]\s*-?\d/g) || []).map(s => s.replace(/\s*[:=].*$/, ''));
+    if (labs.length === nums.length) plot.labels = labs;
+    nums.forEach((v, k) => { (plot.series[k] = plot.series[k] || []).push(v); if (plot.series[k].length > plot.max) plot.series[k].shift(); });
+    plot.dirty = true;
+  }
+  if (plotBuf.length > 2000) plotBuf = '';
+}
+$('sclear').addEventListener('click', () => { out.textContent = ''; outLen = 0; plot.series = []; plot.labels = []; plot.dirty = true; });
+$('ssend').addEventListener('click', sendInput);
+$('sinput').addEventListener('keydown', e => { if (e.key === 'Enter') sendInput(); });
+function sendInput(){
+  const v = $('sinput').value; const nlv = $('snl').value === '\\n' ? '\n' : '';
+  if (!run.running){ sysLine('Keyrðu forritið fyrst til að senda texta'); return; }
+  run.serial.inbuf += v + nlv; $('sinput').value = '';
+}
+$('baud').addEventListener('change', () => { if (run.serial.begun && +$('baud').value !== run.serial.baud) sysLine(`Raðskjárinn er á ${$('baud').value} en forritið á ${run.serial.baud}. Hraðinn verður að vera sá sami`); });
+const PLOT_COLORS = ['#1f9e89','#e0712c','#5b6fd6','#d1427a','#8a9a1b','#7f5fb0'];
+function setTab(plotOn){
+  $('t-mon').setAttribute('aria-selected', !plotOn); $('t-plot').setAttribute('aria-selected', plotOn);
+  out.hidden = plotOn; $('plotwrap').hidden = !plotOn; plot.dirty = true;
+}
+$('t-mon').addEventListener('click', () => setTab(false));
+$('t-plot').addEventListener('click', () => setTab(true));
+function drawPlot(){
+  if ($('plotwrap').hidden || !plot.dirty) return; plot.dirty = false;
+  const cv = $('plot'), r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  if (r.width < 10) return;
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cs = getComputedStyle(document.documentElement), ink = cs.getPropertyValue('--muted').trim() || '#888', line = cs.getPropertyValue('--line').trim() || '#ccc';
+  const W = r.width, H = r.height, padL = 52, padR = 12, padT = 30, padB = 22;
+  g.clearRect(0, 0, W, H);
+  const all = plot.series.flat();
+  $('plotlegend').innerHTML = plot.series.map((s, k) => `<span><i style="background:${PLOT_COLORS[k]}"></i>${esc(plot.labels[k] || 'gildi ' + (k + 1))}</span>`).join('');
+  g.font = '11px ' + (cs.getPropertyValue('--f-mono') || 'monospace');
+  if (!all.length){ g.fillStyle = ink; g.fillText('Línuritið sýnir tölur sem forritið prentar með Serial.println().', 14, H / 2); return; }
+  let lo = Math.min(...all), hi = Math.max(...all); if (hi - lo < 1e-9){ hi += 1; lo -= 1; }
+  const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  const yOf = v => padT + (H - padT - padB) * (1 - (v - lo) / (hi - lo));
+  g.strokeStyle = line; g.lineWidth = 1; g.fillStyle = ink;
+  for (let k = 0; k <= 4; k++){
+    const v = lo + (hi - lo) * k / 4, y = yOf(v);
+    g.beginPath(); g.moveTo(padL, y); g.lineTo(W - padR, y); g.stroke();
+    const t = Math.abs(hi - lo) > 20 ? Math.round(v).toString() : v.toFixed(2);
+    g.fillText(t.replace('.', ','), 6, y + 4);
+  }
+  plot.series.forEach((s, k) => {
+    g.strokeStyle = PLOT_COLORS[k]; g.lineWidth = 1.8; g.beginPath();
+    s.forEach((v, i) => { const x = padL + (W - padL - padR) * (i + plot.max - s.length) / (plot.max - 1); const y = yOf(v); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    g.stroke();
+    const last = s[s.length - 1]; g.fillStyle = PLOT_COLORS[k]; g.beginPath(); g.arc(W - padR, yOf(last), 3, 0, 7); g.fill();
+  });
+}
+
+/* ---------- Dæmi ---------- */
+const W_ = (a, b, color) => ({type:'wire', a, b, color});
+const R_ = (a, b, value) => ({type:'res', a, b, value});
+const LED_ = (a, b, color) => ({type:'led', a, b, color});
+const RED = '#d33a2c', BLK = '#1f1f22', BLU = '#2f6fd6', YEL = '#e3ad00', GRN = '#2e9d4f', ORA = '#ef8424';
+const EXAMPLES = [
+  {name:'1 · LED og 9 V rafhlaða', battery:true, comps:[
+    W_('b:+','h:bp:22',RED), W_('b:-','h:bn:23',BLK), W_('h:bp:8','h:j:13',RED),
+    R_('h:g:13','h:g:16',1000), LED_('h:f:16','h:f:18','red'), W_('h:j:18','h:bn:16',BLK)],
+   code:`// Dæmi 1: LED og 9 V rafhlaða – hér þarf engan kóða.
+// Straumurinn fer: + rás → 1 kΩ viðnám → LED (langi fóturinn fyrst) → − rás.
+// Prófaðu:
+//  - Veldu díóðuna og smelltu á „Snúa við“. Hvað gerist?
+//  - Skiptu viðnáminu út fyrir 100 Ω. Hvað segja athugasemdirnar?
+//  - Mældu spennuna yfir díóðuna með spennumælinum.
+
+void setup() {
+}
+
+void loop() {
+}
+`},
+  {name:'2 · Blikkandi LED', comps:[
+    W_('p:D13','h:a:8',ORA), R_('h:c:8','h:c:12',1000), LED_('h:e:12','h:e:13','red'),
+    W_('h:a:13','h:tn:10',BLK), W_('p:GND_T','h:tn:1',BLK)],
+   code:`// Dæmi 2: Blikkandi LED á pinna 13
+const int LED = 13;
+
+void setup() {
+  pinMode(LED, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LED, HIGH);   // kveikja
+  delay(500);                // bíða í 0,5 s
+  digitalWrite(LED, LOW);    // slökkva
+  delay(500);
+}
+`},
+  {name:'3 · Takki stýrir LED', comps:[
+    W_('p:D13','h:a:8',ORA), R_('h:c:8','h:c:12',1000), LED_('h:e:12','h:e:13','red'),
+    W_('h:a:13','h:tn:10',BLK), W_('p:GND_T','h:tn:1',BLK),
+    {type:'btn', at:'e:20', o:'h'}, W_('p:D2','h:a:20',YEL), W_('h:a:22','h:tn:16',BLK)],
+   code:`// Dæmi 3: Takki stýrir LED
+// Takkinn tengist milli pinna 2 og GND. INPUT_PULLUP heldur pinnanum
+// HIGH þar til ýtt er á takkann – þá verður hann LOW.
+// Haltu músarhnappnum niðri á rauða takkanum.
+const int TAKKI = 2;
+const int LED = 13;
+
+void setup() {
+  pinMode(TAKKI, INPUT_PULLUP);
+  pinMode(LED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int stada = digitalRead(TAKKI);
+  if (stada == LOW) {
+    digitalWrite(LED, HIGH);
+  } else {
+    digitalWrite(LED, LOW);
+  }
+  Serial.println(stada);
+  delay(50);
+}
+`},
+  {name:'4 · Ljósnemi (LDR)', comps:[
+    W_('p:5V','h:tp:3',RED), W_('p:GND_T','h:tn:1',BLK),
+    W_('h:a:6','h:tp:5',RED), {type:'ldr', a:'h:c:6', b:'h:c:10'}, R_('h:d:10','h:d:14',10000),
+    W_('h:a:14','h:tn:12',BLK), W_('p:A0','h:a:10',GRN)],
+   code:`// Dæmi 4: Ljósnemi (LDR) í spennudeili með 10 kΩ viðnámi
+// Breyttu birtunni með sleðanum „Birta“ undir brauðbrettinu
+// og skoðaðu „Línurit“ í raðskjánum.
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  int gildi = analogRead(A0);           // 0–1023
+  float spenna = gildi * 5.0 / 1023.0;  // í voltum
+  Serial.print("Gildi: ");
+  Serial.print(gildi);
+  Serial.print("  Spenna: ");
+  Serial.println(spenna);
+  delay(200);
+}
+`},
+  {name:'5 · Hitamælir LM35', comps:[
+    W_('p:5V','h:tp:3',RED), W_('p:GND_T','h:tn:1',BLK),
+    {type:'lm35', at:'c:10', o:'h'}, W_('h:a:10','h:tp:8',RED), W_('h:a:12','h:tn:9',BLK), W_('p:A1','h:a:11',GRN)],
+   code:`// Dæmi 5: Hitamælir með LM35
+// LM35 gefur 10 mV fyrir hverja gráðu: 25 °C → 0,25 V.
+// Breyttu hitanum með sleðanum „Hiti“.
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  int gildi = analogRead(A1);
+  float spenna = gildi * 5.0 / 1023.0;
+  float hiti = spenna * 100.0;   // 10 mV á gráðu
+  Serial.println(hiti);
+  delay(500);
+}
+`},
+  {name:'6 · RGB LED og PWM', comps:[
+    W_('p:GND_B1','h:bn:3',BLK),
+    {type:'rgb', at:'h:17', o:'h2', common:'K'},
+    R_('h:d:17','h:g:17',1000), R_('h:d:15','h:g:15',1000), R_('h:d:14','h:g:14',1000),
+    W_('h:j:16','h:bn:12',BLK), W_('p:D9','h:a:17',RED), W_('p:D10','h:a:15',GRN), W_('p:D11','h:a:14',BLU)],
+   code:`// Dæmi 6: RGB LED með PWM (analogWrite)
+// Pinnar 9, 10 og 11 eru PWM-pinnar (merktir ~ á borðinu).
+const int RAUTT = 9;
+const int GRAENT = 10;
+const int BLATT = 11;
+
+void setLitur(int r, int g, int b) {
+  analogWrite(RAUTT, r);
+  analogWrite(GRAENT, g);
+  analogWrite(BLATT, b);
+}
+
+void setup() {
+  pinMode(RAUTT, OUTPUT);
+  pinMode(GRAENT, OUTPUT);
+  pinMode(BLATT, OUTPUT);
+}
+
+void loop() {
+  setLitur(255, 0, 0);
+  delay(800);
+  setLitur(0, 255, 0);
+  delay(800);
+  setLitur(0, 0, 255);
+  delay(800);
+  for (int i = 0; i < 256; i++) {   // rautt dofnar í blátt
+    setLitur(255 - i, 0, i);
+    delay(8);
+  }
+}
+`},
+  {name:'7 · Tónstigi á suðara', comps:[
+    W_('p:GND_T','h:tn:1',BLK), {type:'piezo', a:'h:c:24', b:'h:c:27'}, W_('p:D8','h:a:24',YEL), W_('h:a:27','h:tn:22',BLK)],
+   code:`// Dæmi 7: Tónstigi á suðara
+// tone(pinni, tíðni) spilar tón með tíðninni í Hz.
+const int SUDARI = 8;
+int tonar[] = {262, 294, 330, 349, 392, 440, 494, 523};  // C-dúr
+
+void setup() {
+}
+
+void loop() {
+  for (int i = 0; i < 8; i++) {
+    tone(SUDARI, tonar[i]);
+    delay(300);
+  }
+  noTone(SUDARI);
+  delay(1000);
+}
+`},
+  {name:'8 · Stilliviðnám stýrir birtu', comps:[
+    W_('p:5V','h:tp:3',RED), W_('p:GND_T','h:tn:1',BLK),
+    {type:'pot', at:'e:3', o:'h', pos:0.5}, W_('h:a:3','h:tp:1',RED), W_('h:a:5','h:tn:4',BLK), W_('p:A0','h:a:4',GRN),
+    W_('p:D9','h:a:9',ORA), R_('h:c:9','h:c:13',1000), LED_('h:e:13','h:e:14','green'), W_('h:a:14','h:tn:12',BLK)],
+   code:`// Dæmi 8: Stilliviðnám stýrir birtu díóðu
+// Veldu stilliviðnámið og dragðu sleðann.
+void setup() {
+  pinMode(9, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int gildi = analogRead(A0);   // 0–1023
+  int birta = gildi / 4;        // 0–255
+  analogWrite(9, birta);
+  Serial.println(birta);
+  delay(50);
+}
+`},
+  {name:'9 · BC547 kveikir á 9 V rás', battery:true, comps:[
+    W_('b:+','h:bp:22',RED), W_('b:-','h:bn:23',BLK), W_('p:GND_B1','h:bn:2',BLK),
+    W_('h:bp:8','h:j:13',RED), R_('h:g:13','h:g:16',1000), LED_('h:f:16','h:f:20','blue'),
+    {type:'bc547', at:'j:20', o:'h'}, R_('h:f:21','h:d:21',10000), W_('p:D8','h:a:21',YEL), W_('h:g:22','h:bn:19',BLK)],
+   code:`// Dæmi 9: BC547-smári kveikir á LED í 9 V rás
+// Arduino gefur aðeins lítinn grunnstraum (um 0,4 mA gegnum 10 kΩ).
+// Smárinn hleypir þá stærri straumi frá 9 V rafhlöðunni gegnum díóðuna.
+// GND á Arduino og − á rafhlöðunni verða að vera tengd saman.
+const int GRUNNUR = 8;
+
+void setup() {
+  pinMode(GRUNNUR, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(GRUNNUR, HIGH);
+  delay(1000);
+  digitalWrite(GRUNNUR, LOW);
+  delay(1000);
+}
+`},
+];
+function fillExamples(){
+  $('examples').innerHTML = `<option value="">Opna dæmi…</option>` + EXAMPLES.map((e, i) => `<option value="${i}">${esc(e.name)}</option>`).join('') + `<option value="clear">Tómt brauðbretti</option>`;
+}
+function loadExample(i, noHist){
+  if (!noHist) pushHist(true);
+  if (run.running) stopRun();
+  if (i === 'clear'){ st.comps = []; st.battery = false; }
+  else {
+    const ex = EXAMPLES[i]; st.nextId = 1;
+    st.comps = ex.comps.map(c => ({...c, id: st.nextId++}));
+    st.battery = !!ex.battery; editor.value = ex.code; updateGutter();
+  }
+  ui.sel = null; ui.probe = {a:null, b:null}; $('probe').hidden = ui.tool !== 'probe';
+  renderBattery(); structureChanged(); clearError(); syncEnv();
+}
+$('examples').addEventListener('change', e => { const v = e.target.value; if (v === '') return; loadExample(v === 'clear' ? 'clear' : +v); e.target.value = ''; });
+
+/* ---------- Vista / hlaða ---------- */
+$('share').addEventListener('click', () => {
+  const data = JSON.stringify({v:1, board: st.board, layout: st.layout, battery: st.battery, comps: st.comps.map(({id, ...r}) => r), code: editor.value});
+  const root = $('dlgroot');
+  root.innerHTML = `<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgt"><div class="card">
+    <h3 id="dlgt">Vista eða hlaða verkefni</h3>
+    <p>Afritaðu textann til að skila verkefninu eða geyma það. Til að opna verkefni límirðu texta frá öðrum hér inn og smellir á „Hlaða“.</p>
+    <textarea id="dlgtx" spellcheck="false" aria-label="Verkefni sem texti"></textarea>
+    <div class="irow"><button class="btn" id="dlgcopy">Afrita</button><button class="btn" id="dlgload">Hlaða</button><button class="btn" id="dlgclose" style="margin-left:auto">Loka</button></div>
+    <p id="dlgmsg" aria-live="polite"></p></div></div>`;
+  const tx = $('dlgtx'); tx.value = data;
+  const close = () => { root.innerHTML = ''; };
+  $('dlgclose').onclick = close;
+  root.querySelector('.dlg').addEventListener('click', e => { if (e.target.classList.contains('dlg')) close(); });
+  $('dlgcopy').onclick = () => { tx.select(); const done = () => { $('dlgmsg').textContent = 'Afritað.'; }; try { navigator.clipboard.writeText(tx.value).then(done, () => { tx.select(); $('dlgmsg').textContent = 'Textinn er valinn. Ýttu á Ctrl+C til að afrita.'; }); } catch (e) { $('dlgmsg').textContent = 'Textinn er valinn. Ýttu á Ctrl+C til að afrita.'; } };
+  $('dlgload').onclick = () => {
+    try {
+      const o = JSON.parse(tx.value);
+      pushHist(true); if (run.running) stopRun();
+      o.comps = (o.comps || []).map((c, i) => ({...c, id: i + 1})); o.nextId = o.comps.length + 1;
+      loadData(o); setBoardUI(); applyLayout(); ui.sel = null; structureChanged(); syncEnv(); close();
+    } catch (e) { $('dlgmsg').textContent = 'Þetta er ekki gilt verkefni. Athugaðu að allur textinn hafi verið límdur inn.'; }
+  };
+});
+
+/* ---------- Borð, hljóð, aðdráttur, lyklar ---------- */
+function setBoardUI(){ $('b-r3').setAttribute('aria-pressed', st.board === 'r3'); $('b-r4').setAttribute('aria-pressed', st.board === 'r4'); }
+function setBoard(b){
+  if (st.board === b) return;
+  if (run.running) stopRun();
+  st.board = b; setBoardUI(); renderBoard(); markDirty(); save();
+  flash(b === 'r4' ? 'UNO R4 Minima: hver pinni þolir aðeins 8 mA, int er 32 bita og A0 getur gefið hliðræna spennu (DAC).' : 'UNO R3: hver pinni þolir 20 mA (40 mA hámark) og int er 16 bita (−32768 til 32767).', true);
+}
+function applyLayout(){
+  C.setLayout(st.layout);
+  $('l-top').setAttribute('aria-pressed', st.layout === 'top'); $('l-side').setAttribute('aria-pressed', st.layout === 'side');
+  $('grid').classList.toggle('tall', st.layout === 'top');
+  updateViewBox();
+  renderBoard(); bbInit(); renderBattery(); renderComps();
+  L('L-hl').innerHTML = ''; L('L-ghost').innerHTML = ''; lastDyn = ''; ui.hover = null;
+  setZoom(null);
+}
+function updateViewBox(){
+  const h = st.battery ? C.VIEW_H : Math.max(C.QY + C.BB_H, C.BY + C.BH) + 16;
+  sv.setAttribute('viewBox', `0 0 ${C.VIEW_W} ${h}`);
+}
+function setLayoutMode(m){ if (st.layout === m) return; st.layout = m; applyLayout(); save(); }
+$('l-top').addEventListener('click', () => setLayoutMode('top'));
+$('l-side').addEventListener('click', () => setLayoutMode('side'));
+$('b-r3').addEventListener('click', () => setBoard('r3'));
+$('b-r4').addEventListener('click', () => setBoard('r4'));
+$('mute').addEventListener('click', () => {
+  audio.muted = !audio.muted; $('mute').textContent = audio.muted ? '🔇 Hljóð af' : '🔊 Hljóð á'; $('mute').setAttribute('aria-pressed', audio.muted); if (audio.muted) setSound(0);
+});
+$('undo').addEventListener('click', undo);
+$('probeclr').addEventListener('click', () => { ui.probe = {a:null, b:null}; if (ui.tool !== 'probe') $('probe').hidden = true; updateHint(); });
+function setZoom(z){
+  ui.zoom = z;
+  if (z == null){ sv.classList.remove('zoomed'); sv.style.width = ''; sv.style.maxHeight = ''; }
+  else { sv.classList.add('zoomed'); sv.style.width = Math.round(C.VIEW_W * z) + 'px'; sv.style.maxHeight = 'none'; }
+}
+$('zin').addEventListener('click', () => setZoom(Math.min(3, (ui.zoom || $('mat').clientWidth / C.VIEW_W) * 1.25)));
+$('zout').addEventListener('click', () => setZoom(Math.max(0.6, (ui.zoom || $('mat').clientWidth / C.VIEW_W) / 1.25)));
+$('zfit').addEventListener('click', () => setZoom(null));
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'textarea' || tag === 'input' || tag === 'select') return;
+  if (e.key === 'Escape'){ ui.first = null; setTool('select'); if (ui.sel){ ui.sel = null; renderComps(); renderInspector(); } }
+  else if ((e.key === 'Delete' || e.key === 'Backspace') && ui.sel){ e.preventDefault(); deleteSel(); }
+  else if (e.key === 'r' || e.key === 'R'){ rotateSel(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault(); undo(); }
+});
+
+/* ---------- Lykkja ---------- */
+let lastSlow = 0;
+function frame(t){
+  if (dirty) recompute();
+  flushSerial();
+  updateDynamic();
+  if (t - lastSlow > 200){
+    lastSlow = t;
+    if (run.running){ run.flags.now = performance.now(); warnings = C.analyze(solved.W, solved.M, run.flags); const s = (performance.now() - run.start) / 1000; $('runstate').textContent = `Keyrir · ${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`; }
+    renderWarnings(); updateInspectorLive(); updateStatus(); updatePotOutputs();
+  }
+  drawPlot();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Ræsing ---------- */
+fillExamples(); renderBoard(); bbInit();
+function bbInit(){ L('L-bb').innerHTML = bbSVG(); }
+let loaded = false;
+try { const s = localStorage.getItem(STORE_KEY); if (s){ loadData(JSON.parse(s)); loaded = true; } } catch (e) { loaded = false; }
+if (!loaded) loadExample(1, true);
+setBoardUI(); applyLayout(); structureChanged(); syncEnv(); updateGutter(); updateHint(); renderTools(); renderInspector();
+$('undo').disabled = true;
+requestAnimationFrame(frame);
+</script>
