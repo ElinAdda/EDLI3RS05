@@ -1,0 +1,590 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Rafrásahermir</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Share+Tech+Mono&display=swap">
+<style>
+/* Layout: graph-paper breadboard on the left, instrument panel (multimeter, tools, log) on the right; stacks on phones */
+:root{
+  --bg:#eaeef1; --panel:#fbfcfc; --board:#f8faf9; --grid:#dbe3e8; --ink:#1f2a33; --muted:#5b6872; --line:#cdd6dc;
+  --wire:#b0602a; --accent:#1f5f8b; --accent-ink:#ffffff; --flow:#0a84d6; --sel:#cfe2f0;
+  --res-body:#e9d8b2; --meter:#ffffff; --case:#2b3741; --case-ink:#e6edf1; --lcd:#c6d1b4; --lcd-ink:#1d2919;
+  --probe-pos:#d0342c; --probe-com:#22272b; --probe-com-stroke:#ffffff; --warn:#b42318; --warn-bg:#fde8e6;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-lcd:"Share Tech Mono","IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10161b; --panel:#172028; --board:#131b21; --grid:#222e37; --ink:#dbe4ea; --muted:#93a3ae; --line:#2b3842;
+  --wire:#d6834a; --accent:#6db2df; --accent-ink:#0c1419; --flow:#5cc8ff; --sel:#1f3444;
+  --res-body:#cdb98d; --meter:#1c2730; --case:#0b1014; --case-ink:#dbe4ea; --lcd:#a3b290; --lcd-ink:#121a10;
+  --probe-pos:#e5483f; --probe-com:#3a4249; --probe-com-stroke:#dbe4ea; --warn:#ff8a7a; --warn-bg:#3a1714; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10161b; --panel:#172028; --board:#131b21; --grid:#222e37; --ink:#dbe4ea; --muted:#93a3ae; --line:#2b3842;
+  --wire:#d6834a; --accent:#6db2df; --accent-ink:#0c1419; --flow:#5cc8ff; --sel:#1f3444;
+  --res-body:#cdb98d; --meter:#1c2730; --case:#0b1014; --case-ink:#dbe4ea; --lcd:#a3b290; --lcd-ink:#121a10;
+  --probe-pos:#e5483f; --probe-com:#3a4249; --probe-com-stroke:#dbe4ea; --warn:#ff8a7a; --warn-bg:#3a1714; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:14px}
+h1{font-size:26px;font-weight:600;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.boardcard{padding:10px;min-width:0}
+svg#board{display:block;width:100%;height:auto;background:var(--board);border-radius:6px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.hint{font-size:13px;color:var(--muted);margin:8px 4px 2px}
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sec{padding:14px}
+.lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 8px}
+
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tools.t3{grid-template-columns:repeat(3,1fr)}
+.tool{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;text-align:center;line-height:1.25;border:1px solid var(--line);border-radius:8px;background:var(--board);color:var(--ink);font:500 12px var(--f-body);cursor:pointer}
+.tool svg{width:34px;height:20px}
+.tool:hover{border-color:var(--accent)}
+.tool[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tool:focus-visible,.btn:focus-visible,.preset:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.dmm{background:var(--case);color:var(--case-ink);border-radius:14px;padding:14px}
+.dmm .top{display:flex;justify-content:space-between;align-items:center;font:500 12px var(--f-mono);letter-spacing:.06em;margin-bottom:8px}
+.lcd{background:var(--lcd);color:var(--lcd-ink);border-radius:6px;padding:10px 14px;text-align:right;font-family:var(--f-lcd);font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums;box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+.lcd small{font-size:22px;margin-left:6px}
+.dmm .where{font:12px var(--f-mono);margin-top:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:4px}
+.amms{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.amm{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.06);border-radius:6px;padding:4px 10px;font-family:var(--f-mono);font-size:13px}
+.amm b{font-family:var(--f-lcd);font-size:20px;font-weight:400;font-variant-numeric:tabular-nums}
+.amms .none{font-size:12px;opacity:.75}
+.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:500}
+
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.btn{border:1px solid var(--line);background:var(--board);color:var(--ink);border-radius:8px;padding:7px 12px;font:500 13px var(--f-body);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default}
+.rvar{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:10px;align-items:center}
+.rvar label{grid-column:1/-1;font-size:13px;font-weight:500}
+.rvar input,.rvar select{border:1px solid var(--line);background:var(--board);color:var(--ink);border-radius:6px;padding:6px 8px;font:14px var(--f-mono);min-width:0}
+.rvar input[aria-invalid="true"]{border-color:var(--warn)}
+.rvar .note{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.rvar .note.err{color:var(--warn)}
+label.chk{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px;cursor:pointer}
+
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.preset{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:20px;padding:4px 12px;font:500 13px var(--f-body);cursor:pointer}
+.preset[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--sel)}
+.task{font-size:14px;margin:10px 0 0;max-width:65ch}
+
+.logwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td input{width:100%;min-width:120px;border:1px solid var(--line);background:var(--board);color:var(--ink);border-radius:6px;padding:4px 6px;font:13px var(--f-body)}
+.empty{color:var(--muted);font-size:13px;padding:10px 0}
+.logsec{margin-top:16px;padding:14px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:13px}
+
+/* board svg */
+.hit{fill:transparent;cursor:pointer}
+.hit:hover{fill:var(--sel);fill-opacity:.6}
+.flow{fill:none;stroke:var(--flow);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:1 15;animation:flow var(--d,1.5s) linear infinite}
+.flow.rev{animation-direction:reverse}
+@keyframes flow{to{stroke-dashoffset:-16}}
+@media (prefers-reduced-motion: reduce){.flow{animation:none}}
+.probe{cursor:grab;touch-action:none}
+.probe:active{cursor:grabbing}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Rafrásahermir</h1>
+    <p>Byggðu rás úr spennugjöfum og viðnámum og mældu straum og spennu.</p>
+  </header>
+
+  <div class="main">
+    <div>
+      <div class="card boardcard">
+        <svg id="board" viewBox="0 0 750 610" role="application" aria-label="Rafrásarbretti">
+          <defs>
+            <pattern id="paper" width="15" height="15" patternUnits="userSpaceOnUse">
+              <path d="M15 0H0V15" style="fill:none;stroke:var(--grid);stroke-width:.6"/>
+            </pattern>
+          </defs>
+          <rect x="0" y="0" width="750" height="610" fill="url(#paper)"/>
+          <g id="gAxis"></g>
+          <g id="gBase"></g>
+          <g id="gFlow"></g>
+          <g id="gBody"></g>
+          <g id="gLabels"></g>
+          <g id="gNodes"></g>
+          <g id="gHits"></g>
+          <g id="gMeter"></g>
+          <g id="gProbes"></g>
+        </svg>
+        <p class="hint">Veldu íhlut og smelltu á línu milli tveggja punkta. Smelltu aftur með sama tóli til að fjarlægja hann (rafhlaða og straummælir snúast þá við). Dragðu rauða og svarta mælioddinn á punkta til að mæla spennu.</p>
+      </div>
+
+      <div class="card logsec">
+        <p class="lbl">Mæliblað</p>
+        <div class="logwrap">
+          <table>
+            <thead><tr><th>#</th><th>Spenna</th><th>Mælipunktar</th><th>Straumur</th><th>Skýring</th></tr></thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </div>
+        <div id="logEmpty" class="empty">Engar mælingar enn. Ýttu á „Skrá mælingu“ til að vista það sem mælarnir sýna.</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="copyLog">Afrita töflu</button>
+          <button class="btn" id="clearLog">Hreinsa töflu</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="dmm" aria-live="polite">
+        <div class="top"><span>SPENNUMÆLIR</span><span>DC V</span></div>
+        <div class="lcd" id="lcd">0,000<small>V</small></div>
+        <div class="where">
+          <span><span class="dot" style="background:var(--probe-pos)"></span>V+ <span id="posName">–</span></span>
+          <span><span class="dot" style="background:var(--probe-com);box-shadow:0 0 0 1px var(--case-ink)"></span>COM <span id="comName">–</span></span>
+        </div>
+        <div class="amms" id="amms"></div>
+      </div>
+
+      <div id="warn" class="warn" hidden>Skammhlaup! Rafhlaða er tengd án viðnáms. Straummælir á alltaf að vera raðtengdur við viðnám, aldrei beint yfir rafhlöðu.</div>
+
+      <div class="card sec">
+        <p class="lbl">Íhlutir</p>
+        <div class="tools" id="toolsA"></div>
+        <div class="rvar">
+          <label for="batVal">Spenna spennugjafa</label>
+          <input id="batVal" type="number" inputmode="decimal" min="0" max="100" step="any" value="1.5">
+          <select disabled aria-label="Eining"><option>V</option></select>
+          <span class="note" id="batNote">Veldu „Spennugjafi“ og smelltu á línu. Smelltu á spennugjafa í rásinni til að gefa honum nýju spennuna; smelltu aftur til að snúa honum við.</span>
+        </div>
+        <p class="lbl" style="margin-top:16px">Viðnám</p>
+        <div class="tools t3" id="toolsB"></div>
+        <div class="rvar">
+          <label for="rvarVal">Breytilegt viðnám</label>
+          <input id="rvarVal" type="number" inputmode="decimal" min="0.1" step="any" value="470">
+          <select id="rvarUnit"><option value="1">Ω</option><option value="1000">kΩ</option><option value="1000000">MΩ</option></select>
+          <span class="note" id="rvarNote">Veldu „Breytilegt“ og smelltu á línu. Smelltu á breytilegt viðnám í rásinni til að gefa því nýja gildið.</span>
+        </div>
+        <label class="chk"><input type="checkbox" id="flowChk" checked> Sýna straumstefnu</label>
+      </div>
+
+      <div class="card sec">
+        <div class="row">
+          <button class="btn primary" id="logBtn">Skrá mælingu</button>
+          <button class="btn" id="undoBtn">Afturkalla</button>
+          <button class="btn" id="clearBtn">Hreinsa borð</button>
+        </div>
+      </div>
+
+      <div class="card sec">
+        <p class="lbl">Dæmi og verkefni</p>
+        <div class="presets" id="presets"></div>
+        <p class="task" id="task"></p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const COLS=8, ROWS=6, S=90, MX=60, MY=50, W=750, H=610, N=COLS*ROWS, Y0=H-74; // Y0 = top of probe strip
+const R_INT=0.001, R_WIRE=1e-4, R_AMM=1e-4, GMIN=1e-9;
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const nx=i=>MX+(i%COLS)*S, ny=i=>MY+Math.floor(i/COLS)*S;
+const idx=(c,r)=>r*COLS+c;
+const nodeName=i=>'ABCDEFGH'[i%COLS]+(Math.floor(i/COLS)+1);
+
+const TYPES={
+  wire:{name:'Vír'},
+  bat:{name:'Spennugjafi'},
+  r220:{name:'220 Ω',R:220,label:'220 Ω',bands:['#c62828','#c62828','#6d4c2f']},
+  r330:{name:'330 Ω',R:330,label:'330 Ω',bands:['#e8730c','#e8730c','#6d4c2f']},
+  r1k:{name:'1 kΩ',R:1000,label:'1 kΩ',bands:['#6d4c2f','#1b1b1b','#c62828']},
+  r4k7:{name:'4,7 kΩ',R:4700,label:'4,7 kΩ',bands:['#f2c40c','#8e44ad','#c62828']},
+  r10k:{name:'10 kΩ',R:10000,label:'10 kΩ',bands:['#6d4c2f','#1b1b1b','#e8730c']},
+  rvar:{name:'Breytilegt'},
+  amm:{name:'Straummælir'},
+  erase:{name:'Strokleður'}
+};
+const ICONS={
+  wire:'<line x1="3" y1="10" x2="31" y2="10" stroke="currentColor" stroke-width="2.5"/><circle cx="3" cy="10" r="2.5" fill="currentColor"/><circle cx="31" cy="10" r="2.5" fill="currentColor"/>',
+  bat:'<line x1="1" y1="10" x2="14" y2="10" stroke="currentColor" stroke-width="2"/><line x1="14" y1="2" x2="14" y2="18" stroke="currentColor" stroke-width="2"/><line x1="20" y1="6" x2="20" y2="14" stroke="currentColor" stroke-width="4"/><line x1="20" y1="10" x2="33" y2="10" stroke="currentColor" stroke-width="2"/>',
+  res:'<line x1="1" y1="10" x2="33" y2="10" stroke="currentColor" stroke-width="2"/><rect x="8" y="5" width="18" height="10" rx="4" fill="#e9d8b2" stroke="currentColor" stroke-width="1.5"/>',
+  amm:'<line x1="1" y1="10" x2="33" y2="10" stroke="currentColor" stroke-width="2"/><circle cx="17" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><text x="17" y="14" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" font-family="sans-serif">A</text>',
+  rvar:'<line x1="1" y1="10" x2="33" y2="10" stroke="currentColor" stroke-width="2"/><rect x="8" y="5" width="18" height="10" rx="4" fill="#e9d8b2" stroke="currentColor" stroke-width="1.5"/><path d="M7 18L27 2M27 2l-6 1M27 2l-1 6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
+  erase:'<path d="M11 4l12 12M23 4L11 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>'
+};
+function bandIcon(t){const b=TYPES[t].bands;return ICONS.res+b.map((c,i)=>`<rect x="${11+i*4}" y="5" width="2.4" height="10" fill="${c}"/>`).join('');}
+
+// ---------- state ----------
+let els=new Map();  // key -> {type,a,b,pos,id}
+let idc=0, tool='r220', showFlow=true, preset='rad';
+let probes={pos:null,com:null};
+let dragXY={pos:null,com:null}, drag=null;
+let undo=[], log=[];
+
+const keyOf=(a,b)=>Math.min(a,b)+'-'+Math.max(a,b);
+
+// ---------- presets ----------
+const PRESETS={
+  einfold:{name:'Einföld rás',task:'Ein rafhlaða og eitt 220 Ω viðnám. Mældu spennuna yfir viðnámið og yfir rafhlöðuna. Settu svo straummæli inn í rásina (í stað eins vírs) og mældu strauminn. Reiknaðu R = U/I og berðu saman við 220 Ω.',
+    parts:[['bat',1,1,1,2],['wire',1,1,2,1],['r220',2,1,3,1],['wire',3,1,3,2],['wire',3,2,3,3],['wire',1,2,1,3],['wire',1,3,2,3],['wire',2,3,3,3]],probe:[[2,1],[3,1]]},
+  rad:{name:'Raðtenging',task:'Mældu spennuna yfir 220 Ω viðnámið, yfir 1 kΩ viðnámið og yfir rafhlöðuna. Hvernig tengist summa spennanna spennu rafhlöðunnar? Færðu straummælinn á annan stað í rásinni. Breytist straumurinn?',
+    parts:[['bat',1,1,1,2],['wire',1,2,1,3],['wire',1,1,2,1],['r220',2,1,3,1],['wire',3,1,4,1],['r1k',4,1,5,1],['wire',5,1,5,2],['amm',5,2,5,3],['wire',1,3,2,3],['wire',2,3,3,3],['wire',3,3,4,3],['wire',4,3,5,3]],probe:[[2,1],[3,1]]},
+  hlid:{name:'Hliðtenging',task:'A1 mælir heildarstrauminn og A2 strauminn í gegnum 1 kΩ. Mældu spennuna yfir hvora grein. Hvar þarftu að setja þriðja straummælinn til að mæla strauminn gegnum 220 Ω? Passar að A1 sé summa hinna?',
+    parts:[['bat',1,1,1,2],['wire',1,2,1,3],['wire',1,1,2,1],['amm',2,1,3,1],['wire',3,1,4,1],['wire',4,1,5,1],['r220',3,1,3,2],['wire',3,2,3,3],['r1k',5,1,5,2],['amm',5,2,5,3],['wire',1,3,2,3],['wire',2,3,3,3],['wire',3,3,4,3],['wire',4,3,5,3]],probe:[[3,1],[3,3]]},
+  tvaer:{name:'Tvær rafhlöður',task:'Mældu spennuna yfir hvora rafhlöðu og yfir báðar saman. Snúðu svo annarri rafhlöðunni við (smelltu tvisvar á hana með spennugjafatólinu). Hvað gerist með spennuna og strauminn?',
+    parts:[['bat',1,1,1,2],['bat',1,2,1,3],['wire',1,1,2,1],['r1k',2,1,3,1],['wire',3,1,4,1],['wire',4,1,5,1],['r220',5,1,5,2],['wire',5,2,5,3],['wire',4,3,5,3],['amm',4,3,3,3],['wire',2,3,3,3],['wire',1,3,2,3]],probe:[[1,1],[1,3]]},
+  tom:{name:'Autt borð',task:'Byggðu þína eigin rás. Mundu: straummælir er raðtengdur í rásina, spennumælir er tengdur yfir íhlutinn sem á að mæla.',parts:[],probe:null}
+};
+function loadPreset(k){
+  const p=PRESETS[k]; preset=k;
+  els=new Map(); idc=0;
+  for(const [t,c1,r1,c2,r2] of p.parts){
+    const n1=idx(c1,r1), n2=idx(c2,r2);
+    const o={type:t,a:Math.min(n1,n2),b:Math.max(n1,n2),pos:n1,id:++idc}; if(t==='bat') o.E=1.5;
+    els.set(keyOf(n1,n2),o);
+  }
+  probes=p.probe?{pos:idx(...p.probe[0]),com:idx(...p.probe[1])}:{pos:null,com:null};
+}
+
+// ---------- solver ----------
+function cond(e){
+  if(e.type==='wire') return 1/R_WIRE;
+  if(e.type==='amm') return 1/R_AMM;
+  if(e.type==='bat') return 1/R_INT;
+  if(e.type==='rvar') return 1/e.R;
+  return 1/TYPES[e.type].R;
+}
+const emf=e=>e.E==null?1.5:e.E;
+const fmtE=E=>String(+E.toFixed(2)).replace('.',',')+' V';
+function gauss(A,z){
+  const n=z.length;
+  for(let k=0;k<n;k++){
+    let p=k,m=Math.abs(A[k][k]);
+    for(let i=k+1;i<n;i++){const v=Math.abs(A[i][k]);if(v>m){m=v;p=i}}
+    if(m<1e-20) continue;
+    if(p!==k){[A[k],A[p]]=[A[p],A[k]];[z[k],z[p]]=[z[p],z[k]];}
+    for(let i=k+1;i<n;i++){
+      const f=A[i][k]/A[k][k]; if(f===0) continue;
+      for(let j=k;j<n;j++) A[i][j]-=f*A[k][j];
+      z[i]-=f*z[k];
+    }
+  }
+  const x=new Float64Array(n);
+  for(let i=n-1;i>=0;i--){
+    let s=z[i]; for(let j=i+1;j<n;j++) s-=A[i][j]*x[j];
+    x[i]=Math.abs(A[i][i])<1e-20?0:s/A[i][i];
+  }
+  return x;
+}
+function solve(){
+  const A=Array.from({length:N},()=>new Float64Array(N)), z=new Float64Array(N);
+  for(let i=0;i<N;i++) A[i][i]+=GMIN;
+  for(const e of els.values()){
+    const g=cond(e),a=e.a,b=e.b;
+    A[a][a]+=g;A[b][b]+=g;A[a][b]-=g;A[b][a]-=g;
+    if(e.type==='bat'){const p=e.pos,n=p===a?b:a,Is=emf(e)*g; z[p]+=Is; z[n]-=Is;}
+  }
+  const V=gauss(A,z), I=new Map();
+  let short=false;
+  for(const [k,e] of els){
+    const g=cond(e); let iab=(V[e.a]-V[e.b])*g;
+    if(e.type==='bat'){ iab += (e.pos===e.a?-1:1)*emf(e)*g; if(Math.abs(iab)>0.01 && Math.abs(iab)*R_INT>0.05*Math.abs(emf(e))) short=true; }
+    I.set(k,iab);
+  }
+  // connectivity
+  const par=[...Array(N).keys()], f=x=>par[x]===x?x:(par[x]=f(par[x]));
+  for(const e of els.values()) par[f(e.a)]=f(e.b);
+  return {V,I,short,f};
+}
+
+// ---------- formatting ----------
+function fmtR(r){
+  const t=(x,u)=>{const d=x>=100?0:x>=10?1:2;return String(+x.toFixed(d)).replace('.',',')+' '+u;};
+  if(r>=1e6) return t(r/1e6,'MΩ'); if(r>=1e3) return t(r/1e3,'kΩ'); return t(r,'Ω');
+}
+const nf=(x,d)=>x.toFixed(d).replace('.',',').replace('-','−');
+function fmtV(v){ if(Math.abs(v)<0.0005) v=0; const a=Math.abs(v); return a>=100?nf(v,1):a>=10?nf(v,2):nf(v,3); }
+function fmtI(i){
+  const a=Math.abs(i);
+  if(a>=10) return 'OL';
+  if(a>=1) return nf(i,3)+' A';
+  if(a>=1e-3){const m=i*1e3;return nf(m,Math.abs(m)<10?2:1)+' mA';}
+  const u=i*1e6; if(Math.abs(u)<0.005) return '0,00 mA';
+  return nf(u,Math.abs(u)<10?2:Math.abs(u)<100?1:0)+' µA';
+}
+
+// ---------- svg helpers ----------
+const el=(tag,attrs,inner)=>`<${tag} ${Object.entries(attrs).map(([k,v])=>`${k}="${v}"`).join(' ')}>${inner||''}</${tag}>`;
+function edgeGeom(e){
+  const x1=nx(e.a),y1=ny(e.a),x2=nx(e.b),y2=ny(e.b),hor=y1===y2;
+  return {x1,y1,x2,y2,hor,mx:(x1+x2)/2,my:(y1+y2)/2,ang:hor?0:90,
+    sideA:hor?[0,-1]:[1,0], dir:hor?[1,0]:[0,1]};
+}
+function ammLabels(){
+  const list=[...els.values()].filter(e=>e.type==='amm').sort((p,q)=>p.id-q.id);
+  const m=new Map(); list.forEach((e,i)=>m.set(e.id,'A'+(i+1))); return {list,m};
+}
+
+// ---------- rendering ----------
+function renderStatic(){
+  let s='';
+  for(let c=0;c<COLS;c++) s+=el('text',{x:MX+c*S,y:MY-28,'text-anchor':'middle','font-size':12,'font-family':'IBM Plex Mono, monospace',style:'fill:var(--muted)'},'ABCDEFGH'[c]);
+  for(let r=0;r<ROWS;r++) s+=el('text',{x:MX-36,y:MY+r*S+4,'text-anchor':'middle','font-size':12,'font-family':'IBM Plex Mono, monospace',style:'fill:var(--muted)'},r+1);
+  $('gAxis').innerHTML=s;
+  // hits
+  let h='';
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const i=idx(c,r);
+    if(c<COLS-1) h+=el('rect',{class:'hit','data-a':i,'data-b':i+1,x:nx(i)+14,y:ny(i)-15,width:S-28,height:30,rx:6},`<title>${nodeName(i)}–${nodeName(i+1)}</title>`);
+    if(r<ROWS-1) h+=el('rect',{class:'hit','data-a':i,'data-b':i+COLS,x:nx(i)-15,y:ny(i)+14,width:30,height:S-28,rx:6},`<title>${nodeName(i)}–${nodeName(i+COLS)}</title>`);
+  }
+  $('gHits').innerHTML=h;
+  // meter strip
+  const cx=W/2;
+  $('gMeter').innerHTML=
+    el('line',{x1:20,y1:Y0,x2:W-20,y2:Y0,style:'stroke:var(--line)','stroke-dasharray':'4 4'})+
+    el('text',{x:24,y:Y0+24,'font-size':12,'font-family':'IBM Plex Sans, sans-serif',style:'fill:var(--muted)'},'Mælioddar')+
+    el('rect',{x:cx-34,y:Y0+30,width:68,height:34,rx:6,style:'fill:var(--case)'})+
+    el('text',{x:cx,y:Y0+44,'text-anchor':'middle','font-size':10,'font-family':'IBM Plex Mono, monospace',style:'fill:var(--case-ink)'},'V')+
+    el('circle',{cx:cx-16,cy:Y0+54,r:5,style:'fill:var(--probe-com);stroke:var(--case-ink)'})+
+    el('circle',{cx:cx+16,cy:Y0+54,r:5,style:'fill:var(--probe-pos)'});
+}
+
+function render(){
+  const sol=solve(); const {V,I,short,f}=sol; const {list:ammList,m:ammName}=ammLabels();
+  let base='',flow='',body='',labels='';
+  const deg=new Array(N).fill(0);
+  for(const [k,e] of els){
+    deg[e.a]++;deg[e.b]++;
+    const g=edgeGeom(e), L=S;
+    const tr=`translate(${g.x1},${g.y1}) rotate(${g.ang})`;
+    const color=e.type==='wire'?'var(--wire)':'var(--ink)';
+    base+=el('line',{x1:g.x1,y1:g.y1,x2:g.x2,y2:g.y2,style:`stroke:${color}`,'stroke-width':e.type==='wire'?4:2.5,'stroke-linecap':'round'});
+    const cur=I.get(k);
+    if(showFlow && Math.abs(cur)>1e-7){
+      const d=Math.max(0.25,Math.min(3.5,3.2-0.45*(Math.log10(Math.abs(cur))+6)));
+      flow+=el('line',{class:'flow'+(cur<0?' rev':''),x1:g.x1,y1:g.y1,x2:g.x2,y2:g.y2,style:`--d:${d.toFixed(2)}s`});
+    }
+    const P=(along,perp,side)=>{const sv=side==='A'?g.sideA:[-g.sideA[0],-g.sideA[1]];return [g.x1+g.dir[0]*along+sv[0]*perp,g.y1+g.dir[1]*along+sv[1]*perp];};
+    const labA=(txt,cls)=>{const [x,y]=g.hor?[g.mx,g.my-18]:[g.mx+20,g.my+4];return el('text',{x,y,'text-anchor':g.hor?'middle':'start','font-size':12,'font-family':'IBM Plex Mono, monospace','font-weight':500,style:`fill:var(${cls||'--ink'})`},txt);};
+    if(TYPES[e.type].R){
+      const b=TYPES[e.type].bands;
+      body+=el('g',{transform:tr},
+        el('rect',{x:24,y:-9,width:42,height:18,rx:8,style:'fill:var(--res-body);stroke:var(--ink)','stroke-width':1.5})+
+        b.map((c,i)=>el('rect',{x:31+i*7,y:-8.2,width:4,height:16.4,fill:c})).join('')+
+        el('rect',{x:56,y:-8.2,width:3,height:16.4,fill:'#b8902e'}));
+      labels+=labA(TYPES[e.type].label);
+    } else if(e.type==='rvar'){
+      body+=el('g',{transform:tr},
+        el('rect',{x:24,y:-9,width:42,height:18,rx:8,style:'fill:var(--res-body);stroke:var(--ink)','stroke-width':1.5})+
+        el('path',{d:'M26 15L64 -15M64 -15l-8 1.5M64 -15l-2 7.5',style:'fill:none;stroke:var(--ink)','stroke-width':1.8,'stroke-linecap':'round'}));
+      labels+=labA(fmtR(e.R));
+    } else if(e.type==='bat'){
+      const flip=e.pos===e.b?` translate(${L},0) scale(-1,1)`:'';
+      body+=el('g',{transform:tr+flip},
+        el('rect',{x:37,y:-21,width:16,height:42,style:'fill:var(--board)'})+
+        el('line',{x1:40,y1:-18,x2:40,y2:18,style:'stroke:var(--ink)','stroke-width':2.5})+
+        el('line',{x1:50,y1:-9,x2:50,y2:9,style:'stroke:var(--ink)','stroke-width':6}));
+      const along=e.pos===e.a?33:L-33;
+      const [px,py]=P(along,15,'A');
+      labels+=el('text',{x:px,y:py+5,'text-anchor':'middle','font-size':15,'font-weight':600,'font-family':'IBM Plex Sans, sans-serif',style:'fill:var(--probe-pos)'},'+');
+      const [lx,ly]=g.hor?[g.mx,g.my+34]:[g.mx-26,g.my+4];
+      labels+=el('text',{x:lx,y:ly,'text-anchor':g.hor?'middle':'end','font-size':12,'font-family':'IBM Plex Mono, monospace','font-weight':500,style:'fill:var(--ink)'},fmtE(emf(e)));
+    } else if(e.type==='amm'){
+      body+=el('circle',{cx:g.mx,cy:g.my,r:16,style:'fill:var(--meter);stroke:var(--ink)','stroke-width':2});
+      labels+=el('text',{x:g.mx,y:g.my+5,'text-anchor':'middle','font-size':15,'font-weight':700,'font-family':'IBM Plex Sans, sans-serif',style:'fill:var(--ink)'},'A');
+      const along=e.pos===e.a?22:L-22;
+      const [px,py]=P(along,14,'B');
+      labels+=el('text',{x:px,y:py+5,'text-anchor':'middle','font-size':14,'font-weight':600,'font-family':'IBM Plex Sans, sans-serif',style:'fill:var(--probe-pos)'},'+');
+      const ia=(e.pos===e.a?1:-1)*I.get(k);
+      labels+=labA(ammName.get(e.id)+' '+(short?'OL':fmtI(ia)),'--accent');
+    }
+  }
+  $('gBase').innerHTML=base; $('gFlow').innerHTML=flow; $('gBody').innerHTML=body; $('gLabels').innerHTML=labels;
+  let nodes='';
+  for(let i=0;i<N;i++){
+    const r=deg[i]>=3?5.5:deg[i]>=1?3.5:2.5;
+    nodes+=el('circle',{cx:nx(i),cy:ny(i),r,style:deg[i]?'fill:var(--ink)':'fill:var(--muted);opacity:.55'});
+  }
+  $('gNodes').innerHTML=nodes;
+  renderProbes();
+
+  // multimeter
+  let vtxt='– – –';
+  if(probes.pos!=null && probes.com!=null){
+    const v=f(probes.pos)===f(probes.com)?V[probes.pos]-V[probes.com]:0;
+    vtxt=fmtV(v);
+  }
+  $('lcd').innerHTML=vtxt+'<small>V</small>';
+  $('posName').textContent=probes.pos!=null?nodeName(probes.pos):'ótengdur';
+  $('comName').textContent=probes.com!=null?nodeName(probes.com):'ótengdur';
+  $('amms').innerHTML=ammList.length?ammList.map(e=>{
+    const ia=(e.pos===e.a?1:-1)*I.get(keyOf(e.a,e.b));
+    return `<div class="amm"><span>${ammName.get(e.id)} · ${nodeName(e.pos)}→${nodeName(e.pos===e.a?e.b:e.a)}</span><b>${short?'OL':fmtI(ia)}</b></div>`;
+  }).join(''):'<div class="none">Enginn straummælir í rásinni.</div>';
+  $('warn').hidden=!short;
+  $('undoBtn').disabled=!undo.length;
+  current={vtxt,amm:ammList.map(e=>ammName.get(e.id)+': '+(short?'OL':fmtI((e.pos===e.a?1:-1)*I.get(keyOf(e.a,e.b)))))};
+  save();
+}
+let current=null;
+
+function probeXY(w){
+  if(drag && drag.w===w && dragXY[w]) return dragXY[w];
+  if(probes[w]!=null) return {x:nx(probes[w]),y:ny(probes[w])};
+  return w==='pos'?{x:W/2+90,y:Y0+48}:{x:W/2-90,y:Y0+48};
+}
+function renderProbes(){
+  let s='';
+  for(const w of ['com','pos']){
+    const p=probeXY(w), jx=W/2+(w==='pos'?16:-16), jy=Y0+54;
+    const col=w==='pos'?'var(--probe-pos)':'var(--probe-com)';
+    const cy=Math.max(jy,p.y)+50;
+    s+=el('path',{d:`M${jx} ${jy} C ${jx} ${cy}, ${p.x} ${cy}, ${p.x} ${p.y}`,style:`fill:none;stroke:${col};opacity:.85`,'stroke-width':2.5,'pointer-events':'none'});
+  }
+  for(const w of ['com','pos']){
+    const p=probeXY(w);
+    const fill=w==='pos'?'var(--probe-pos)':'var(--probe-com)';
+    const stroke=w==='pos'?'var(--board)':'var(--probe-com-stroke)';
+    s+=el('g',{class:'probe','data-w':w,transform:`translate(${p.x},${p.y})`},
+      el('circle',{r:18,fill:'transparent'})+
+      el('circle',{r:11,style:`fill:${fill};stroke:${stroke}`,'stroke-width':2})+
+      el('text',{y:4.5,'text-anchor':'middle','font-size':13,'font-weight':700,'font-family':'IBM Plex Sans, sans-serif',fill:'#fff','pointer-events':'none'},w==='pos'?'+':'−'));
+  }
+  $('gProbes').innerHTML=s;
+}
+
+// ---------- interaction ----------
+function snapshot(){undo.push(JSON.stringify({e:[...els.values()],idc})); if(undo.length>60) undo.shift();}
+function place(a,b){
+  const k=keyOf(a,b), ex=els.get(k);
+  if(tool==='erase'){ if(!ex) return; snapshot(); els.delete(k); }
+  else if(tool==='bat'){
+    const E=batValue(); if(E==null) return;
+    snapshot();
+    if(ex && ex.type==='bat'){ if(Math.abs(emf(ex)-E)<1e-9) ex.pos=ex.pos===ex.a?ex.b:ex.a; else { ex.E=E; toast('Spennugjafinn er nú '+fmtE(E)); } }
+    else els.set(k,{type:'bat',E,a:Math.min(a,b),b:Math.max(a,b),pos:Math.min(a,b),id:++idc});
+  }
+  else if(tool==='rvar'){
+    const R=rvarValue(); if(!R) return;
+    if(ex && ex.type==='rvar' && Math.abs(ex.R-R)<1e-9){ snapshot(); els.delete(k); }
+    else if(ex && ex.type==='rvar'){ snapshot(); ex.R=R; toast('Viðnámið er nú '+fmtR(R)); }
+    else { snapshot(); els.set(k,{type:'rvar',R,a:Math.min(a,b),b:Math.max(a,b),pos:Math.min(a,b),id:++idc}); }
+  }
+  else if(ex && ex.type===tool){ snapshot(); if(tool==='amm') ex.pos=ex.pos===ex.a?ex.b:ex.a; else els.delete(k); }
+  else { snapshot(); els.set(k,{type:tool,a:Math.min(a,b),b:Math.max(a,b),pos:Math.min(a,b),id:++idc}); }
+  render();
+}
+function rvarValue(){
+  const v=parseFloat(String($('rvarVal').value).replace(',','.'))*+$('rvarUnit').value;
+  const ok=isFinite(v)&&v>=0.1&&v<=1e7;
+  $('rvarVal').setAttribute('aria-invalid',!ok);
+  const n=$('rvarNote');
+  if(!ok){n.textContent='Sláðu inn gildi á bilinu 0,1 Ω til 10 MΩ.';n.classList.add('err');return null;}
+  n.textContent='Veldu „Breytilegt“ og smelltu á línu. Smelltu á breytilegt viðnám í rásinni til að gefa því nýja gildið.';n.classList.remove('err');
+  return v;
+}
+function batValue(){
+  const v=parseFloat(String($('batVal').value).replace(',','.'));
+  const ok=isFinite(v)&&v>=0&&v<=100;
+  $('batVal').setAttribute('aria-invalid',!ok);
+  const n=$('batNote');
+  if(!ok){n.textContent='Sláðu inn spennu á bilinu 0 til 100 V.';n.classList.add('err');return null;}
+  n.textContent='Veldu „Spennugjafi“ og smelltu á línu. Smelltu á spennugjafa í rásinni til að gefa honum nýju spennuna; smelltu aftur til að snúa honum við.';n.classList.remove('err');
+  return v;
+}
+$('batVal').addEventListener('input',batValue);
+$('batVal').addEventListener('focus',()=>{tool='bat';document.querySelectorAll('.tool').forEach(x=>x.setAttribute('aria-pressed',x.dataset.t===tool));});
+$('rvarVal').addEventListener('input',rvarValue);
+$('rvarVal').addEventListener('focus',()=>{tool='rvar';document.querySelectorAll('.tool').forEach(x=>x.setAttribute('aria-pressed',x.dataset.t===tool));});
+$('gHits').addEventListener('click',ev=>{
+  const t=ev.target.closest('.hit'); if(!t) return;
+  place(+t.dataset.a,+t.dataset.b);
+});
+const svg=$('board');
+function toSvg(ev){const pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+$('gProbes').addEventListener('pointerdown',ev=>{
+  const g=ev.target.closest('.probe'); if(!g) return;
+  ev.preventDefault(); drag={w:g.dataset.w,id:ev.pointerId}; dragXY[drag.w]=toSvg(ev);
+  try{svg.setPointerCapture(ev.pointerId)}catch(_){}
+  renderProbes();
+});
+svg.addEventListener('pointermove',ev=>{ if(!drag) return; const p=toSvg(ev); dragXY[drag.w]={x:Math.max(10,Math.min(W-10,p.x)),y:Math.max(10,Math.min(H-10,p.y))}; renderProbes(); });
+function endDrag(){
+  if(!drag) return;
+  const p=dragXY[drag.w]; let best=null,bd=34;
+  for(let i=0;i<N;i++){const d=Math.hypot(nx(i)-p.x,ny(i)-p.y); if(d<bd){bd=d;best=i;}}
+  probes[drag.w]=best; drag=null; render();
+}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
+
+// tools
+const toolBtn=t=>{const icon=TYPES[t].bands?bandIcon(t):ICONS[t];return `<button class="tool" id="tool-${t}" data-t="${t}" aria-pressed="${t===tool}"><svg viewBox="0 0 34 20">${icon}</svg>${TYPES[t].name}</button>`;};
+$('toolsA').innerHTML=['wire','bat','amm','erase'].map(toolBtn).join('');
+$('toolsB').innerHTML=['r220','r330','r1k','r4k7','r10k','rvar'].map(toolBtn).join('');
+document.querySelector('.side').addEventListener('click',ev=>{
+  const b=ev.target.closest('.tool'); if(!b) return; tool=b.dataset.t;
+  document.querySelectorAll('.tool').forEach(x=>x.setAttribute('aria-pressed',x.dataset.t===tool));
+});
+$('flowChk').addEventListener('change',e=>{showFlow=e.target.checked;render();});
+$('undoBtn').addEventListener('click',()=>{const s=undo.pop(); if(!s) return; const o=JSON.parse(s); els=new Map(o.e.map(e=>[keyOf(e.a,e.b),e])); idc=o.idc; render();});
+$('clearBtn').addEventListener('click',()=>{ if(!els.size) return; snapshot(); els=new Map(); render(); toast('Borðið hreinsað. „Afturkalla“ skilar rásinni.'); });
+
+// presets
+$('presets').innerHTML=Object.entries(PRESETS).map(([k,p])=>`<button class="preset" data-k="${k}" aria-pressed="false">${p.name}</button>`).join('');
+function markPreset(){document.querySelectorAll('.preset').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===preset)); $('task').textContent=PRESETS[preset]?PRESETS[preset].task:'';}
+$('presets').addEventListener('click',ev=>{const b=ev.target.closest('.preset'); if(!b) return; snapshot(); loadPreset(b.dataset.k); markPreset(); render();});
+
+// log
+function renderLog(){
+  $('logBody').innerHTML=log.map((r,i)=>`<tr><td class="num">${i+1}</td><td class="num">${r.v}</td><td class="num">${r.pts}</td><td class="num">${r.a||'–'}</td><td><input id="note-${i}" data-i="${i}" value="${(r.note||'').replace(/"/g,'&quot;')}" placeholder="t.d. yfir 220 Ω"></td></tr>`).join('');
+  $('logEmpty').hidden=log.length>0;
+}
+$('logBody').addEventListener('input',e=>{const i=e.target.dataset.i; if(i!=null){log[i].note=e.target.value; save();}});
+$('logBtn').addEventListener('click',()=>{
+  if(!current) return;
+  log.push({v:current.vtxt==='– – –'?'–':current.vtxt+' V',pts:(probes.pos!=null&&probes.com!=null)?nodeName(probes.pos)+' / '+nodeName(probes.com):'–',a:current.amm.join('; '),note:''});
+  renderLog(); save(); toast('Mæling '+log.length+' skráð');
+});
+$('clearLog').addEventListener('click',()=>{ if(!log.length) return; if($('clearLog').dataset.sure){log=[];renderLog();save();delete $('clearLog').dataset.sure;$('clearLog').textContent='Hreinsa töflu';} else {$('clearLog').dataset.sure='1';$('clearLog').textContent='Ýttu aftur til að staðfesta';setTimeout(()=>{delete $('clearLog').dataset.sure;$('clearLog').textContent='Hreinsa töflu';},3000);} });
+$('copyLog').addEventListener('click',()=>{
+  const tsv=['#\tSpenna\tV+ / COM\tStraumur\tSkýring',...log.map((r,i)=>[i+1,r.v,r.pts,r.a,r.note].join('\t'))].join('\n');
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=tsv;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Afritað – límdu inn í Excel');}catch(_){toast('Gat ekki afritað');}ta.remove();};
+  try{navigator.clipboard.writeText(tsv).then(()=>toast('Afritað – límdu inn í Excel'),fallback);}catch(_){fallback();}
+});
+
+let tt;
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2200);}
+
+// storage
+const SK='rafrasahermir-v1';
+function save(){try{localStorage.setItem(SK,JSON.stringify({cols:COLS,e:[...els.values()],idc,probes,log,preset,showFlow}));}catch(_){}}
+function restore(){
+  try{const o=JSON.parse(localStorage.getItem(SK)||'null'); if(!o) return false;
+    if(o.cols!==COLS){ const m=i=>i==null?null:idx(i%7,Math.floor(i/7));
+      o.e.forEach(e=>{e.a=m(e.a);e.b=m(e.b);e.pos=m(e.pos);});
+      if(o.probes) o.probes={pos:m(o.probes.pos),com:m(o.probes.com)}; }
+    els=new Map(o.e.map(e=>{if(!TYPES[e.type]){e.type='rvar';e.R=33000;} return [keyOf(e.a,e.b),e];})); idc=o.idc||0; probes=o.probes||{pos:null,com:null}; log=o.log||[]; preset=o.preset||''; showFlow=o.showFlow!==false; return true;
+  }catch(_){return false;}
+}
+if(!restore()) loadPreset('rad');
+$('flowChk').checked=showFlow;
+renderStatic(); markPreset(); renderLog(); render();
+})();
+</script>
+
+</body></html>
