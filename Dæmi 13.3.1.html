@@ -1,0 +1,341 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dæmi 13.3.1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false },
+  startup: { typeset: true }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+/* Layout: one narrow reading column; plate diagram opens, then step cards for part a) and b) revealed one at a time */
+:root {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --fg: #1b2233;
+  --muted: #5b6478;
+  --line: #dde1ec;
+  --accent: #2f4fb3;
+  --accent-soft: #e6ebfa;
+  --pos: #c23a2b;
+  --neg: #2a62c9;
+  --ok: #1f7a4d;
+  --ok-soft: #e3f3ea;
+  --warn-soft: #fbf1df;
+  --warn: #8a5a10;
+  --display: "Literata", Georgia, "Times New Roman", serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+    --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+    --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+  --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+  --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+}
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px;
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent);
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: 2rem; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.3rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.problem {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+}
+.problem p { max-width: 62ch; }
+.problem ol { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.diagram { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; }
+.diagram text { font-family: var(--mono); fill: var(--fg); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button {
+  font: inherit; font-weight: 700; cursor: pointer; border-radius: 8px;
+  padding: 10px 18px; border: 1px solid var(--accent);
+}
+button.primary { background: var(--accent); color: var(--surface); }
+button.ghost { background: transparent; color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.progress { font-family: var(--mono); font-size: 14px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.partlabel {
+  font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: var(--accent);
+  padding-top: 8px; border-top: 1px solid var(--line);
+}
+.step {
+  display: grid; grid-template-columns: 40px 1fr; gap: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px;
+}
+.step.new { animation: rise .35s ease; }
+@keyframes rise { from { opacity: .3; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.num {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); font-family: var(--mono); font-size: 16px;
+}
+.content { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.math { overflow-x: auto; overflow-y: hidden; }
+.note { color: var(--muted); font-size: 15px; }
+.tip { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; font-size: 15px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.answer { background: var(--ok-soft); border-color: transparent; }
+.answer .num { background: var(--ok); color: var(--surface); }
+.answer h2 { color: var(--ok); }
+.mistakes { background: var(--warn-soft); border-radius: 10px; padding: 16px 20px; }
+.mistakes h2 { color: var(--warn); font-size: 1.1rem; margin-bottom: 8px; }
+.mistakes ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  .step { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
+  .progress { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step.new { animation: none; }
+  .bar span { transition: none; }
+}
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">EÐLI · Vinna og spenna í rafsviði</div>
+    <h1>Dæmi 13.3.1</h1>
+  </header>
+
+  <section class="problem" aria-label="Dæmið">
+    <p>Hleðslan <strong>+65 nC</strong> er flutt <strong>12 mm</strong> leið í einsleitu rafsviði <strong>E = 500 V/m</strong>. Hún er flutt <strong>á móti rafsviðinu</strong>, þ.e. í átt að jákvæðu plötunni.</p>
+    <svg class="diagram" viewBox="0 0 560 200" role="img" aria-label="Jákvæð plata til vinstri og neikvæð til hægri. Rafsviðið vísar til hægri. Hleðslan +65 nC er færð 12 mm til vinstri, á móti sviðinu.">
+      <rect x="40" y="20" width="14" height="160" fill="var(--pos)"/>
+      <rect x="506" y="20" width="14" height="160" fill="var(--neg)"/>
+      <text x="47" y="196" text-anchor="middle" font-size="16" style="fill:var(--pos)">+</text>
+      <text x="513" y="196" text-anchor="middle" font-size="16" style="fill:var(--neg)">−</text>
+      <g stroke="var(--muted)" stroke-width="1.5" fill="var(--muted)">
+        <line x1="70" y1="40" x2="480" y2="40"/><polygon points="492,40 480,34 480,46"/>
+        <line x1="70" y1="160" x2="480" y2="160"/><polygon points="492,160 480,154 480,166"/>
+      </g>
+      <text x="280" y="32" text-anchor="middle" font-size="14">E = 500 V/m</text>
+      <circle cx="210" cy="100" r="18" fill="none" stroke="var(--pos)" stroke-width="2" stroke-dasharray="4 4"/>
+      <circle cx="370" cy="100" r="18" fill="var(--pos)"/>
+      <text x="370" y="107" text-anchor="middle" font-size="20" style="fill:#fff">+</text>
+      <text x="370" y="70" text-anchor="middle" font-size="13">upphaf</text>
+      <text x="210" y="70" text-anchor="middle" font-size="13">endir</text>
+      <g stroke="var(--accent)" stroke-width="2.5" fill="var(--accent)">
+        <line x1="345" y1="100" x2="244" y2="100"/><polygon points="232,100 246,93 246,107"/>
+      </g>
+      <line x1="210" y1="134" x2="370" y2="134" stroke="var(--muted)" stroke-width="1.5"/>
+      <line x1="210" y1="127" x2="210" y2="141" stroke="var(--muted)" stroke-width="1.5"/>
+      <line x1="370" y1="127" x2="370" y2="141" stroke="var(--muted)" stroke-width="1.5"/>
+      <text x="290" y="128" text-anchor="middle" font-size="14">d = 12 mm</text>
+    </svg>
+    <ol>
+      <li><strong>a)</strong> Hve mikla vinnu þarf að framkvæma á hleðsluna?</li>
+      <li><strong>b)</strong> Hve mikið breyttist spennan?</li>
+      <li><strong>c)</strong> Hve mikið breytist rafstöðuorka hleðslunnar?</li>
+    </ol>
+  </section>
+
+  <div class="controls">
+    <button class="primary" id="next">Sýna fyrsta skref</button>
+    <button class="ghost" id="all">Sýna allt</button>
+    <button class="ghost" id="reset">Byrja aftur</button>
+    <span class="progress" id="progress">0 / 9 skref</span>
+  </div>
+  <div class="bar" aria-hidden="true"><span id="barfill"></span></div>
+
+  <div class="steps" id="steps">
+    <article class="step" hidden>
+      <div class="num">1</div>
+      <div class="content">
+        <h2>Skrifa niður það sem er gefið</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Stærð</th><th>Gildi</th><th>Í SI-einingum</th></tr></thead>
+            <tbody>
+              <tr><td>Hleðsla</td><td>\(q = +65\ \text{nC}\)</td><td>\(6{,}5 \cdot 10^{-8}\ \text{C}\)</td></tr>
+              <tr><td>Vegalengd</td><td>\(d = 12\ \text{mm}\)</td><td>\(0{,}012\ \text{m}\)</td></tr>
+              <tr><td>Rafsvið</td><td>\(E = 500\ \text{V/m}\)</td><td>\(500\ \text{N/C}\)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Óþekkt:</strong> a) vinnan \(W\) &nbsp; b) spennubreytingin \(\Delta V\) &nbsp; c) orkubreytingin \(\Delta U\)</p>
+        <p class="tip">Munið: <strong>n</strong> (nanó) þýðir \(10^{-9}\), 1 mm = 0,001 m og 1 V/m = 1 N/C.</p>
+      </div>
+    </article>
+
+    <div class="partlabel" hidden>a) Vinnan sem þarf að framkvæma</div>
+
+    <article class="step" hidden>
+      <div class="num">2</div>
+      <div class="content">
+        <h2>Reikna vinnuna</h2>
+        <p>Hleðslan er jákvæð og er færð <strong>á móti sviðinu</strong>, svo við þurfum að ýta henni áfram. Vinnan sem við framkvæmum er:</p>
+        <div class="math">\[W = q\,E\,d\]</div>
+        <div class="math">\[W = (6{,}5 \cdot 10^{-8})\,(500)\,(0{,}012) = 3{,}9 \cdot 10^{-7}\ \text{J}\]</div>
+        <p>Vinnan er jákvæð. Orkan sem við leggjum til geymist sem <strong>rafstöðuorka</strong> hleðslunnar.</p>
+        <p class="note">Rafsviðið sjálft vinnur jafnmikla neikvæða vinnu, \(-3{,}9 \cdot 10^{-7}\) J, því krafturinn frá því vísar á móti hreyfingunni.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">3</div>
+      <div class="content">
+        <h2>Athuga einingar</h2>
+        <div class="math">\[\text{C} \cdot \frac{\text{V}}{\text{m}} \cdot \text{m} = \text{C·V} = \text{J}\]</div>
+        <p>Vinna er mæld í joulum. ✓</p>
+      </div>
+    </article>
+
+    <div class="partlabel" hidden>b) Breytingin á spennunni</div>
+
+    <article class="step" hidden>
+      <div class="num">4</div>
+      <div class="content">
+        <h2>Velja jöfnu: vinna og spenna</h2>
+        <div class="math">\[W = \Delta V \cdot q\]</div>
+        <p>Vinnan sem þarf til að flytja hleðslu milli tveggja staða er hleðslan sinnum spennumunurinn milli staðanna. Vinnuna þekkjum við úr a) lið og hleðslan er gefin.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">5</div>
+      <div class="content">
+        <h2>Einangra \(\Delta V\) og reikna</h2>
+        <p>Deilum báðum megin með \(q\):</p>
+        <div class="math">\[\Delta V = \frac{W}{q}\]</div>
+        <div class="math">\[\Delta V = \frac{3{,}9 \cdot 10^{-7}\ \text{J}}{6{,}5 \cdot 10^{-8}\ \text{C}} = 6{,}0\ \text{V}\]</div>
+        <p class="note">Eining: J/C = V. ✓</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">6</div>
+      <div class="content">
+        <h2>Til samanburðar: \(\Delta V = E\,d\)</h2>
+        <p>Í einsleitu rafsviði má líka reikna spennubreytinguna beint út frá sviðinu og vegalengdinni, án þess að nota hleðsluna:</p>
+        <div class="math">\[\Delta V = E\,d\]</div>
+        <div class="math">\[\Delta V = (500\ \text{V/m})\,(0{,}012\ \text{m}) = 6{,}0\ \text{V}\]</div>
+        <p>Sama svar. ✓</p>
+        <p class="note">Spennubreytingin er óháð hleðslunni. Hún segir aðeins til um hvar í sviðinu við erum.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">7</div>
+      <div class="content">
+        <h2>Hækkar spennan eða lækkar?</h2>
+        <p>Rafsviðið vísar alltaf frá hærri spennu til lægri spennu. Hleðslan var færð <strong>á móti sviðinu</strong>, í átt að jákvæðu plötunni, svo spennan <strong>hækkar</strong>.</p>
+        <p class="note">Þetta passar við a) lið: við þurftum að leggja til jákvæða vinnu til að koma jákvæðu hleðslunni á staðinn með hærri spennu.</p>
+      </div>
+    </article>
+
+    <div class="partlabel" hidden>c) Breytingin á rafstöðuorku hleðslunnar</div>
+
+    <article class="step" hidden>
+      <div class="num">8</div>
+      <div class="content">
+        <h2>Orkubreyting = hleðsla sinnum spennubreyting</h2>
+        <div class="math">\[\Delta U = q\,\Delta V = (6{,}5 \cdot 10^{-8}\ \text{C})\,(6{,}0\ \text{V}) = 3{,}9 \cdot 10^{-7}\ \text{J}\]</div>
+        <p>Orkan <strong>eykst</strong>, því jákvæð hleðsla fór á stað með hærri spennu. Þetta er nákvæmlega sú vinna sem við lögðum til í a) lið:</p>
+        <div class="math">\[\Delta U = W_{\text{ytri}} = -W_{\text{svið}}\]</div>
+        <p class="note">Ef við slepptum hleðslunni núna myndi sviðið ýta henni til baka og breyta þessari stöðuorku í hreyfiorku.</p>
+      </div>
+    </article>
+
+    <article class="step answer" hidden>
+      <div class="num">9</div>
+      <div class="content">
+        <h2>Svör</h2>
+        <div class="math">\[\text{a)}\quad \boxed{W = 3{,}9 \cdot 10^{-7}\ \text{J}}\]</div>
+        <div class="math">\[\text{b)}\quad \boxed{\Delta V = +6{,}0\ \text{V}}\]</div>
+        <div class="math">\[\text{c)}\quad \boxed{\Delta U = +3{,}9 \cdot 10^{-7}\ \text{J}}\]</div>
+        <p>Það þarf að framkvæma <strong>3,9 · 10⁻⁷ J</strong> vinnu á hleðsluna, spennan <strong>hækkar um 6,0 V</strong> og rafstöðuorkan <strong>eykst um 3,9 · 10⁻⁷ J</strong>.</p>
+      </div>
+    </article>
+  </div>
+
+  <aside class="mistakes" id="mistakes" hidden>
+    <h2>Algeng mistök</h2>
+    <ul>
+      <li>Að gleyma að breyta nC í C og mm í m</li>
+      <li>Að rugla saman vinnunni sem við framkvæmum og vinnunni sem rafsviðið framkvæmir. Þær hafa gagnstæð formerki</li>
+      <li>Að halda að spennan lækki. Á leið á móti sviðinu, í átt að + plötunni, hækkar spennan alltaf</li>
+      <li>Að svara b) lið í joulum. Spenna er mæld í voltum (J/C)</li>
+      <li>Að rugla saman spennu (V) og rafstöðuorku (J). Spennan er orka á hverja hleðslueiningu</li>
+    </ul>
+  </aside>
+</main>
+
+<script>
+(function () {
+  const items = Array.from(document.querySelectorAll('#steps > *'));
+  const total = document.querySelectorAll('#steps .step').length;
+  const next = document.getElementById('next');
+  const all = document.getElementById('all');
+  const reset = document.getElementById('reset');
+  const progress = document.getElementById('progress');
+  const barfill = document.getElementById('barfill');
+  const mistakes = document.getElementById('mistakes');
+  let idx = 0, shown = 0;
+
+  function update() {
+    progress.textContent = shown + ' / ' + total + ' skref';
+    barfill.style.width = (shown / total * 100) + '%';
+    const done = shown >= total;
+    next.disabled = done; all.disabled = done;
+    next.textContent = shown === 0 ? 'Sýna fyrsta skref' : (done ? 'Lausn lokið' : 'Næsta skref');
+    mistakes.hidden = !done;
+  }
+  function revealNext(scroll) {
+    while (idx < items.length) {
+      const el = items[idx++];
+      el.hidden = false;
+      if (el.classList.contains('step')) {
+        el.classList.remove('new'); void el.offsetWidth; el.classList.add('new');
+        shown++;
+        if (scroll) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+        return;
+      }
+    }
+  }
+  next.addEventListener('click', function () { revealNext(true); update(); });
+  all.addEventListener('click', function () { while (shown < total) revealNext(false); update(); });
+  reset.addEventListener('click', function () {
+    items.forEach(function (el) { el.hidden = true; el.classList.remove('new'); });
+    idx = 0; shown = 0; update();
+    window.scrollTo({ top: 0 });
+  });
+  update();
+})();
+</script>
+
+</body></html>

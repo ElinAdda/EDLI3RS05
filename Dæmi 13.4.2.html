@@ -1,0 +1,300 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dæmi 13.4.2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false },
+  startup: { typeset: true }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js"></script>
+<style>
+/* Layout: one narrow reading column; wire diagram opens, then step cards for part a) and b) revealed one at a time */
+:root {
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --fg: #1b2233;
+  --muted: #5b6478;
+  --line: #dde1ec;
+  --accent: #2f4fb3;
+  --accent-soft: #e6ebfa;
+  --pos: #c23a2b;
+  --neg: #2a62c9;
+  --ok: #1f7a4d;
+  --ok-soft: #e3f3ea;
+  --warn-soft: #fbf1df;
+  --warn: #8a5a10;
+  --display: "Literata", Georgia, "Times New Roman", serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+    --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+    --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151e; --surface: #1b2030; --fg: #e7eaf3; --muted: #9aa3b8; --line: #2c3347;
+  --accent: #8ea6f2; --accent-soft: #232c48; --pos: #f07a6a; --neg: #7ea6f5;
+  --ok: #6fd3a0; --ok-soft: #173326; --warn-soft: #33281a; --warn: #f0c27a;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+}
+.wrap {
+  max-width: 720px; margin: 0 auto;
+  padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px;
+}
+.eyebrow {
+  font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent);
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: 2rem; line-height: 1.2; margin: 4px 0 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 500; font-size: 1.3rem; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.problem {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+}
+.problem p { max-width: 62ch; }
+.problem ol { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.diagram { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; }
+.diagram text { font-family: var(--mono); fill: var(--fg); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button {
+  font: inherit; font-weight: 700; cursor: pointer; border-radius: 8px;
+  padding: 10px 18px; border: 1px solid var(--accent);
+}
+button.primary { background: var(--accent); color: var(--surface); }
+button.ghost { background: transparent; color: var(--accent); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.progress { font-family: var(--mono); font-size: 14px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+.steps { display: flex; flex-direction: column; gap: 14px; }
+.partlabel {
+  font-family: var(--display); font-weight: 700; font-size: 1.15rem; color: var(--accent);
+  padding-top: 8px; border-top: 1px solid var(--line);
+}
+.step {
+  display: grid; grid-template-columns: 40px 1fr; gap: 14px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px;
+}
+.step.new { animation: rise .35s ease; }
+@keyframes rise { from { opacity: .3; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.num {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--accent-soft); color: var(--accent); font-family: var(--mono); font-size: 16px;
+}
+.content { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.math { overflow-x: auto; overflow-y: hidden; }
+.note { color: var(--muted); font-size: 15px; }
+.tip { background: var(--accent-soft); border-radius: 8px; padding: 10px 14px; font-size: 15px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.answer { background: var(--ok-soft); border-color: transparent; }
+.answer .num { background: var(--ok); color: var(--surface); }
+.answer h2 { color: var(--ok); }
+.mistakes { background: var(--warn-soft); border-radius: 10px; padding: 16px 20px; }
+.mistakes h2 { color: var(--warn); font-size: 1.1rem; margin-bottom: 8px; }
+.mistakes ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  .step { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
+  .progress { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step.new { animation: none; }
+  .bar span { transition: none; }
+}
+</style>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">EÐLI · Rafstraumur</div>
+    <h1>Dæmi 13.4.2</h1>
+  </header>
+
+  <section class="problem" aria-label="Dæmið">
+    <p>Um vír streymir <strong>2,5 A</strong> straumur. Hleðsla rafeindar er <strong>1,602 · 10⁻¹⁹ C</strong>.</p>
+    <svg class="diagram" viewBox="0 0 560 170" role="img" aria-label="Vír með straumnum 2,5 A til hægri. Rafeindirnar hreyfast til vinstri, á móti straumstefnunni, og fara í gegnum þversnið vírsins.">
+      <rect x="30" y="60" width="500" height="50" rx="25" fill="var(--accent-soft)" stroke="var(--muted)" stroke-width="1.5"/>
+      <ellipse cx="280" cy="85" rx="10" ry="25" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/>
+      <text x="280" y="135" text-anchor="middle" font-size="13">þversnið</text>
+      <g fill="var(--neg)">
+        <circle cx="90" cy="78" r="9"/><circle cx="150" cy="94" r="9"/><circle cx="215" cy="76" r="9"/>
+        <circle cx="345" cy="92" r="9"/><circle cx="410" cy="78" r="9"/><circle cx="470" cy="94" r="9"/>
+      </g>
+      <g font-size="14" text-anchor="middle" style="fill:#fff">
+        <text x="90" y="83">−</text><text x="150" y="99">−</text><text x="215" y="81">−</text>
+        <text x="345" y="97">−</text><text x="410" y="83">−</text><text x="470" y="99">−</text>
+      </g>
+      <g stroke="var(--fg)" stroke-width="2.5" fill="var(--fg)">
+        <line x1="200" y1="30" x2="350" y2="30"/><polygon points="362,30 348,23 348,37"/>
+      </g>
+      <text x="280" y="20" text-anchor="middle" font-size="14">I = 2,5 A</text>
+      <g stroke="var(--neg)" stroke-width="2" fill="var(--neg)">
+        <line x1="350" y1="150" x2="220" y2="150"/><polygon points="208,150 222,143 222,157"/>
+      </g>
+      <text x="430" y="155" text-anchor="middle" font-size="13">rafeindir</text>
+    </svg>
+    <ol>
+      <li><strong>a)</strong> Hvað flytur vírinn mikla hleðslu á hverri sekúndu?</li>
+      <li><strong>b)</strong> Hvað fara margar rafeindir framhjá hverjum stað í vírnum á hverri sekúndu?</li>
+    </ol>
+  </section>
+
+  <div class="controls">
+    <button class="primary" id="next">Sýna fyrsta skref</button>
+    <button class="ghost" id="all">Sýna allt</button>
+    <button class="ghost" id="reset">Byrja aftur</button>
+    <span class="progress" id="progress">0 / 6 skref</span>
+  </div>
+  <div class="bar" aria-hidden="true"><span id="barfill"></span></div>
+
+  <div class="steps" id="steps">
+    <article class="step" hidden>
+      <div class="num">1</div>
+      <div class="content">
+        <h2>Skrifa niður það sem er gefið</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Stærð</th><th>Gildi</th><th>Í SI-einingum</th></tr></thead>
+            <tbody>
+              <tr><td>Straumur</td><td>\(I = 2{,}5\ \text{A}\)</td><td>\(2{,}5\ \text{C/s}\)</td></tr>
+              <tr><td>Tími</td><td>\(t = 1\ \text{s}\)</td><td>\(1\ \text{s}\)</td></tr>
+              <tr><td>Hleðsla rafeindar</td><td>\(e\)</td><td>\(1{,}602 \cdot 10^{-19}\ \text{C}\)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Óþekkt:</strong> a) hleðslan \(q\) &nbsp; b) fjöldi rafeinda \(n\)</p>
+        <p class="tip">Munið: 1 A = 1 C/s. Eitt amper þýðir að eitt coulomb fer framhjá á hverri sekúndu.</p>
+      </div>
+    </article>
+
+    <div class="partlabel" hidden>a) Hleðslan á hverri sekúndu</div>
+
+    <article class="step" hidden>
+      <div class="num">2</div>
+      <div class="content">
+        <h2>Velja jöfnu: skilgreining straums</h2>
+        <div class="math">\[I = \frac{q}{t}\]</div>
+        <p>Straumur er hleðslan sem fer framhjá ákveðnum stað í vírnum deilt með tímanum sem það tekur.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">3</div>
+      <div class="content">
+        <h2>Einangra \(q\) og reikna</h2>
+        <p>Margföldum báðum megin með \(t\):</p>
+        <div class="math">\[q = I \cdot t\]</div>
+        <div class="math">\[q = (2{,}5\ \text{A})\,(1\ \text{s}) = 2{,}5\ \text{C}\]</div>
+        <p class="note">Eining: A·s = (C/s)·s = C. ✓</p>
+      </div>
+    </article>
+
+    <div class="partlabel" hidden>b) Fjöldi rafeinda á hverri sekúndu</div>
+
+    <article class="step" hidden>
+      <div class="num">4</div>
+      <div class="content">
+        <h2>Velja jöfnu: hleðsla er margfeldi af hleðslu rafeindar</h2>
+        <div class="math">\[q = n \cdot e\]</div>
+        <p>Heildarhleðslan sem fer framhjá er fjöldi rafeinda sinnum hleðsla hverrar rafeindar. Hleðsluna \(q\) þekkjum við úr a) lið.</p>
+      </div>
+    </article>
+
+    <article class="step" hidden>
+      <div class="num">5</div>
+      <div class="content">
+        <h2>Einangra \(n\) og reikna</h2>
+        <p>Deilum báðum megin með \(e\):</p>
+        <div class="math">\[n = \frac{q}{e}\]</div>
+        <div class="math">\[n = \frac{2{,}5\ \text{C}}{1{,}602 \cdot 10^{-19}\ \text{C}} \approx 1{,}56 \cdot 10^{19}\]</div>
+        <p class="note">Einingarnar styttast út, svo svarið er hreinn fjöldi, án einingar. ✓</p>
+      </div>
+    </article>
+
+    <article class="step answer" hidden>
+      <div class="num">6</div>
+      <div class="content">
+        <h2>Svör</h2>
+        <div class="math">\[\text{a)}\quad \boxed{q = 2{,}5\ \text{C}}\]</div>
+        <div class="math">\[\text{b)}\quad \boxed{n \approx 1{,}56 \cdot 10^{19}\ \text{rafeindir}}\]</div>
+        <p>Á hverri sekúndu fara <strong>2,5 C</strong> framhjá hverjum stað í vírnum. Það eru um <strong>15 600 000 000 000 000 000</strong> rafeindir, þ.e. 15,6 trilljónir.</p>
+      </div>
+    </article>
+  </div>
+
+  <aside class="mistakes" id="mistakes" hidden>
+    <h2>Algeng mistök</h2>
+    <ul>
+      <li>Að margfalda með hleðslu rafeindar í stað þess að deila</li>
+      <li>Að slá veldið vitlaust inn í reiknivélina. Notið EXP- eða ×10ˣ-takkann</li>
+      <li>Að fá neikvæðan fjölda rafeinda með því að setja mínus á hleðslu rafeindar. Fjöldi er alltaf jákvæður</li>
+    </ul>
+  </aside>
+</main>
+
+<script>
+(function () {
+  const items = Array.from(document.querySelectorAll('#steps > *'));
+  const total = document.querySelectorAll('#steps .step').length;
+  const next = document.getElementById('next');
+  const all = document.getElementById('all');
+  const reset = document.getElementById('reset');
+  const progress = document.getElementById('progress');
+  const barfill = document.getElementById('barfill');
+  const mistakes = document.getElementById('mistakes');
+  let idx = 0, shown = 0;
+
+  function update() {
+    progress.textContent = shown + ' / ' + total + ' skref';
+    barfill.style.width = (shown / total * 100) + '%';
+    const done = shown >= total;
+    next.disabled = done; all.disabled = done;
+    next.textContent = shown === 0 ? 'Sýna fyrsta skref' : (done ? 'Lausn lokið' : 'Næsta skref');
+    mistakes.hidden = !done;
+  }
+  function revealNext(scroll) {
+    while (idx < items.length) {
+      const el = items[idx++];
+      el.hidden = false;
+      if (el.classList.contains('step')) {
+        el.classList.remove('new'); void el.offsetWidth; el.classList.add('new');
+        shown++;
+        if (scroll) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+        return;
+      }
+    }
+  }
+  next.addEventListener('click', function () { revealNext(true); update(); });
+  all.addEventListener('click', function () { while (shown < total) revealNext(false); update(); });
+  reset.addEventListener('click', function () {
+    items.forEach(function (el) { el.hidden = true; el.classList.remove('new'); });
+    idx = 0; shown = 0; update();
+    window.scrollTo({ top: 0 });
+  });
+  update();
+})();
+</script>
+
+</body></html>
