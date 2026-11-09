@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brauðbrettishermir – rafhlaða, viðnám og díóða</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--acc:#2563eb;--ok:#15803d;--warn:#b45309;--bad:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:18px 20px 4px}
+h1{font-size:21px;margin:0}
+header p{margin:4px 0 0;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 20px}
+.group{display:flex;gap:6px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:14px}
+.group label{display:flex;align-items:center;gap:5px;cursor:pointer}
+button,select{font:inherit;font-size:14px;border:1px solid #d1d5db;background:#fff;color:var(--ink);border-radius:8px;padding:5px 10px;cursor:pointer}
+button:hover{background:#f3f4f6}
+button.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.pri:hover{background:#1d4ed8}
+button.danger{color:var(--bad);border-color:#fecaca}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;padding:0 20px 16px;align-items:start}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px}
+svg{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.info{font-size:14px;padding:8px 8px 4px;color:#374151;min-height:3em;border-top:1px solid var(--line);margin-top:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.card h3{font-size:15px;margin:0 0 8px}
+.status{border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.status .st{font-weight:600}
+.status .big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.status.ok{background:#dcfce7;color:#14532d}
+.status.off{background:#f1f5f9;color:#334155}
+.status.bad{background:#fee2e2;color:#7f1d1d}
+#issues{margin:0;padding-left:18px;font-size:14px}
+#issues li{margin:4px 0}
+#issues li.good{color:var(--ok)}
+#issues li.warn{color:var(--warn)}
+#issues li.bad{color:var(--bad)}
+.msg{background:#fee2e2;border:1px solid #fecaca;color:#7f1d1d;border-radius:10px;padding:8px 10px;font-size:14px;margin-bottom:8px}
+.msg button{margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:4px 4px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:12px}
+.note{font-size:12px;color:var(--muted);margin:6px 0 0}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.small{font-size:13px;color:#374151}
+.preset h3{color:#1e3a8a}
+.preset{background:#eff6ff;border-color:#bfdbfe}
+.help{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;padding:0 20px 28px}
+.help .card{margin:0}
+.help ul,.help ol{padding-left:18px;margin:6px 0}
+.help li{margin:3px 0;font-size:14px}
+kbd{font:12px ui-monospace,monospace;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;padding:0 4px}
+/* SVG */
+.boardbg{fill:#f5f2ea;stroke:#d8d1c2;stroke-width:1.5}
+svg.transparent .boardbg{fill-opacity:.55}
+.groove{fill:#e4ddcd}
+.hole{fill:#3b4048}
+.hole.on{fill:#16a34a}
+.strip{fill:#c3c9d1;stroke:#8f99a6;stroke-width:1}
+.lbl{font:9px system-ui,sans-serif;fill:#8a8478;text-anchor:middle}
+.rl{font:bold 13px system-ui,sans-serif;text-anchor:middle}
+.hovnet{fill:rgba(22,163,74,.16);stroke:#16a34a;stroke-width:1.5}
+.selnet{fill:rgba(37,99,235,.10);stroke:#2563eb;stroke-width:1.2;stroke-dasharray:4 3}
+.cand{fill:none;stroke:#f59e0b;stroke-width:3}
+.badc{fill:none;stroke:#dc2626;stroke-width:3}
+.leg{stroke:#9ca3af;stroke-width:2.5;stroke-linecap:round}
+.hit{stroke:#000;stroke-opacity:0;stroke-width:14;fill:none;stroke-linecap:round}
+.handle{fill:#fff;fill-opacity:0;stroke:#2563eb;stroke-opacity:0;stroke-width:2;cursor:grab}
+.handle:hover{stroke-opacity:.6}
+.sel .handle{stroke-opacity:1}
+.comp{cursor:move}
+.clbl{font:600 10px system-ui,sans-serif;fill:#111;paint-order:stroke;stroke:#fff;stroke-width:3px;text-anchor:middle;pointer-events:none}
+.ak{font:600 8px system-ui,sans-serif;fill:#374151;paint-order:stroke;stroke:#fff;stroke-width:2.5px;text-anchor:middle;pointer-events:none}
+.lead{fill:none;stroke-width:4;stroke-linecap:round}
+.potbar{border-top:1px solid var(--line);margin-top:4px;padding:6px 8px 2px}
+.potrow{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0;flex-wrap:wrap}
+.potrow input{flex:1;min-width:160px;accent-color:#1d4ed8}
+.potrow .pn{font-weight:700;color:#1d4ed8;min-width:22px}
+.potrow .pe{font-size:12px;color:var(--muted)}
+.potrow .pv{font-size:13px;color:#374151;font-variant-numeric:tabular-nums;min-width:200px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Brauðbrettishermir – rafhlaða, viðnám og díóða</h1>
+  <p>Sjáðu hvernig íhlutir tengjast saman í gegnum 400 pinna brauðbretti. Dragðu fætur íhlutanna á milli gata og fylgstu með straumnum.</p>
+</header>
+
+<div class="toolbar">
+  <div class="group">
+    <span>Rafhlaða</span>
+    <select id="batV">
+      <option value="1.5">1,5 V</option>
+      <option value="3">3 V</option>
+      <option value="4.5">4,5 V</option>
+      <option value="6">6 V</option>
+      <option value="9" selected>9 V</option>
+    </select>
+    <label><input type="checkbox" id="batOn"> Kveikt</label>
+  </div>
+  <div class="group">
+    <button data-add="res">+ Viðnám</button>
+    <button data-add="dio">+ Díóða</button>
+    <button data-add="pot">+ Stilliviðnám</button>
+    <button data-add="wire">+ Vír</button>
+  </div>
+  <div class="group">
+    <label><input type="checkbox" id="strips"> Sýna leiðarana inni í brettinu</label>
+  </div>
+  <div class="group">
+    <span>Dæmi</span>
+    <select id="preset">
+      <option value="rett">1. Rétt tengd rás</option>
+      <option value="samiDalkur">2. Villa: viðnám í einum dálki</option>
+      <option value="ofug">3. Villa: díóða snýr öfugt</option>
+      <option value="rangurDalkur">4. Villa: rangur dálkur</option>
+      <option value="samiStrimill">5. Villa: díóða í einum dálki</option>
+      <option value="rongBraut">6. Villa: röng spennubraut</option>
+      <option value="potBirta">7. Stilliviðnám stýrir birtu</option>
+      <option value="potDeilir">8. Stilliviðnám sem spennudeilir</option>
+      <option value="maelaU">9. Fjölmælir: spenna yfir viðnám</option>
+      <option value="maelaI">10. Fjölmælir: straumur gegnum viðnám</option>
+      <option value="maelaVilla">11. Villa: straummælir hliðtengdur</option>
+      <option value="tomt">Autt bretti – byggðu sjálf(ur)</option>
+    </select>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="stage">
+    <svg id="svg" viewBox="0 0 845 530" aria-label="Brauðbretti">
+      <defs>
+        <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="5"/></filter>
+      </defs>
+      <g id="gBoard"></g>
+      <g id="gStrips"></g>
+      <g id="gHL"></g>
+      <g id="gHoles"></g>
+      <g id="gComps"></g>
+      <g id="gCand" style="pointer-events:none"></g>
+    </svg>
+    <div class="potbar" id="potbar" style="display:none"></div>
+    <div class="info" id="info"></div>
+  </div>
+  <aside>
+    <div class="card preset" id="presetInfo"></div>
+    <div class="card">
+      <div id="status" class="status"></div>
+      <div id="msg"></div>
+      <ul id="issues"></ul>
+    </div>
+    <div class="card" id="selp"></div>
+    <div class="card">
+      <h3>Mælingar</h3>
+      <table id="meas"></table>
+      <p class="note">Spenna og straumur díóðu eru mæld frá anóðu (A) til katóðu (K). Neikvæð spenna merkir bakspennu.</p>
+    </div>
+  </aside>
+</div>
+
+<section class="help">
+  <div class="card">
+    <h3>Svona er brauðbrettið tengt</h3>
+    <ul>
+      <li>Brettið hefur <b>30 dálka</b> (1–30) og raðir <b>a–e</b> og <b>f–j</b>.</li>
+      <li>Í hverjum dálki eru götin <b>a–e</b> tengd saman með málmþynnu (5 göt). Sama gildir um <b>f–j</b>.</li>
+      <li><b>Miðrásin</b> skilur á milli: e10 og f10 eru <i>ekki</i> tengd.</li>
+      <li><b>Spennubrautirnar</b> (+ og −) efst og neðst liggja eftir endilöngu brettinu. Efri og neðri brautir eru ekki tengdar saman nema með vír.</li>
+      <li>Hakaðu við „Sýna leiðarana“ til að sjá málmþynnurnar.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Svona notarðu herminn</h3>
+    <ul>
+      <li>Dragðu <b>enda</b> (fót) íhlutar til að setja hann í annað gat.</li>
+      <li>Dragðu <b>búk</b> íhlutar til að færa hann allan.</li>
+      <li>Smelltu á íhlut til að velja hann – þá sérðu hvaða strimlum fætur hans tengjast og getur breytt honum. <kbd>Delete</kbd> eyðir.</li>
+      <li>Færðu bendilinn yfir gat (eða snertu það) til að sjá hvaða göt tengjast og hver spennan er þar.</li>
+      <li>Smelltu á rofann á rafhlöðunni til að kveikja og slökkva.</li>
+      <li><b>Fjölmælir:</b> dragðu rauða og svarta mælioddinn í göt á brettinu og veldu V eða mA á mælinum. Slepptu oddi utan brettisins til að taka hann úr.</li>
+      <li><b>Stilliviðnám</b> hefur þrjá fætur og situr yfir miðrásinni: miðfóturinn öðrum megin, fætur 1 og 3 hinum megin. Milli fóta 1 og 3 er alltaf allt viðnámið; miðfóturinn (2) rennur eftir viðnáminu þegar snúið er. Snúðu því með sleðanum undir brettinu.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Verkefni</h3>
+    <ol>
+      <li>Mældu spennuna yfir R1, yfir D1 og yfir rafhlöðuna (dæmi 9). Hvaða samband er á milli talnanna?</li>
+      <li>Mældu strauminn gegnum R1 (dæmi 10) og reiknaðu viðnámið með lögmáli Ohms, R = U/I.</li>
+      <li>Í dæmi 1: reiknaðu strauminn með <i>I</i> = (<i>U</i> − <i>U</i><sub>D</sub>)/<i>R</i> og berðu saman við herminn. (Gerðu ráð fyrir <i>U</i><sub>D</sub> ≈ 1,8 V fyrir rauða LED.)</li>
+      <li>Hvaða minnsta viðnám má nota við 9 V svo straumurinn um rauða LED fari ekki yfir 20 mA?</li>
+      <li>Farðu í gegnum dæmi 2–6. Spáðu fyrst fyrir um hvað gerist, kveiktu svo og lagaðu villuna.</li>
+      <li>Tengdu tvær díóður í röð og svo hlið við hlið. Hvað breytist?</li>
+      <li>Í dæmi 8: hver er spennan á miðfætinum þegar sleðinn er í miðjunni? Af hverju lýsir græna díóðan ekki fyrr en spennan þar er orðin nokkuð há?</li>
+    </ol>
+  </div>
+</section>
+
+<script>
+(function(){
+"use strict";
+const svg=document.getElementById('svg');
+const gBoard=document.getElementById('gBoard'),gStrips=document.getElementById('gStrips'),gHL=document.getElementById('gHL'),
+      gHoles=document.getElementById('gHoles'),gComps=document.getElementById('gComps'),gCand=document.getElementById('gCand');
+const infoEl=document.getElementById('info');
+
+/* ---------- Rúmfræði brettisins ---------- */
+const OX=170, X0=OX+40, PITCH=20;
+const cx=c=>X0+(c-1)*PITCH;
+const ROWY={};
+'abcde'.split('').forEach((r,i)=>ROWY[r]=110+i*20);
+'fghij'.split('').forEach((r,i)=>ROWY[r]=230+i*20);
+const RAILDEF={
+  tp:{y:50, name:'efri + braut', sign:'+', col:'#dc2626'},
+  tm:{y:70, name:'efri − braut', sign:'−', col:'#2563eb'},
+  bm:{y:350,name:'neðri − braut',sign:'−', col:'#2563eb'},
+  bp:{y:370,name:'neðri + braut',sign:'+', col:'#dc2626'}
+};
+const RAILCOLS=[]; for(let c=2;c<=30;c++) if((c-2)%6!==5) RAILCOLS.push(c);
+
+const H={}, NETS={};
+function addHole(id,x,y,net,label){H[id]={id,x,y,net,label};(NETS[net]=NETS[net]||[]).push(id);}
+for(const r of 'abcdefghij') for(let c=1;c<=30;c++) addHole(r+c,cx(c),ROWY[r],(r<='e'?'L':'U')+c,r+c);
+for(const k in RAILDEF) for(const c of RAILCOLS) addHole(k+c,cx(c),RAILDEF[k].y,k,RAILDEF[k].name+' (við dálk '+c+')');
+
+function netDesc(net){
+  if(net[0]==='L'){const c=net.slice(1);return 'a'+c+'–e'+c+' (5 göt)';}
+  if(net[0]==='U'){const c=net.slice(1);return 'f'+c+'–j'+c+' (5 göt)';}
+  return 'öll '+RAILDEF[net].name+' (25 göt)';
+}
+
+/* ---------- Íhlutagerðir ---------- */
+const R_INT=0.5; // innra viðnám rafhlöðu (Ω)
+const DTYPES={
+  red:   {name:'Rauð LED',  Vf:1.8, Rd:10, Imax:0.04, led:true, col:'#ef4444', dim:'#f6b4b4'},
+  yellow:{name:'Gul LED',   Vf:2.0, Rd:10, Imax:0.04, led:true, col:'#facc15', dim:'#f5e7a6'},
+  green: {name:'Græn LED',  Vf:2.1, Rd:12, Imax:0.04, led:true, col:'#22c55e', dim:'#bfe8cc'},
+  blue:  {name:'Blá LED',   Vf:3.0, Rd:15, Imax:0.04, led:true, col:'#3b82f6', dim:'#c3d6f5'},
+  si:    {name:'Kísildíóða (1N4148)', Vf:0.65, Rd:1, Imax:0.3, led:false}
+};
+const RVALS=[100,220,330,470,1000,2200,4700,10000];
+const BANDCOL=['#111111','#7c4a1e','#dc2626','#f97316','#facc15','#16a34a','#2563eb','#7c3aed','#9ca3af','#f9fafb'];
+const BANDNAME=['svartur','brúnn','rauður','appelsínugulur','gulur','grænn','blár','fjólublár','grár','hvítur'];
+const WIRECOL=['#2563eb','#16a34a','#ea580c','#9333ea','#0891b2','#ca8a04','#db2777'];
+function bands(R){const s=String(R);return [+s[0],+s[1],s.length-2];}
+function fmtR(R){return R>=1000?fmt(R/1000,R%1000?1:0)+' kΩ':R+' Ω';}
+function fmt(x,d){const s=Math.abs(x).toFixed(d);const neg=x<0&&parseFloat(s)!==0;return (neg?'−':'')+s.replace('.',',');}
+
+/* ---------- Ástand ---------- */
+const state={batV:9,batOn:true,comps:[],sel:null,showStrips:false,msg:null,preset:'rett'};
+let uid=0, cnt={res:0,dio:0,wire:0,pot:0}, result=null, drag=null, hoverHole=null, hoverNet=null;
+const byId=id=>state.comps.find(c=>c.id===id);
+const POTVALS=[1000,10000,100000];
+const endsOf=c=>c.type==='pot'?['a','w','b']:['a','b'];
+function occMap(){const m={};for(const c of state.comps) for(const e of endsOf(c)) if(c[e]) m[c[e]]={c,end:e};return m;}
+function holeAt(x,y){return nearestHole(x,y,3);}
+// Staðsetning fóta stilliviðnáms út frá miðfæti og stefnu
+function potLegs(w,orient){
+  const o=H[w]; if(!o) return null;
+  // 'd': miðfótur ofan miðrásar (t.d. e11), fætur 1 og 3 neðan hennar (f10 og f12)
+  // 'u': snúið 180° – miðfótur neðan (f11), fætur 1 og 3 ofan (e12 og e10)
+  const dy=orient==='u'?-2*PITCH:2*PITCH, sx=orient==='u'?-1:1;
+  const a=holeAt(o.x-sx*PITCH,o.y+dy), b=holeAt(o.x+sx*PITCH,o.y+dy);
+  return a&&b?{a,b}:null;
+}
+
+function addComp(type,a,b,props){
+  const n=++cnt[type];
+  const c={id:'c'+(++uid),type,a,b};
+  if(type==='res'){c.R=(props&&props.R)||330;c.name='R'+n;}
+  if(type==='dio'){c.dt=(props&&props.dt)||'red';c.burnt=false;c.name='D'+n;}
+  if(type==='wire'){c.col=WIRECOL[(n-1)%WIRECOL.length];c.name='Vír '+n;}
+  if(type==='pot'){c.w=props.w;c.R=props.R||10000;c.x=props.x!=null?props.x:0.5;c.orient=props.orient||'d';c.name='P'+n;}
+  state.comps.push(c);return c;
+}
+
+/* ---------- Dæmi ---------- */
+const PRESETS={
+  rett:{t:'Dæmi 1: Rétt tengd rás',on:true,
+    comps:[['res','tp10','a10',{R:470}],['dio','d10','d13',{dt:'red'}],['wire','a13','tm14']],
+    txt:'Straumurinn fer frá + brautinni gegnum R1 niður í dálk 10, gegnum díóðuna D1 yfir í dálk 13 og með vírnum aftur í − brautina. Færðu bendilinn yfir götin til að sjá hvaða göt tengjast.'},
+  samiDalkur:{t:'Dæmi 2: Viðnám í einum dálki',on:false,
+    comps:[['wire','tp10','a10'],['res','b10','e10',{R:470}],['dio','c10','c13',{dt:'red'}],['wire','a13','tm14']],
+    txt:'Slökkt er á rafhlöðunni. Skoðaðu hvar fætur R1 eru. Spáðu fyrir um hvað gerist þegar kveikt er – kveiktu svo og lagaðu villuna.'},
+  ofug:{t:'Dæmi 3: Díóða snýr öfugt',on:false,
+    comps:[['res','tp10','a10',{R:470}],['dio','d13','d10',{dt:'red'}],['wire','a13','tm14']],
+    txt:'Díóða leiðir aðeins í eina átt: frá anóðu (A) til katóðu (K). Kveiktu og skoðaðu spennuna yfir D1. Lagaðu svo með því að velja D1 og ýta á „Snúa við“.'},
+  rangurDalkur:{t:'Dæmi 4: Rangur dálkur',on:true,
+    comps:[['res','tp10','a10',{R:470}],['dio','d11','d13',{dt:'red'}],['wire','a13','tm14']],
+    txt:'Kveikt er á rafhlöðunni en ekkert ljós! Finndu villuna með því að skoða í hvaða dálkum fætur R1 og D1 eru.'},
+  samiStrimill:{t:'Dæmi 5: Díóða í einum dálki',on:true,
+    comps:[['res','tp10','a10',{R:470}],['dio','c10','e10',{dt:'red'}],['wire','a13','tm14']],
+    txt:'Báðir fætur D1 eru í dálki 10. Af hverju lýsir hún ekki? Færðu annan fótinn svo rásin lokist.'},
+  rongBraut:{t:'Dæmi 6: Röng spennubraut',on:true,
+    comps:[['res','tp10','a10',{R:470}],['dio','d10','d13',{dt:'red'}],['wire','a13','bm14']],
+    txt:'Vírinn fer í − brautina neðst á brettinu. Er hún tengd við rafhlöðuna? Lagaðu með því að færa vírinn – eða bættu við vír sem tengir brautirnar saman.'},
+  potBirta:{t:'Dæmi 7: Stilliviðnám stýrir birtu',on:true,
+    bat:{a:'tp2',b:'bm2'},
+    comps:[['res','tp11','a11',{R:330}],['pot','f10','f12',{w:'e11',R:1000,x:0.3,orient:'d'}],['dio','h10','h13',{dt:'red'}],['wire','j13','bm14']],
+    txt:'Stilliviðnámið situr yfir miðrásinni: miðfóturinn (2) er í röð e en fætur 1 og 3 í röð f. Hér eru aðeins fótur 1 og miðfóturinn notaðir – stilliviðnámið virkar sem breytilegt viðnám. Athugaðu að − leiðsla rafhlöðunnar fer í neðri − brautina. Snúðu P1 og fylgstu með straumnum og birtunni.'},
+  potDeilir:{t:'Dæmi 8: Spennudeilir',on:true,
+    bat:{a:'bp2',b:'bm2'},
+    comps:[['pot','f20','f22',{w:'e21',R:10000,x:0.5,orient:'d'}],['wire','j20','bp20'],['wire','j22','bm22'],['res','b21','b25',{R:330}],['dio','c25','c28',{dt:'green'}],['wire','e28','bm28']],
+    txt:'Nú eru allir þrír fæturnir notaðir: fótur 1 (f20) tengist + brautinni og fótur 3 (f22) − brautinni. Miðfóturinn (e21) gefur spennu einhvers staðar á milli 0 V og spennu rafhlöðunnar og hún fer áfram í R1 og díóðuna. Hér er rafhlaðan tengd neðri brautunum. Færðu bendilinn yfir gat í dálki 21 (efri hluta) og lestu spennuna á meðan þú snýrð P1 – eða mældu hana með fjölmælinum.'},
+  maelaU:{t:'Dæmi 9: Spenna mæld yfir viðnám',on:true,
+    comps:[['res','tp10','a10',{R:470}],['dio','d10','d13',{dt:'red'}],['wire','a13','tm14']],
+    meter:{a:'tp11',b:'b10',mode:'V'},
+    txt:'Spennumælir er <b>hliðtengdur</b> við íhlutinn: rauði mælioddurinn fer á annan fót viðnámsins (hér + brautin) og svarti á hinn (dálkur 10). Rásin helst óbreytt. Prófaðu líka að mæla spennuna yfir díóðuna og yfir rafhlöðuna. Leggst spennan yfir R1 og D1 saman í spennu rafhlöðunnar?'},
+  maelaI:{t:'Dæmi 10: Straumur mældur gegnum viðnám',on:true,
+    comps:[['res','tp10','a8',{R:470}],['dio','d10','d13',{dt:'red'}],['wire','a13','tm14']],
+    meter:{a:'b8',b:'b10',mode:'A'},
+    txt:'Straummælir er <b>raðtengdur</b>: rásin er rofin og straumurinn látinn fara í gegnum mælinn. Hér var fótur R1 færður í dálk 8 og mælirinn brúar bilið milli dálks 8 og 10. Prófaðu að taka annan mælioddinn úr – hvað gerist þá?'},
+  maelaVilla:{t:'Dæmi 11: Villa – straummælir hliðtengdur',on:false,
+    comps:[['res','tp10','a10',{R:470}],['dio','d10','d13',{dt:'red'}],['wire','a13','tm14']],
+    meter:{a:'tp11',b:'b10',mode:'A'},
+    txt:'Fjölmælirinn er stilltur á straum (mA) en tengdur eins og spennumælir – yfir viðnámið. Straummælir hefur mjög lítið innra viðnám. Spáðu fyrir um hvað gerist þegar kveikt er!'},
+  tomt:{t:'Autt bretti',on:false,comps:[],
+    txt:'Byggðu eigin rás: bættu við viðnámi og díóðu og tengdu þau milli + og − brautanna. Kveiktu svo á rafhlöðunni.'}
+};
+function loadPreset(key){
+  const p=PRESETS[key]; cnt={res:0,dio:0,wire:0,pot:0};
+  const bt=p.bat||{a:'tp2',b:'tm2'};
+  state.comps=[{id:'bat',type:'bat',a:bt.a,b:bt.b,name:'Rafhlaða'}];
+  for(const [type,a,b,props] of p.comps) addComp(type,a,b,props);
+  const mt=p.meter||{};
+  state.comps.push({id:'meter',type:'meter',a:mt.a||null,b:mt.b||null,mode:mt.mode||'V',fuse:false,name:'Fjölmælir'});
+  state.batOn=p.on; state.msg=null; state.sel=p.meter?'meter':null; state.preset=key;
+  document.getElementById('preset').value=key;
+  update();
+}
+
+/* ---------- Útreikningar (hnútagreining) ---------- */
+function gauss(A,b){
+  const n=b.length,x=new Float64Array(n);
+  for(let i=0;i<n;i++){
+    let p=i;for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
+    [A[i],A[p]]=[A[p],A[i]];const tb=b[i];b[i]=b[p];b[p]=tb;
+    const d=A[i][i]; if(Math.abs(d)<1e-30) continue;
+    for(let r=i+1;r<n;r++){const f=A[r][i]/d;if(!f)continue;for(let c=i;c<n;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i];}
+  }
+  for(let i=n-1;i>=0;i--){let s=b[i];for(let c=i+1;c<n;c++)s-=A[i][c]*x[c];x[i]=Math.abs(A[i][i])<1e-30?0:s/A[i][i];}
+  return x;
+}
+// Viðnám milli fóta 1–2 (aw) og 2–3 (wb); minnst 1 Ω
+function potR(c,seg){return Math.max(1,c.R*(seg==='aw'?c.x:1-c.x));}
+const R_VM=10e6, R_AM=1, FUSE=0.2; // innra viðnám spennumælis/straummælis, öryggi 200 mA
+function meterOn(c){return c.type==='meter'&&c.a&&c.b&&!(c.mode==='A'&&c.fuse);}
+function solve(){
+  const par={};
+  const f=x=>{if(par[x]===undefined)par[x]=x;while(par[x]!==x){par[x]=par[par[x]];x=par[x];}return x;};
+  for(const c of state.comps) if(c.type==='wire'){const a=f(H[c.a].net),b=f(H[c.b].net);if(a!==b)par[a]=b;}
+  const bat=byId('bat'), Pn=f(H[bat.a].net), Mn=f(H[bat.b].net);
+  const U=state.batOn?state.batV:0;
+  const res={comp:{},batI:0,short:false,root:f,V:()=>0,known:n=>f(n)===Mn};
+  if(Pn===Mn){
+    res.short=state.batOn; res.batI=U/R_INT;
+    for(const c of state.comps) res.comp[c.id]={U:0,I:0,P:0,U1:0,I1:0,U2:0,I2:0};
+    res.comp.meter={U:0,I:0,conn:false};
+    res.comp.bat={U:0,I:res.batI};
+    return res;
+  }
+  const els=state.comps.filter(c=>c.type==='res'||c.type==='pot'||meterOn(c)||(c.type==='dio'&&!c.burnt));
+  const idx={},nodes=[];
+  const add=n=>{n=f(n);if(n!==Mn&&idx[n]===undefined){idx[n]=nodes.length;nodes.push(n);}};
+  add(Pn); for(const c of els){add(H[c.a].net);add(H[c.b].net);if(c.w)add(H[c.w].net);}
+  const N=nodes.length, on={};
+  let V=()=>0;
+  for(let it=0;it<60;it++){
+    const G=Array.from({length:N},()=>new Float64Array(N)), b=new Float64Array(N);
+    const st=(g,a,k)=>{const i=idx[a],j=idx[k];if(i!==undefined)G[i][i]+=g;if(j!==undefined)G[j][j]+=g;if(i!==undefined&&j!==undefined){G[i][j]-=g;G[j][i]-=g;}};
+    const inj=(I,n)=>{const i=idx[n];if(i!==undefined)b[i]+=I;};
+    for(let i=0;i<N;i++) G[i][i]+=1e-12;
+    st(1/R_INT,Pn,Mn); inj(U/R_INT,Pn); inj(-U/R_INT,Mn);
+    for(const c of els){
+      const a=f(H[c.a].net),k=f(H[c.b].net);
+      if(c.type==='res') st(1/c.R,a,k);
+      else if(c.type==='pot'){const w=f(H[c.w].net);st(1/potR(c,'aw'),a,w);st(1/potR(c,'wb'),w,k);}
+      else if(c.type==='meter') st(1/(c.mode==='A'?R_AM:R_VM),a,k);
+      else{const d=DTYPES[c.dt];if(on[c.id]){const g=1/d.Rd;st(g,a,k);inj(g*d.Vf,a);inj(-g*d.Vf,k);}else st(1e-9,a,k);}
+    }
+    const x=gauss(G,b);
+    V=n=>{n=f(n);return n===Mn?0:(idx[n]===undefined?0:x[idx[n]]);};
+    let changed=false;
+    for(const c of els) if(c.type==='dio'){
+      const d=DTYPES[c.dt], vak=V(H[c.a].net)-V(H[c.b].net);
+      if(!on[c.id]&&vak>d.Vf+1e-9){on[c.id]=true;changed=true;}
+      else if(on[c.id]&&vak<d.Vf-1e-9){on[c.id]=false;changed=true;}
+    }
+    if(!changed) break;
+  }
+  res.V=V; res.known=n=>{n=f(n);return n===Mn||idx[n]!==undefined;};
+  for(const c of state.comps){
+    if(c.type==='meter'){
+      if(meterOn(c)){const u=V(H[c.a].net)-V(H[c.b].net);res.comp.meter={U:u,I:u/(c.mode==='A'?R_AM:R_VM),conn:true};}
+      else res.comp.meter={U:0,I:0,conn:false};
+      continue;
+    }
+    const u=V(H[c.a].net)-V(H[c.b].net);
+    if(c.type==='res'){const I=u/c.R;res.comp[c.id]={U:u,I,P:u*I};}
+    else if(c.type==='pot'){
+      const vw=V(H[c.w].net),u1=V(H[c.a].net)-vw,u2=vw-V(H[c.b].net);
+      const i1=u1/potR(c,'aw'),i2=u2/potR(c,'wb');
+      res.comp[c.id]={U:u,U1:u1,I1:i1,U2:u2,I2:i2,P:u1*i1+u2*i2};
+    }
+    else if(c.type==='dio'){
+      if(c.burnt) res.comp[c.id]={U:u,I:0,P:0,on:false};
+      else{const d=DTYPES[c.dt];const I=on[c.id]?(u-d.Vf)/d.Rd:u*1e-9;res.comp[c.id]={U:u,I,P:u*I,on:!!on[c.id]};}
+    }
+  }
+  const vt=V(Pn); res.batI=(U-vt)/R_INT; res.comp.bat={U:vt,I:res.batI};
+  return res;
+}
+function update(){
+  for(let k=0;k<6;k++){
+    result=solve(); let burnt=false;
+    const mt=byId('meter');
+    if(state.batOn&&mt&&mt.mode==='A'&&!mt.fuse&&Math.abs(result.comp.meter.I)>FUSE){
+      mt.fuse=true;
+      state.msg='<b>Öryggið í fjölmælinum sprakk!</b> Straumurinn í gegnum mælinn varð um '+fmt(Math.abs(result.comp.meter.I)*1000,0)+' mA. Straummælir hefur nánast ekkert viðnám og á alltaf að vera <b>raðtengdur</b> – aldrei hliðtengdur yfir íhlut eða rafhlöðu.';
+      continue;
+    }
+    if(state.batOn) for(const c of state.comps) if(c.type==='dio'&&!c.burnt){
+      const I=result.comp[c.id].I, d=DTYPES[c.dt];
+      if(I>d.Imax){c.burnt=true;burnt=true;
+        state.msg='<b>'+c.name+' sprakk!</b> Straumurinn varð um '+fmt(I*1000,0)+' mA en díóðan þolir aðeins um '+fmt(d.Imax*1000,0)+' mA. Settu viðnám í röð við díóðuna til að takmarka strauminn.';}
+    }
+    if(!burnt) break;
+  }
+  render(); renderPanel(); renderInfo(); renderPotbar();
+}
+
+/* ---------- Teikning brettis ---------- */
+function buildBoard(){
+  let s=`<rect x="${OX}" y="20" width="660" height="380" rx="10" class="boardbg"/>`;
+  s+=`<rect x="${OX+10}" y="203" width="640" height="14" rx="3" class="groove"/>`;
+  const x1=cx(1)-6,x2=cx(30)+6;
+  s+=`<line x1="${x1}" x2="${x2}" y1="36" y2="36" stroke="#dc2626" stroke-width="2"/>`;
+  s+=`<line x1="${x1}" x2="${x2}" y1="84" y2="84" stroke="#2563eb" stroke-width="2"/>`;
+  s+=`<line x1="${x1}" x2="${x2}" y1="336" y2="336" stroke="#2563eb" stroke-width="2"/>`;
+  s+=`<line x1="${x1}" x2="${x2}" y1="384" y2="384" stroke="#dc2626" stroke-width="2"/>`;
+  for(const k in RAILDEF){const r=RAILDEF[k];
+    s+=`<text class="rl" x="${OX+20}" y="${r.y+5}" fill="${r.col}">${r.sign}</text><text class="rl" x="${OX+640}" y="${r.y+5}" fill="${r.col}">${r.sign}</text>`;}
+  for(const c of [1,5,10,15,20,25,30]) s+=`<text class="lbl" x="${cx(c)}" y="97">${c}</text><text class="lbl" x="${cx(c)}" y="327">${c}</text>`;
+  for(const r in ROWY) s+=`<text class="lbl" x="${OX+22}" y="${ROWY[r]+3}">${r}</text><text class="lbl" x="${OX+638}" y="${ROWY[r]+3}">${r}</text>`;
+  gBoard.innerHTML=s;
+  let t='';
+  for(let c=1;c<=30;c++){
+    t+=`<rect class="strip" x="${cx(c)-5}" y="${ROWY.a-7}" width="10" height="${ROWY.e-ROWY.a+14}" rx="3"/>`;
+    t+=`<rect class="strip" x="${cx(c)-5}" y="${ROWY.f-7}" width="10" height="${ROWY.j-ROWY.f+14}" rx="3"/>`;
+  }
+  for(const k in RAILDEF) t+=`<rect class="strip" x="${cx(2)-7}" y="${RAILDEF[k].y-5}" width="${cx(30)-cx(2)+14}" height="10" rx="3"/>`;
+  gStrips.innerHTML=t;
+  let h='';
+  for(const id in H){const o=H[id];h+=`<rect class="hole" data-h="${id}" x="${o.x-3.5}" y="${o.y-3.5}" width="7" height="7" rx="1.5"/>`;}
+  gHoles.innerHTML=h;
+}
+const holeEl={};
+function indexHoles(){gHoles.querySelectorAll('[data-h]').forEach(el=>holeEl[el.dataset.h]=el);}
+
+function netRect(net,cls){
+  const ids=NETS[net];let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;
+  for(const id of ids){const o=H[id];x1=Math.min(x1,o.x);y1=Math.min(y1,o.y);x2=Math.max(x2,o.x);y2=Math.max(y2,o.y);}
+  return `<rect class="${cls}" x="${x1-9}" y="${y1-9}" width="${x2-x1+18}" height="${y2-y1+18}" rx="6"/>`;
+}
+
+/* ---------- Teikning íhluta ---------- */
+const BATP={x:52,y:142}, BATM={x:100,y:142};
+const PARK={a:{x:150,y:430},b:{x:150,y:476}};
+function endPos(c,end){
+  const h=H[c[end]];
+  if(!h){ if(drag&&drag.id===c.id&&drag.moved&&drag.end===end) return {x:drag.cur.x,y:drag.cur.y}; return PARK[end]; }
+  if(drag&&drag.id===c.id&&drag.moved){
+    if(drag.end==='both') return {x:h.x+drag.cur.x-drag.start.x,y:h.y+drag.cur.y-drag.start.y};
+    if(drag.end===end) return {x:drag.cur.x,y:drag.cur.y};
+  }
+  return {x:h.x,y:h.y};
+}
+function leadPath(T,P){return `M${T.x} ${T.y} C${T.x} ${T.y-70} ${P.x-70} ${P.y-25} ${P.x} ${P.y}`;}
+function handle(c,end,p){return `<circle class="handle" data-comp="${c.id}" data-end="${end}" cx="${p.x}" cy="${p.y}" r="8"/>`;}
+
+function meterText(){
+  const m=byId('meter'), r=result&&result.comp.meter;
+  if(!m.a||!m.b) return '- - -';
+  if(m.mode==='A'&&m.fuse) return '0,0 mA';
+  if(!r||!r.conn) return '- - -';
+  if(m.mode==='V') return fmt(r.U,Math.abs(r.U)>=10?1:2)+' V';
+  return Math.abs(r.I)>=1?fmt(r.I,2)+' A':fmt(r.I*1000,1)+' mA';
+}
+function drawMeter(c){
+  const A=endPos(c,'a'),B=endPos(c,'b'),sel=c.id===state.sel;
+  const JR={x:104,y:492},JB={x:50,y:492};
+  let s=`<g class="comp${sel?' sel':''}" data-comp="meter" style="cursor:pointer">`;
+  s+=`<rect x="20" y="336" width="114" height="186" rx="14" fill="#f59e0b" stroke="#b45309"/>`;
+  s+=`<rect x="28" y="344" width="98" height="170" rx="9" fill="#1f2937"/>`;
+  s+=`<rect x="36" y="353" width="82" height="34" rx="4" fill="#c5d1ab" stroke="#6b7a55"/>`;
+  s+=`<text x="77" y="376" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="15" font-weight="700" fill="#111">${meterText()}</text>`;
+  if(c.mode==='A'&&c.fuse) s+=`<text x="77" y="398" text-anchor="middle" font-size="8" font-weight="700" fill="#f87171">ÖRYGGI SPRUNGIÐ</text>`;
+  const pill=(x,mode,lab)=>`<g data-meter="${mode}" style="cursor:pointer"><rect x="${x}" y="404" width="38" height="22" rx="6" fill="${c.mode===mode?'#2563eb':'#475569'}"/><text x="${x+19}" y="419" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${lab}</text></g>`;
+  s+=pill(36,'V','V ⎓')+pill(80,'A','mA ⎓');
+  s+=`<text x="77" y="446" text-anchor="middle" font-size="9" letter-spacing="1.5" fill="#9ca3af">FJÖLMÆLIR</text>`;
+  s+=`<circle cx="${JB.x}" cy="${JB.y}" r="7" fill="#111" stroke="#9ca3af" stroke-width="2"/><circle cx="${JR.x}" cy="${JR.y}" r="7" fill="#7f1d1d" stroke="#ef4444" stroke-width="2"/>`;
+  s+=`<text x="${JB.x}" y="511" text-anchor="middle" font-size="8" fill="#d1d5db">COM</text><text x="${JR.x}" y="511" text-anchor="middle" font-size="8" fill="#fca5a5">V/mA</text>`;
+  const cable=(J,P,col)=>`<path d="M${J.x} ${J.y} C${J.x+50} ${J.y+30} ${P.x-10} ${P.y+110} ${P.x} ${P.y}" fill="none" stroke="${col}" stroke-width="3.5" stroke-linecap="round" opacity=".92" pointer-events="none"/>`;
+  s+=cable(JB,B,'#111827')+cable(JR,A,'#dc2626');
+  const tip=(P,col)=>`<circle cx="${P.x}" cy="${P.y}" r="5.5" fill="${col}" stroke="#fff" stroke-width="1.5"/><circle cx="${P.x}" cy="${P.y}" r="1.6" fill="#e5e7eb"/>`;
+  s+=tip(B,'#111827')+tip(A,'#dc2626');
+  if(!c.a) s+=`<text class="ak" x="${PARK.a.x}" y="${PARK.a.y-10}">rauður</text>`;
+  if(!c.b) s+=`<text class="ak" x="${PARK.b.x}" y="${PARK.b.y+18}">svartur</text>`;
+  s+=handle(c,'a',A)+handle(c,'b',B)+'</g>';
+  return s;
+}
+function drawComp(c){
+  if(c.type==='meter') return drawMeter(c);
+  const A=endPos(c,'a'),B=endPos(c,'b'),sel=c.id===state.sel;
+  const mx=(A.x+B.x)/2,my=(A.y+B.y)/2,dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy)||1,ang=Math.atan2(dy,dx)*180/Math.PI;
+  let nx=-dy/L,ny=dx/L; if(ny>0||(ny===0&&nx>0)){nx=-nx;ny=-ny;}
+  let s=`<g class="comp${sel?' sel':''}" data-comp="${c.id}">`;
+  if(c.type==='bat'){
+    const on=state.batOn;
+    s+=`<path class="lead" stroke="#dc2626" d="${leadPath(BATP,A)}"/><path class="lead" stroke="#111827" d="${leadPath(BATM,B)}"/>`;
+    s+=`<rect x="${A.x-4}" y="${A.y-4}" width="8" height="8" rx="1.5" fill="#7f1d1d"/><rect x="${B.x-4}" y="${B.y-4}" width="8" height="8" rx="1.5" fill="#111"/>`;
+    s+=`<rect x="24" y="150" width="104" height="170" rx="10" fill="#1e293b"/>`;
+    s+=`<rect x="24" y="150" width="104" height="40" rx="10" fill="#f59e0b"/><rect x="24" y="172" width="104" height="18" fill="#f59e0b"/>`;
+    s+=`<rect x="44" y="140" width="16" height="12" rx="2" fill="#dc2626"/><rect x="92" y="140" width="16" height="12" rx="2" fill="#64748b"/>`;
+    s+=`<text x="52" y="176" text-anchor="middle" font-size="18" font-weight="700" fill="#7c2d12">+</text><text x="100" y="176" text-anchor="middle" font-size="18" font-weight="700" fill="#7c2d12">−</text>`;
+    s+=`<text x="76" y="242" text-anchor="middle" font-size="26" font-weight="700" fill="#fff">${fmt(state.batV,state.batV%1?1:0)} V</text>`;
+    s+=`<text x="76" y="266" text-anchor="middle" font-size="11" fill="#cbd5e1" letter-spacing="1">${on?'KVEIKT':'SLÖKKT'}</text>`;
+    s+=`<g data-action="toggle" style="cursor:pointer"><rect x="46" y="282" width="60" height="24" rx="12" fill="${on?'#16a34a':'#64748b'}"/><circle cx="${on?94:58}" cy="294" r="9" fill="#fff"/></g>`;
+    s+=handle(c,'a',A)+handle(c,'b',B)+'</g>';
+    return s;
+  }
+  if(c.type==='wire'){
+    const off=Math.min(30,L*0.35)+6, qx=mx+nx*off, qy=my+ny*off;
+    const d=`M${A.x} ${A.y} Q${qx} ${qy} ${B.x} ${B.y}`;
+    s+=`<path class="hit" d="${d}"/><path d="${d}" fill="none" stroke="${c.col}" stroke-width="4.5" stroke-linecap="round"/>`;
+    s+=`<rect x="${A.x-4}" y="${A.y-4}" width="8" height="8" rx="1.5" fill="#374151"/><rect x="${B.x-4}" y="${B.y-4}" width="8" height="8" rx="1.5" fill="#374151"/>`;
+    s+=`<text class="clbl" x="${qx+nx*2}" y="${qy+ny*2-4}">${c.name}</text>`;
+    s+=handle(c,'a',A)+handle(c,'b',B)+'</g>';
+    return s;
+  }
+  if(c.type==='pot'){
+    const W=endPos(c,'w'), P3=[A,W,B];
+    const x1=Math.min(...P3.map(p=>p.x))-14, x2=Math.max(...P3.map(p=>p.x))+14;
+    const y1=Math.min(...P3.map(p=>p.y))-13, y2=Math.max(...P3.map(p=>p.y))+13;
+    const kx=(x1+x2)/2, ky=(y1+y2)/2;
+    s+=`<rect x="${x1}" y="${y1}" width="${x2-x1}" height="${y2-y1}" rx="7" fill="#1d4ed8" fill-opacity=".9" stroke="#1e3a8a"/>`;
+    const pin=(P,i)=>`<circle cx="${P.x}" cy="${P.y}" r="6" fill="#1e3a8a" stroke="#93c5fd"/><text x="${P.x}" y="${P.y+3}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff" pointer-events="none">${i}</text>`;
+    s+=pin(A,1)+pin(W,2)+pin(B,3);
+    const ang=-135+270*c.x;
+    s+=`<circle cx="${kx}" cy="${ky}" r="10" fill="#e5e7eb" stroke="#93c5fd"/>`;
+    s+=`<g transform="translate(${kx} ${ky}) rotate(${ang})" pointer-events="none"><rect x="-1.5" y="-9" width="3" height="10.5" rx="1" fill="#374151"/></g>`;
+    s+=`<text class="clbl" x="${x2+11}" y="${ky+4}">${c.name}</text>`;
+    s+='</g>';
+    return s;
+  }
+  s+=`<line class="hit" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/><line class="leg" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>`;
+  s+=`<circle cx="${A.x}" cy="${A.y}" r="2.6" fill="#6b7280"/><circle cx="${B.x}" cy="${B.y}" r="2.6" fill="#6b7280"/>`;
+  if(c.type==='res'){
+    const bl=Math.max(14,Math.min(34,L-12)), bd=bands(c.R);
+    s+=`<g transform="translate(${mx} ${my}) rotate(${ang})"><rect x="${-bl/2}" y="-5.5" width="${bl}" height="11" rx="5" fill="#e9d5a7" stroke="#b4945c"/>`;
+    const cols=[BANDCOL[bd[0]],BANDCOL[bd[1]],BANDCOL[bd[2]],'#c8a24a'];
+    [0.2,0.36,0.52,0.8].forEach((fr,i)=>{s+=`<rect x="${-bl/2+bl*fr-1.5}" y="-5.5" width="3" height="11" fill="${cols[i]}"/>`;});
+    s+='</g>';
+    s+=`<text class="clbl" x="${mx+nx*15}" y="${my+ny*15+3}">${c.name}</text>`;
+  } else {
+    const d=DTYPES[c.dt], r=result&&result.comp[c.id], I=r&&state.batOn?r.I:0;
+    const br=Math.max(0,Math.min(1.2,I/0.02));
+    if(d.led){
+      if(br>0.02&&!c.burnt) s+=`<circle cx="${mx}" cy="${my}" r="${13+10*br}" fill="${d.col}" opacity="${Math.min(.9,.3+.6*br)}" filter="url(#glow)" pointer-events="none"/>`;
+      const fill=c.burnt?'#4b5563':(br>0.02?d.col:d.dim);
+      s+=`<g transform="translate(${mx} ${my}) rotate(${ang})"><path d="M7 -7.14 A10 10 0 1 0 7 7.14 Z" fill="${fill}" stroke="rgba(0,0,0,.35)" stroke-width="1"/>`;
+      if(br>0.02&&!c.burnt) s+=`<circle cx="-2" cy="-3" r="3" fill="#fff" opacity=".7"/>`;
+      if(c.burnt) s+=`<path d="M-5 -5 L5 5 M5 -5 L-5 5" stroke="#fca5a5" stroke-width="2"/>`;
+      s+='</g>';
+    } else {
+      const bl=Math.max(12,Math.min(24,L-12));
+      s+=`<g transform="translate(${mx} ${my}) rotate(${ang})"><rect x="${-bl/2}" y="-4.5" width="${bl}" height="9" rx="2" fill="${c.burnt?'#4b5563':'#1f2937'}"/><rect x="${bl/2-5}" y="-4.5" width="2.5" height="9" fill="#d1d5db"/></g>`;
+    }
+    const pa={x:A.x+dx*0.22+nx*9,y:A.y+dy*0.22+ny*9}, pk={x:A.x+dx*0.78+nx*9,y:A.y+dy*0.78+ny*9};
+    if(L>=30){s+=`<text class="ak" x="${pa.x}" y="${pa.y+3}">A</text><text class="ak" x="${pk.x}" y="${pk.y+3}">K</text>`;}
+    s+=`<text class="clbl" x="${mx-nx*19}" y="${my-ny*19+4}">${c.name}${c.burnt?' (sprungin)':''}</text>`;
+  }
+  s+=handle(c,'a',A)+handle(c,'b',B)+'</g>';
+  return s;
+}
+
+function render(){
+  gStrips.style.display=state.showStrips?'':'none';
+  svg.classList.toggle('transparent',state.showStrips);
+  const order=['bat','res','pot','dio','wire','meter'];
+  const list=[...state.comps].sort((x,y)=>(order.indexOf(x.type)-order.indexOf(y.type))||((x.id===state.sel)-(y.id===state.sel)));
+  gComps.innerHTML=list.map(drawComp).join('');
+  renderCand(); renderHL();
+}
+let prevNet=null;
+function renderHL(){
+  let s='';
+  const sel=state.sel&&byId(state.sel);
+  if(sel&&!(drag&&drag.moved)){const seen={};for(const e of endsOf(sel)){if(!sel[e])continue;const n=H[sel[e]].net;if(!seen[n]){seen[n]=1;s+=netRect(n,'selnet');}}}
+  if(hoverNet&&!(drag&&drag.moved)) s+=netRect(hoverNet,'hovnet');
+  gHL.innerHTML=s;
+  const net=(drag&&drag.moved)?null:hoverNet;
+  if(prevNet!==net){
+    if(prevNet) for(const id of NETS[prevNet]) holeEl[id].classList.remove('on');
+    if(net) for(const id of NETS[net]) holeEl[id].classList.add('on');
+    prevNet=net;
+  }
+}
+
+/* ---------- Draga og sleppa ---------- */
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+function nearestHole(x,y,maxD){let best=null,bd=maxD*maxD;for(const id in H){const o=H[id],d=(o.x-x)**2+(o.y-y)**2;if(d<bd){bd=d;best=id;}}return best;}
+function computeDrop(c){
+  const occ=occMap(), free=h=>!!h&&(!occ[h]||occ[h].c===c);
+  if(drag.end==='both'){
+    const dx=drag.cur.x-drag.start.x,dy=drag.cur.y-drag.start.y;
+    if(c.type==='pot'){
+      const hw=nearestHole(H[c.w].x+dx,H[c.w].y+dy,12), L=hw&&potLegs(hw,c.orient);
+      if(!L) return {t:[{h:hw,ok:false}],valid:false};
+      const ok=[L.a,hw,L.b].map(free);
+      return {t:[{h:L.a,ok:ok[0]},{h:hw,ok:ok[1]},{h:L.b,ok:ok[2]}],valid:ok.every(Boolean),ha:L.a,hb:L.b,hw};
+    }
+    const ha=nearestHole(H[c.a].x+dx,H[c.a].y+dy,12),hb=nearestHole(H[c.b].x+dx,H[c.b].y+dy,12);
+    const okA=free(ha),okB=free(hb);
+    return {t:[{h:ha,ok:okA},{h:hb,ok:okB}],valid:okA&&okB&&ha!==hb,ha,hb};
+  }
+  const h=nearestHole(drag.cur.x,drag.cur.y,14),other=c[drag.end==='a'?'b':'a'];
+  if(!h&&c.type==='meter') return {t:[],valid:true,h:null};
+  const ok=free(h)&&h!==other;
+  return {t:[{h,ok}],valid:ok,h};
+}
+function renderCand(){
+  let s='';
+  if(drag&&drag.moved){const r=computeDrop(byId(drag.id));for(const o of r.t) if(o.h){const p=H[o.h];s+=`<circle class="${o.ok&&r.valid?'cand':'badc'}" cx="${p.x}" cy="${p.y}" r="8"/>`;}}
+  gCand.innerHTML=s;
+}
+svg.addEventListener('pointerdown',e=>{
+  const p=pt(e);
+  if(e.target.closest('[data-action="toggle"]')){state.batOn=!state.batOn;update();e.preventDefault();return;}
+  const mb=e.target.closest('[data-meter]');
+  if(mb){const m=byId('meter');m.mode=mb.dataset.meter;state.sel='meter';update();e.preventDefault();return;}
+  const t=e.target.closest('[data-comp]');
+  if(t){
+    const c=byId(t.dataset.comp); state.sel=c.id;
+    const end=t.dataset.end;
+    if(end) drag={id:c.id,end,start:p,cur:p,moved:false};
+    else if(c.type!=='bat'&&c.type!=='meter') drag={id:c.id,end:'both',start:p,cur:p,moved:false};
+    try{svg.setPointerCapture(e.pointerId);}catch(_){}
+    e.preventDefault(); render(); renderPanel();
+  } else {
+    if(state.sel){state.sel=null;render();renderPanel();}
+    hover(p);
+  }
+});
+svg.addEventListener('pointermove',e=>{
+  const p=pt(e);
+  if(drag){drag.cur=p;if(!drag.moved&&Math.hypot(p.x-drag.start.x,p.y-drag.start.y)>3)drag.moved=true;if(drag.moved)render();}
+  else hover(p);
+});
+function endDrag(){
+  if(!drag) return;
+  if(drag.moved){
+    const c=byId(drag.id),r=computeDrop(c);
+    if(r.valid){if(drag.end==='both'){c.a=r.ha;c.b=r.hb;if(r.hw)c.w=r.hw;}else c[drag.end]=r.h;}
+    drag=null; update();
+  } else {drag=null;render();}
+}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('pointerleave',()=>{if(!drag){hoverHole=null;hoverNet=null;renderHL();renderInfo();}});
+
+function hover(p){
+  const h=nearestHole(p.x,p.y,11);
+  if(h===hoverHole) return;
+  hoverHole=h; hoverNet=h?H[h].net:null; renderHL(); renderInfo();
+}
+function legName(c,end){
+  if(c.type==='dio') return end==='a'?' (anóða A)':' (katóða K)';
+  if(c.type==='bat') return end==='a'?' (+ leiðsla)':' (− leiðsla)';
+  if(c.type==='meter') return end==='a'?' (rauður mælioddur, V/mA)':' (svartur mælioddur, COM)';
+  if(c.type==='pot') return end==='a'?' (fótur 1)':end==='w'?' (fótur 2 – miðfótur/sleði)':' (fótur 3)';
+  return '';
+}
+function renderInfo(){
+  if(!hoverHole){infoEl.innerHTML='Færðu bendilinn yfir gat (eða snertu það) til að sjá hvaða göt eru tengd saman og hver spennan er þar.';return;}
+  const h=H[hoverHole],occ=occMap()[hoverHole];
+  let t=`<b>Gat ${h.label}</b> – tengist innan brettisins: ${netDesc(h.net)}.`;
+  if(occ) t+=` Í gatinu er fótur á <b>${occ.c.name}</b>${legName(occ.c,occ.end)}.`;
+  else t+=' Gatið er autt.';
+  if(state.batOn&&result&&!result.short){
+    if(result.known(h.net)) t+=` Spenna miðað við − pól rafhlöðunnar: <b>${fmt(result.V(h.net),2)} V</b>.`;
+    else t+=' Þessi strimill er ekki tengdur við rafhlöðuna.';
+  }
+  infoEl.innerHTML=t;
+}
+
+/* ---------- Hliðarspjald ---------- */
+function holeText(id){return H[id].label;}
+function renderPanel(){
+  const r=result;
+  document.getElementById('batOn').checked=state.batOn;
+  document.getElementById('batV').value=String(state.batV);
+  const p=PRESETS[state.preset];
+  document.getElementById('presetInfo').innerHTML=`<h3>${p.t}</h3><div class="small">${p.txt}</div>`;
+  // staða
+  const stEl=document.getElementById('status');
+  const Ib=Math.abs(r.batI);
+  let st,cls;
+  if(!state.batOn){st='Slökkt á rafhlöðunni';cls='off';}
+  else if(r.short||Ib>1){st='⚠ Skammhlaup!';cls='bad';}
+  else if(Ib>1e-6){st='Lokuð rás – straumur rennur';cls='ok';}
+  else {st='Opin rás – enginn straumur';cls='off';}
+  stEl.className='status '+cls;
+  const Itxt=(r.short||Ib>1)?(fmt(Ib,1)+' A'):(fmt(Ib*1000,1)+' mA');
+  stEl.innerHTML=`<div class="st">${st}</div><div class="big">I = ${state.batOn?Itxt:'0 mA'}</div>`;
+  // skilaboð
+  document.getElementById('msg').innerHTML=state.msg?`<div class="msg">${state.msg}<br><button data-act="replaceAll">Skipta um sprungnar díóður</button></div>`:'';
+  // ábendingar
+  const iss=[], f=r.root, bat=byId('bat');
+  if(f(H[bat.a].net)===f(H[bat.b].net)) iss.push(['bad','Báðar leiðslur rafhlöðunnar tengjast sama punkti – það er skammhlaup!']);
+  for(const c of state.comps) if(c.type==='res'||c.type==='dio'){
+    if(f(H[c.a].net)===f(H[c.b].net)){
+      const why=H[c.a].net===H[c.b].net?'eru í sama tengistrimli':'eru tengdir saman með vír';
+      iss.push(['warn',`Báðir fætur <b>${c.name}</b> ${why} – enginn straumur fer um íhlutinn.`]);
+    }
+  }
+  for(const c of state.comps) if(c.type==='pot'){
+    const ra=f(H[c.a].net),rw=f(H[c.w].net),rb=f(H[c.b].net);
+    if(ra===rw&&rw===rb) iss.push(['warn',`Allir fætur <b>${c.name}</b> tengjast sama punkti – stilliviðnámið gerir ekkert.`]);
+    else if(ra===rw||rw===rb) iss.push(['warn',`Miðfótur <b>${c.name}</b> er tengdur sama punkti og endafótur – sá hluti viðnámsins er skammhleyptur.`]);
+  }
+  if(state.batOn&&!r.short){
+    for(const c of state.comps){
+      if(c.type==='pot'){const m=r.comp[c.id];if(m.P>0.25)iss.push(['bad',`<b>${c.name}</b> hitnar: P = ${fmt(m.P,2)} W, of mikið fyrir lítið stilliviðnám. Hefurðu snúið því alveg í botn án viðnáms í röð?`]);continue;}
+      const m=r.comp[c.id];
+      if(c.type==='dio'&&!c.burnt){
+        if(m.U<-0.2) iss.push(['warn',`<b>${c.name}</b> snýr öfugt (bakspenna ${fmt(m.U,2)} V) – hún hleypir ekki straumi í gegn. Veldu hana og ýttu á „Snúa við“.`]);
+        else if(DTYPES[c.dt].led&&m.I>0.0205) iss.push(['warn',`Straumurinn um <b>${c.name}</b> er ${fmt(m.I*1000,1)} mA – yfir 20 mA. Notaðu stærra viðnám.`]);
+        else if(m.I>1e-5) iss.push(['good',`<b>${c.name}</b> leiðir${DTYPES[c.dt].led?' og lýsir':''} (${fmt(m.I*1000,1)} mA).`]);
+      }
+      if(c.type==='res'&&m.P>0.25) iss.push(['bad',`<b>${c.name}</b> hitnar: P = ${fmt(m.P,2)} W, meira en 0,25 W sem venjuleg viðnám þola.`]);
+    }
+    if(Ib<1e-6&&!iss.some(x=>x[0]==='warn')) iss.push(['warn','Straumurinn kemst ekki hringinn frá + pól til − póls. Fylgdu leiðinni og athugaðu í hvaða dálki hver fótur er.']);
+  }
+  document.getElementById('issues').innerHTML=iss.map(x=>`<li class="${x[0]}">${x[1]}</li>`).join('');
+  // mælingar
+  let tb='<tr><th>Íhlutur</th><th>U (V)</th><th>I (mA)</th><th>P (mW)</th></tr>';
+  const b=r.comp.bat;
+  tb+=`<tr><td>Rafhlaða (pólspenna)</td><td>${fmt(state.batOn?b.U:0,2)}</td><td>${fmt(state.batOn?b.I*1000:0,1)}</td><td>${fmt(state.batOn?b.U*b.I*1000:0,0)}</td></tr>`;
+  for(const c of state.comps) if(c.type==='pot'){
+    const m=r.comp[c.id];
+    tb+=`<tr><td>${c.name} fætur 1–2 (${fmtR(Math.round(potR(c,'aw')))})</td><td>${fmt(Math.abs(m.U1),2)}</td><td>${fmt(Math.abs(m.I1)*1000,1)}</td><td>${fmt(Math.abs(m.U1*m.I1)*1000,0)}</td></tr>`;
+    tb+=`<tr><td>${c.name} fætur 2–3 (${fmtR(Math.round(potR(c,'wb')))})</td><td>${fmt(Math.abs(m.U2),2)}</td><td>${fmt(Math.abs(m.I2)*1000,1)}</td><td>${fmt(Math.abs(m.U2*m.I2)*1000,0)}</td></tr>`;
+  }
+  for(const c of state.comps) if(c.type==='res'||c.type==='dio'){
+    const m=r.comp[c.id], lab=c.type==='res'?`${c.name} (${fmtR(c.R)})`:`${c.name} (${DTYPES[c.dt].name}${c.burnt?', sprungin':''})`;
+    const u=c.type==='res'?Math.abs(m.U):m.U, i=c.type==='res'?Math.abs(m.I):m.I;
+    tb+=`<tr><td>${lab}</td><td>${fmt(u,2)}</td><td>${fmt(i*1000,1)}</td><td>${fmt(Math.abs(m.P)*1000,0)}</td></tr>`;
+  }
+  document.getElementById('meas').innerHTML=tb;
+  // valinn íhlutur
+  const sel=state.sel&&byId(state.sel), sp=document.getElementById('selp');
+  if(!sel){sp.innerHTML='<h3>Valinn íhlutur</h3><div class="small">Smelltu á íhlut til að velja hann. Þá sérðu (blá brotalína) í hvaða strimlum fætur hans eru og getur breytt honum.</div>';return;}
+  let h='';
+  if(sel.type==='bat'){
+    h=`<h3>Rafhlaða</h3><div class="small">+ leiðsla: ${holeText(sel.a)}<br>− leiðsla: ${holeText(sel.b)}</div><div class="small" style="margin-top:6px">Dragðu enda leiðslnanna til að færa þær. Spennu og rofa stillirðu efst eða á rafhlöðunni sjálfri.</div>`;
+  } else if(sel.type==='res'){
+    const bd=bands(sel.R);
+    h=`<h3>${sel.name} – viðnám</h3><div class="row"><span>Gildi:</span><select data-act="R">${RVALS.map(v=>`<option value="${v}"${v===sel.R?' selected':''}>${fmtR(v)}</option>`).join('')}</select></div>`;
+    h+=`<div class="small">Litarendur: ${BANDNAME[bd[0]]}, ${BANDNAME[bd[1]]}, ${BANDNAME[bd[2]]}, gull</div>`;
+    h+=`<div class="small" style="margin-top:6px">Fætur: ${holeText(sel.a)} og ${holeText(sel.b)}</div>`;
+    h+=`<div class="row"><button class="danger" data-act="del">Eyða</button></div>`;
+  } else if(sel.type==='dio'){
+    const d=DTYPES[sel.dt];
+    h=`<h3>${sel.name} – díóða</h3><div class="row"><span>Gerð:</span><select data-act="dt">${Object.keys(DTYPES).map(k=>`<option value="${k}"${k===sel.dt?' selected':''}>${DTYPES[k].name}</option>`).join('')}</select></div>`;
+    h+=`<div class="small">Lekaspenna (framspenna) U<sub>D</sub> ≈ ${fmt(d.Vf,2)} V. Þolir um ${fmt(d.Imax*1000,0)} mA.</div>`;
+    h+=`<div class="small" style="margin-top:6px">Anóða (A, lengri fóturinn): ${holeText(sel.a)}<br>Katóða (K, styttri fóturinn, flata hliðin): ${holeText(sel.b)}</div>`;
+    h+=`<div class="row"><button data-act="flip">Snúa við</button>${sel.burnt?'<button class="pri" data-act="replace">Skipta um díóðu</button>':''}<button class="danger" data-act="del">Eyða</button></div>`;
+  } else if(sel.type==='meter'){
+    const ht=id=>id?holeText(id):'ekki tengdur';
+    h=`<h3>Fjölmælir</h3><div class="row"><button class="${sel.mode==='V'?'pri':''}" data-act="mV">Spenna (V)</button><button class="${sel.mode==='A'?'pri':''}" data-act="mA">Straumur (mA)</button></div>`;
+    h+=`<div class="small" style="font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin:4px 0">${meterText()}</div>`;
+    h+=sel.mode==='V'
+      ? `<div class="small"><b>Spennumæling:</b> hliðtengdu mælinn – settu mælioddana sinn hvoru megin við íhlutinn án þess að breyta rásinni. Spennumælir hefur mjög mikið innra viðnám (10 MΩ) og truflar rásina nánast ekki.</div>`
+      : `<div class="small"><b>Straummæling:</b> raðtengdu mælinn – rjúfðu rásina og láttu strauminn fara inn um rauða oddinn og út um þann svarta. Straummælir hefur nánast ekkert innra viðnám (1 Ω) og þolir mest 200 mA.</div>`;
+    h+=`<div class="small" style="margin-top:6px">Rauður oddur (V/mA): ${ht(sel.a)}<br>Svartur oddur (COM): ${ht(sel.b)}</div>`;
+    h+=`<div class="small" style="margin-top:4px">Neikvæð tala merkir að mælioddunum er snúið öfugt.</div>`;
+    h+=`<div class="row"><button data-act="park">Taka mælioddana úr</button>${sel.fuse?'<button class="pri" data-act="fuse">Skipta um öryggi</button>':''}</div>`;
+  } else if(sel.type==='pot'){
+    h=`<h3>${sel.name} – stilliviðnám</h3><div class="row"><span>Heildarviðnám:</span><select data-act="potR">${POTVALS.map(v=>`<option value="${v}"${v===sel.R?' selected':''}>${fmtR(v)}</option>`).join('')}</select></div>`;
+    h+=`<div class="small">Snúðu með sleðanum undir brettinu. Milli fóta 1 og 2: ${fmtR(Math.round(potR(sel,'aw')))}, milli fóta 2 og 3: ${fmtR(Math.round(potR(sel,'wb')))}. Milli fóta 1 og 3 er alltaf ${fmtR(sel.R)}.</div><div class="small" style="margin-top:4px">Stilliviðnámið situr yfir miðrásinni svo miðfóturinn lendir í öðrum strimli en fætur 1 og 3.</div>`;
+    h+=`<div class="small" style="margin-top:6px">Fótur 1: ${holeText(sel.a)}<br>Fótur 2 (miðfótur): ${holeText(sel.w)}<br>Fótur 3: ${holeText(sel.b)}</div>`;
+    h+=`<div class="row"><button data-act="rot">Snúa 180°</button><button class="danger" data-act="del">Eyða</button></div><div class="small" id="rotmsg"></div>`;
+  } else {
+    h=`<h3>${sel.name} – tengivír</h3><div class="small">Endar: ${holeText(sel.a)} og ${holeText(sel.b)}</div><div class="row"><button class="danger" data-act="del">Eyða</button></div>`;
+  }
+  sp.innerHTML=h;
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b||b.tagName==='SELECT') return;
+  const act=b.dataset.act, sel=state.sel&&byId(state.sel);
+  if(act==='del'&&sel&&sel.type!=='bat'&&sel.type!=='meter'){state.comps=state.comps.filter(c=>c!==sel);state.sel=null;}
+  if(act==='flip'&&sel){const t=sel.a;sel.a=sel.b;sel.b=t;}
+  if(act==='replace'&&sel){sel.burnt=false;state.msg=null;}
+  if(act==='rot'&&sel&&sel.type==='pot'){
+    const no=sel.orient==='u'?'d':'u', occ=occMap();
+    // snúið um miðju: miðfótur fer yfir í miðgat fóta 1/3
+    const mid=holeAt(H[sel.w].x,H[sel.a].y), L=mid&&potLegs(mid,no);
+    const ok=L&&[L.a,L.b,mid].every(h=>!occ[h]||occ[h].c===sel);
+    if(ok){sel.orient=no;sel.a=L.a;sel.b=L.b;sel.w=mid;}
+    else{update();const m=document.getElementById('rotmsg');if(m)m.textContent='Ekki pláss til að snúa hér – færðu stilliviðnámið fyrst.';return;}
+  }
+  if(act==='replaceAll'){for(const c of state.comps){if(c.type==='dio')c.burnt=false;if(c.type==='meter')c.fuse=false;}state.msg=null;}
+  if(act==='fuse'&&sel&&sel.type==='meter'){sel.fuse=false;state.msg=null;}
+  if(act==='park'&&sel&&sel.type==='meter'){sel.a=null;sel.b=null;}
+  if((act==='mV'||act==='mA')&&sel&&sel.type==='meter'){sel.mode=act==='mV'?'V':'A';}
+  update();
+});
+document.addEventListener('change',e=>{
+  const t=e.target, sel=state.sel&&byId(state.sel);
+  if(t.dataset.act==='R'&&sel){sel.R=+t.value;update();}
+  if(t.dataset.act==='dt'&&sel){sel.dt=t.value;sel.burnt=false;update();}
+  if(t.dataset.act==='potR'&&sel){sel.R=+t.value;update();}
+});
+// Sleðar fyrir stilliviðnám (undir brettinu)
+const potbar=document.getElementById('potbar');
+let potKey='';
+function renderPotbar(){
+  const pots=state.comps.filter(c=>c.type==='pot');
+  const key=pots.map(c=>c.id).join(',');
+  if(key!==potKey){
+    potKey=key;
+    potbar.innerHTML=pots.map(c=>`<label class="potrow"><span class="pn">${c.name}</span><span class="pe">1</span><input type="range" min="0" max="1000" value="${Math.round(c.x*1000)}" data-pot="${c.id}"><span class="pe">3</span><span class="pv" data-potv="${c.id}"></span></label>`).join('');
+    potbar.style.display=pots.length?'':'none';
+  }
+  for(const c of pots){
+    const inp=potbar.querySelector(`[data-pot="${c.id}"]`); if(inp&&document.activeElement!==inp) inp.value=Math.round(c.x*1000);
+    const v=potbar.querySelector(`[data-potv="${c.id}"]`); if(v) v.textContent=`1–2: ${fmtR(Math.round(potR(c,'aw')))} · 2–3: ${fmtR(Math.round(potR(c,'wb')))}`;
+  }
+}
+potbar.addEventListener('input',e=>{
+  const id=e.target.dataset.pot; if(!id) return;
+  const c=byId(id); c.x=+e.target.value/1000; update();
+});
+document.addEventListener('keydown',e=>{
+  if((e.key==='Delete'||e.key==='Backspace')&&state.sel&&state.sel!=='bat'&&state.sel!=='meter'&&!/INPUT|SELECT/.test(document.activeElement.tagName)){
+    state.comps=state.comps.filter(c=>c.id!==state.sel);state.sel=null;update();e.preventDefault();}
+});
+
+/* ---------- Tækjastika ---------- */
+document.getElementById('batV').addEventListener('change',e=>{state.batV=parseFloat(e.target.value);update();});
+document.getElementById('batOn').addEventListener('change',e=>{state.batOn=e.target.checked;update();});
+document.getElementById('strips').addEventListener('change',e=>{state.showStrips=e.target.checked;render();});
+document.getElementById('preset').addEventListener('change',e=>loadPreset(e.target.value));
+function freePair(rows,gap){
+  const occ=occMap();
+  for(const r of rows) for(let c=2;c+gap<=29;c++){const a=r+c,b=r+(c+gap);if(!occ[a]&&!occ[b])return [a,b];}
+  return null;
+}
+document.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>{
+  const type=btn.dataset.add;
+  let c;
+  if(type==='pot'){
+    const occ=occMap();let spot=null;
+    for(const r of 'edc'){for(let col=3;col<=28&&!spot;col++){const w=r+col,L=potLegs(w,'d');if(L&&!occ[w]&&!occ[L.a]&&!occ[L.b])spot={w,...L};}if(spot)break;}
+    if(!spot) return;
+    c=addComp('pot',spot.a,spot.b,{w:spot.w});
+  } else {
+    const pr=type==='res'?freePair('hgijf',4):type==='dio'?freePair('gfhij',3):freePair('ijhgf',5);
+    if(!pr) return;
+    c=addComp(type,pr[0],pr[1]);
+  }
+  state.sel=c.id; update();
+}));
+
+buildBoard(); indexHoles();
+loadPreset('rett');
+})();
+</script>
+</body>
+</html>
