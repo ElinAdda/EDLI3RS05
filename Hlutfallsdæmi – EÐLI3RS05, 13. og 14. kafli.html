@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hlutfallsdæmi – EÐLI3RS05, 13. og 14. kafli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ef; --card:#ffffff; --ink:#1f2430; --muted:#5d6472; --line:#e3dfd5;
+  --accent:#1f5f8b; --accent-soft:#e6f0f7; --good:#1e7b4f; --good-soft:#e5f4ec;
+  --bad:#b23a3a; --bad-soft:#fbeaea; --hint:#8a5a00; --hint-soft:#fdf3dc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Source Sans 3",system-ui,sans-serif;font-size:18px;line-height:1.5}
+header{max-width:820px;margin:0 auto;padding:22px 18px 6px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font-family:"Source Serif 4",Georgia,serif;font-size:1.45rem;margin:0}
+.sub{color:var(--muted);font-size:.95rem}
+main{max-width:820px;margin:0 auto;padding:8px 18px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:14px}
+button{font:inherit;cursor:pointer}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;font-weight:600;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:default}
+.progress{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.dot{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:#fff;font-weight:700;color:var(--muted);font-size:.9rem}
+.dot.cur{border-color:var(--accent);color:var(--accent)}
+.dot.ok{background:var(--good);border-color:var(--good);color:#fff}
+.dot.ok2{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:2px 9px;border-radius:20px}
+.qtext{font-size:1.2rem;font-weight:600;margin:12px 0 16px}
+.opts{display:grid;gap:9px}
+.opt{text-align:left;border:2px solid var(--line);background:#fff;border-radius:11px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .let{font-weight:700;color:var(--muted);min-width:1.3em}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt:disabled{cursor:default;color:var(--muted)}
+.opt.right:disabled,.opt.wrong:disabled{color:var(--ink)}
+.fb{margin-top:14px;padding:12px 15px;border-radius:10px;font-size:1rem}
+.fb.bad{background:var(--bad-soft);border-left:4px solid var(--bad)}
+.fb.good{background:var(--good-soft);border-left:4px solid var(--good)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.hint{background:var(--hint-soft);border-left:4px solid #e0a82e;border-radius:10px;padding:11px 15px;margin-top:10px;font-size:1rem}
+.hint b.h{color:var(--hint)}
+.methods{margin-top:12px;display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:.95rem;color:var(--muted)}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:3px 11px;font-size:.9rem;font-weight:600;color:var(--ink)}
+.chip:hover{border-color:var(--accent)}
+.mbox{margin-top:10px;background:var(--accent-soft);border-radius:10px;padding:11px 15px;font-size:1rem}
+.hl{background:#fde9a8;border-radius:4px;padding:0 3px}
+.symbox{margin-top:12px;border:1px solid #c9d9e6;background:#f7fafc;border-radius:12px;padding:14px;font-size:1rem}
+.symbox h3{margin:0 0 6px;font-size:1.05rem}
+.symbox ol{margin:0;padding-left:22px}.symbox li{padding:5px 0}
+.calc{margin-top:12px;border:1px dashed var(--accent);border-radius:12px;padding:14px;font-size:1rem}
+.calc h3{margin:0 0 4px;font-size:1.05rem}
+.calc table{border-collapse:collapse;width:100%;margin-top:8px}
+.calc th,.calc td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--line)}
+.calc th{font-size:.85rem;color:var(--muted);font-weight:600}
+.calc input{width:90px;font:inherit;padding:4px 7px;border:1px solid var(--line);border-radius:7px}
+.calc input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.calc .out td{font-weight:700}
+.ratio{color:var(--accent);font-weight:700}
+.note{color:var(--muted);font-size:.9rem}
+.sol{margin-top:14px;background:#f2f6f9;border-radius:10px;padding:12px 15px;font-size:1rem}
+.nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:12px 0}
+.steps li{counter-increment:s;position:relative;padding:8px 0 8px 46px;border-bottom:1px solid var(--line)}
+.steps li:before{content:counter(s);position:absolute;left:0;top:7px;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.ex{background:#f2f6f9;border-radius:10px;padding:12px 15px;margin-top:12px;font-size:1rem}
+.f{font-family:"Source Serif 4",Georgia,serif;white-space:nowrap;font-size:1.08em}
+.bank{display:grid;gap:10px;margin-top:10px}
+.bank div{border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:1rem}
+.bank b{color:var(--accent)}
+.overlay{position:fixed;inset:0;background:rgba(20,25,35,.45);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;overflow:auto;z-index:10}
+.overlay.show{display:flex}
+.overlay .card{max-width:720px;width:100%;margin:0}
+svg text{font-family:"Source Sans 3",sans-serif}
+@media (max-width:560px){body{font-size:17px}.card{padding:16px}.calc input{width:70px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Hlutfallsdæmi án talna</h1>
+    <div class="sub">EÐLI3RS05 · Rafmagnsfræði og segulsvið, 13. og 14. kafli</div>
+  </div>
+  <button class="btn" id="bankBtn">📚 Aðferðabanki</button>
+</header>
+<main id="app"></main>
+
+<div class="overlay" id="overlay">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0;font-family:'Source Serif 4',serif">Aðferðabanki</h2>
+      <button class="btn" id="closeBank">Loka ✕</button>
+    </div>
+    <p class="note">Aðferðir sem virka á nánast öll dæmi þar sem ein stærð er tvöfölduð, helminguð eða þrefölduð.</p>
+    <div class="bank" id="bankList"></div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => s; // efni er okkar eigið
+
+/* ---------- Aðferðir ---------- */
+const METHODS = {
+  tolur:{name:"1. Settu inn tölur og berðu saman (fyrsta aðferð)", txt:"Fjögur skref sem duga á flest dæmi þar sem ein stærð er tvöfölduð, helminguð eða þrefölduð:<br><b>a) Finndu formúluna</b> sem tengir það sem spurt er um við það sem breytist. Hringaðu utan um það sem breytist.<br><b>b) Ákveddu hvað er fast.</b> Allt sem ekki er nefnt að breytist helst óbreytt. Fastar (t.d. k<sub>raf</sub>, ε₀, ρ, hleðslur) má setja = 1 – þær styttast hvort sem er út.<br><b>c) Settu inn þægilegar tölur.</b> Kallaðu upprunalega ástandið 1 og nýja ástandið 2, t.d. F₁ og F₂. Veldu r₁ = 1 og r₂ = 2 (eða 3, eða ½) og reiknaðu formúluna tvisvar.<br><b>d) Hlutfallsreikningur.</b> Deildu nýja svarinu með því gamla, t.d. F₂/F₁. Ef F₂/F₁ = 1/9 er nýi krafturinn 1/9 af þeim gamla."},
+  takn:{name:"2. Innsetningaraðferð (önnur aðferð, engar tölur)", txt:"Engar tölur – þú berð saman formúlurnar sjálfar. Dæmi: lengd vírs tvöfaldast.<br>1. Jafna fyrir upprunalega ástandið: <span class='f'>R₁ = ρ·L/A</span><br>2. Jafna fyrir nýja ástandið (L verður 2L): <span class='f'>R₂ = ρ·(2L)/A</span><br>3. Dragðu töluna fram fyrir og skrifaðu jöfnurnar hvora undir aðra:<br>&nbsp;&nbsp;&nbsp;<span class='f'>R₁ = <span class='hl'>ρ·L/A</span></span><br>&nbsp;&nbsp;&nbsp;<span class='f'>R₂ = 2 · (<span class='hl'>ρ·L/A</span>)</span><br>4. Innsetning: þar sem <span class='f'><span class='hl'>ρ·L/A</span> = R₁</span> setur þú R₁ inn í jöfnuna fyrir R₂: <span class='f'>R₂ = 2 · <span class='hl'>R₁</span></span><br>Gættu að veldum: ef r verður 3r í r² færðu (3r)² = 9r², ekki 3r²."},
+  att:{name:"3. Í hvaða átt? Hvaða veldi?", txt:"Er breytan í teljara (stærri breyta → stærra svar) eða nefnara (stærri breyta → minna svar)? Er hún í öðru veldi (tvöföldun → ×4)? Ef tvær breytingar ýta í sömu átt er hægt að svara án útreikninga."},
+  einingar:{name:"4. Gættu að einingum", txt:"Reiknaðu með einingunum. kW · h = kWh. Ekki breyta einingum að óþörfu ef svarið er beðið í sömu einingum."},
+  regla:{name:"5. Teiknaðu og notaðu reglu", txt:"Stefnuspurningar snúast ekki um tölur. Teiknaðu mynd og notaðu hægri handar regluna."},
+  skoda:{name:"6. Skoðaðu svarið", txt:"Er svarið skynsamlegt? Útilokaðu valkosti sem stefna í ranga átt áður en þú reiknar."}
+};
+
+/* ---------- Spurningar ---------- */
+const Q = [
+{
+ topic:"Lögmál Coulombs",
+ sym:["Skrifaðu formúluna fyrir upprunalega kraftinn: <span class='f'>F₁ = k<sub>raf</sub>·q₁q₂ / r²</span>", "Nýja fjarlægðin er <b>3r</b>. Skiptu r út fyrir (3r): <span class='f'>F₂ = k<sub>raf</sub>·q₁q₂ / (3r)²</span>", "Leystu upp svigann – veldið gildir um bæði 3 og r: <span class='f'>(3r)² = 9r²</span>, svo <span class='f'>F₂ = k<sub>raf</sub>·q₁q₂ / (9r²)</span>", "Dragðu töluna fram fyrir: <span class='f'>F₂ = (1/9) · k<sub>raf</sub>·q₁q₂/r²</span>. Það sem eftir stendur er F₁, svo <span class='f'>F₂ = (1/9)·F₁</span>"],
+ text:"Fjarlægðin milli tveggja punkthleðslna er þrefölduð. Hvað verður um kraftinn milli þeirra?",
+ opts:["Krafturinn verður 1/3 af upprunalega kraftinum","Krafturinn verður 1/9 af upprunalega kraftinum","Krafturinn verður 3x stærri","Krafturinn verður 9x stærri"],
+ ans:1,
+ fb:["Rétt átt, en gáðu að veldinu: r er í <b>öðru veldi</b> í nefnaranum.","","Krafturinn <b>minnkar</b> þegar hleðslurnar fjarlægjast – r er í nefnaranum.","Krafturinn <b>minnkar</b> þegar hleðslurnar fjarlægjast – r er í nefnaranum (þó veldið sé rétt hjá þér)."],
+ hints:[
+  "Hvaða lögmál lýsir krafti milli tveggja punkthleðslna? Skrifaðu formúluna: <span class='f'>F = k<sub>raf</sub>·q₁·q₂ / r²</span>",
+  "Aðeins <b>r</b> breytist. k<sub>raf</sub>, q₁ og q₂ eru fastar – settu þær allar = 1. Þá er <span class='f'>F = 1/r²</span>.",
+  "Þú ert með tvo krafta: <b>F₁</b> (fyrir breytingu) og <b>F₂</b> (eftir breytingu). Settu inn tölur: <span class='f'>r₁ = 1</span> gefur <span class='f'>F₁ = 1/1² = 1</span>. <span class='f'>r₂ = 3</span> gefur <span class='f'>F₂ = 1/3² = 1/9</span>. Hvað er F₂/F₁?"
+ ],
+ methods:["tolur", "takn", "att"],
+ calc:{type:"compare",
+  note:"k<sub>raf</sub> er settur = 1 því hann breytist ekki. Breyttu dálkinum „Eftir“.",
+  vars:[{k:"q1",l:"q₁",v:1},{k:"q2",l:"q₂",v:1},{k:"r",l:"r",v:1}],
+  outs:[{l:"F = q₁q₂/r²",f:v=>v.q1*v.q2/(v.r*v.r)}]},
+ sol:"<span class='f'>F₂/F₁ = (r₁/r₂)² = (1/3)² = 1/9</span>. Krafturinn verður 1/9 af upprunalega kraftinum. Fjarlægð í öðru veldi í nefnara: ×3 í fjarlægð → ÷9 í krafti."
+},
+{
+ topic:"Þéttar",
+ sym:["Báðir þéttarnir hafa rýmdina C: <span class='f'>1/C<sub>heild</sub> = 1/C + 1/C</span>", "Leggðu saman brotin (sami nefnari): <span class='f'>1/C<sub>heild</sub> = 2/C</span>", "Snúðu báðum hliðum við: <span class='f'>C<sub>heild</sub> = C/2 = ½·C</span>"],
+ text:"Tveir eins þéttar eru raðtengdir. Hver er heildarrýmdin samanborið við ef aðeins einn þéttir væri í rásinni?",
+ opts:["Heildarrýmdin er 1/2 af rýmd annars þéttisins","Heildarrýmdin er jöfn rýmd annars þéttisins","Heildarrýmdin er 2x stærri","Heildarrýmdin er 4x stærri"],
+ ans:0,
+ fb:["","Rýmdin breytist þegar öðrum þétti er bætt við. Prófaðu að setja C = 1 inn í formúluna.","Þetta gildir um <b>hliðtengda</b> þétta (eða raðtengd viðnám). Þéttar hegða sér öfugt við viðnám!","Engin formúla fyrir tvo þétta gefur ×4. Skrifaðu niður formúluna fyrir raðtengingu."],
+ hints:[
+  "Formúla fyrir raðtengda þétta: <span class='f'>1/C<sub>heild</sub> = 1/C₁ + 1/C₂</span>. Athugaðu: þetta er <b>öfugt</b> við viðnám!",
+  "Þéttarnir eru eins: settu C₁ = C₂ = 1 (eða 2 μF ef þér finnst það þægilegra).",
+  "Þú ert með tvær rýmdir: <b>C</b> (stakur þéttir) og <b>C<sub>heild</sub></b> (báðir raðtengdir). Settu inn tölur: <span class='f'>C = 1</span> gefur <span class='f'>1/C<sub>heild</sub> = 1/1 + 1/1 = 2</span>, svo <span class='f'>C<sub>heild</sub> = 1/2</span>. Hvað er C<sub>heild</sub>/C? Gáðu að því að snúa við í lokin!"
+ ],
+ methods:["tolur", "takn", "skoda"],
+ calc:{type:"single",
+  note:"Prófaðu bæði eins þétta og ólíka þétta.",
+  vars:[{k:"c1",l:"C₁",v:1},{k:"c2",l:"C₂",v:1}],
+  outs:[{l:"C<sub>heild</sub> = 1/(1/C₁ + 1/C₂)",f:v=>1/(1/v.c1+1/v.c2)},{l:"C<sub>heild</sub> / C₁",f:v=>(1/(1/v.c1+1/v.c2))/v.c1,ratio:true}]},
+ sol:"<span class='f'>1/C<sub>heild</sub> = 1/C + 1/C = 2/C ⇒ C<sub>heild</sub> = C/2</span>. Skynsemisathugun: raðtenging tveggja þétta jafngildir því að lengja bilið milli platnanna – það minnkar rýmdina."
+},
+{
+ topic:"Raforka og afl",
+ text:"Rafmagnsofn sem er 2,0 kW er í gangi í 3,0 klukkustundir. Hve mikla raforku notar hann?",
+ opts:["0,67 kWh","1,5 kWh","6,0 kWh","6000 kWh"],
+ ans:2,
+ fb:["Þú deildir P með t. Orka er afl <b>sinnum</b> tími.","Þú deildir t með P. Orka er afl <b>sinnum</b> tími.","","Þú breyttir kW í W en hélst klukkustundunum – þá færðu Wh, ekki kWh. Blandaðu ekki saman einingum."],
+ hints:[
+  "Afl er orka á tímaeiningu: <span class='f'>P = U/t</span>. Einangraðu U.",
+  "<span class='f'>U = P·t</span>. Spurt er um kWh, svo ekki þarf að breyta í W og s: kW · h = kWh.",
+  "Skynsemisathugun: ofn sem notar 2 kWh á hverri klukkustund og er í gangi í meira en 1 klst hlýtur að nota <b>meira</b> en 2 kWh. Hvaða valkostir falla þá út?"
+ ],
+ methods:["einingar", "skoda"],
+ calc:{type:"single",
+  note:"Hér eru tölur gefnar – reiknirinn sýnir einingarnar.",
+  vars:[{k:"p",l:"P (kW)",v:2},{k:"t",l:"t (h)",v:3}],
+  outs:[{l:"U = P·t (kWh)",f:v=>v.p*v.t},{l:"U í joule (J)",f:v=>v.p*1000*v.t*3600,big:true}]},
+ sol:"<span class='f'>U = P·t = 2,0 kW · 3,0 h = 6,0 kWh</span>. (Í SI-einingum: 2000 W · 10 800 s = 2,16·10⁷ J.)"
+},
+{
+ topic:"Innra viðnám",
+ sym:["Fyrir: <span class='f'>V₁ = ε − I₁·r</span>. Eftir: <span class='f'>V₂ = ε − I₂·r</span>, þar sem I₂ > I₁.", "Hér er formúlan <b>mismunur</b>, ekki margfeldi – svo við drögum frá í stað þess að deila: <span class='f'>V₂ − V₁ = −I₂·r + I₁·r = −(I₂ − I₁)·r</span>", "I₂ − I₁ er jákvætt og r er jákvætt, svo <span class='f'>V₂ − V₁ &lt; 0</span> ⇒ <b>V₂ &lt; V₁</b>. Pólspennan lækkar."],
+ text:"Rafhlaða hefur innra viðnám. Hvaða áhrif hefur það á pólspennuna ef viðnámið í ytri rásinni er minnkað og straumurinn eykst?",
+ opts:["Pólspennan eykst","Pólspennan helst óbreytt og er jöfn íspennunni","Pólspennan lækkar","Pólspennan verður núll"],
+ ans:2,
+ fb:["Meiri straumur þýðir meira spennufall <b>inni í</b> rafhlöðunni – það dregst frá íspennunni.","Pólspenna er jöfn íspennu aðeins ef enginn straumur fer um rafhlöðuna (I = 0) eða ef r = 0.","","Pólspennan verður aðeins núll við skammhlaup (ytra viðnám R = 0). Hér er viðnámið aðeins minnkað."],
+ hints:[
+  "Formúla fyrir pólspennu: <span class='f'>V<sub>pól</sub> = ε − I·r</span>, þar sem ε er íspennan og r innra viðnámið.",
+  "Hvað er fast? ε og r eru eiginleikar rafhlöðunnar – þau breytast ekki. Aðeins <b>I</b> breytist (eykst). Hvað gerist um I·r?",
+  "Þú ert með tvær pólspennur: <b>V₁</b> (fyrir breytingu) og <b>V₂</b> (eftir breytingu). Settu inn tölur: ε = 12 V og r = 1 Ω. <span class='f'>I₁ = 1 A</span> gefur <span class='f'>V₁ = 12 − 1·1 = 11 V</span>. <span class='f'>I₂ = 4 A</span> gefur <span class='f'>V₂ = 12 − 4·1 = 8 V</span>. Er V₂ stærri eða minni en V₁?"
+ ],
+ methods:["tolur", "takn", "att"],
+ calc:{type:"compare",
+  note:"Minnkaðu ytra viðnámið R í dálkinum „Eftir“ og sjáðu hvað gerist um I og V<sub>pól</sub>.",
+  vars:[{k:"e",l:"ε (V)",v:12},{k:"r",l:"r (Ω)",v:1},{k:"R",l:"R ytra (Ω)",v:11}],
+  outs:[{l:"I = ε/(R + r)",f:v=>v.e/(v.R+v.r)},{l:"V<sub>pól</sub> = ε − I·r",f:v=>v.e-v.e/(v.R+v.r)*v.r}]},
+ sol:"<span class='f'>V<sub>pól</sub> = ε − I·r</span>. ε og r eru föst, I eykst ⇒ I·r eykst ⇒ meira dregst frá ⇒ pólspennan <b>lækkar</b>."
+},
+{
+ topic:"Segulkraftur á ögn",
+ sym:["Formúlan: <span class='f'>F = q·v·B·sin θ</span>", "Hraðinn er samsíða sviðinu ⇒ θ = 0°: <span class='f'>F = q·v·B·sin 0°</span>", "<span class='f'>sin 0° = 0</span> ⇒ <span class='f'>F = q·v·B·0 = 0</span>. Sama hve stór q, v eða B eru!"],
+ text:"Hlaðin ögn hreyfist í sömu stefnu og einsleitt segulsvið. Hvað gerist?",
+ opts:["Ögnin fer í hring","Enginn segulkraftur verkar á hana og hún heldur áfram í beinni línu","Ögnin hægir á sér","Á hana verkar kraftur í stefnu segulsviðsins"],
+ ans:1,
+ fb:["Ögnin fer í hring þegar hraðinn er <b>hornréttur</b> á sviðið (θ = 90°), ekki samsíða því.","","Segulkraftur er alltaf hornréttur á hraðann og getur því aldrei breytt hraða agnarinnar (vinnur enga vinnu).","Segulkraftur er alltaf <b>hornréttur</b> á bæði v og B – aldrei í stefnu sviðsins."],
+ hints:[
+  "Segulkraftur á hlaðna ögn: <span class='f'>F = q·v·B·sin θ</span>, þar sem θ er hornið milli hraðans v og sviðsins B.",
+  "„Í sömu stefnu“ þýðir að hornið milli v og B er θ = 0°. Hvað er sin 0°?",
+  "sin 0° = 0 ⇒ F = 0. Ef enginn kraftur verkar á ögnina, hvað segir fyrsta lögmál Newtons?"
+ ],
+ methods:["tolur", "takn", "regla"],
+ calc:{type:"single",
+  note:"q, v og B eru sett = 1. Breyttu horninu θ.",
+  vars:[{k:"th",l:"θ (gráður)",v:0}],
+  outs:[{l:"F = q·v·B·sin θ",f:v=>Math.abs(Math.sin(v.th*Math.PI/180))<1e-12?0:Math.sin(v.th*Math.PI/180)}]},
+ sol:"<span class='f'>F = qvB·sin 0° = 0</span>. Enginn kraftur ⇒ engin hröðun ⇒ ögnin heldur áfram með jöfnum hraða í beinni línu (fyrsta lögmál Newtons)."
+},
+{
+ topic:"Segulsvið um vír",
+ text:"Langur, beinn vír liggur í blaðfletinum og flytur straum upp eftir blaðinu. Hver er stefna segulsviðsins í punkti hægra megin við vírinn?",
+ opts:["Út úr blaðinu","Inn í blaðið","Upp eftir blaðinu","Til hægri"],
+ ans:1,
+ fb:["Þetta er stefnan <b>vinstra</b> megin við vírinn. Prófaðu hægri handar regluna aftur.","","Sviðslínurnar mynda <b>hringi</b> umhverfis vírinn – þær eru aldrei samsíða straumnum.","Sviðslínurnar mynda <b>hringi</b> umhverfis vírinn – þær stefna ekki beint frá honum."],
+ hints:[
+  "Þetta er stefnuspurning – hér þarf ekki tölur heldur <b>hægri handar regluna</b>.",
+  "Hægri handar regla fyrir vír: Gríptu um vírinn með hægri hendi, þumallinn í stefnu straumsins. Fingurnir hringast í stefnu segulsviðsins.",
+  "Þumall upp. Fingurnir koma <b>út</b> úr blaðinu öðrum megin og fara <b>inn</b> í blaðið hinum megin. Smelltu á „Sýna sviðið“ á myndinni."
+ ],
+ methods:["regla"],
+ calc:{type:"wire"},
+ sol:"Hægri handar regla: þumall upp eftir vírnum. Fingurnir koma út úr blaðinu vinstra megin (⊙) og fara inn í blaðið hægra megin (⊗). Hægra megin stefnir sviðið því <b>inn í blaðið</b>."
+},
+{
+ topic:"Hringhreyfing í segulsviði",
+ sym:["Fyrir: <span class='f'>r₁ = m·v / (q·B)</span>", "Hraðinn eykst um einhvern þátt a > 1 og sviðið minnkar um þátt b > 1: v → <b>a·v</b> og B → <b>B/b</b>. <span class='f'>r₂ = m·(a·v) / (q·B/b)</span>", "Að deila með B/b er það sama og að margfalda með b/B: <span class='f'>r₂ = a·b · m·v/(q·B) = a·b·r₁</span>", "a > 1 og b > 1 ⇒ a·b > 1 ⇒ <b>r₂ > r₁</b>. Dæmi: tvöfaldur hraði og hálft svið gefur r₂ = 2·2·r₁ = 4r₁."],
+ text:"Hlaðin ögn fer í hring í einsleitu segulsviði. Hraði agnarinnar er aukinn og styrkur segulsviðsins er minnkaður. Hvað gerist um radíus hringsins?",
+ opts:["Radíusinn eykst","Radíusinn minnkar","Radíusinn helst óbreyttur","Ekki er hægt að segja til um það án útreikninga"],
+ ans:0,
+ fb:["","Skoðaðu hvar v og B eru í formúlunni – í teljara eða nefnara?","Breytingarnar vega ekki hvor aðra upp – þær ýta báðar í <b>sömu átt</b>.","Hér þarf ekki útreikninga því báðar breytingarnar ýta í <b>sömu átt</b>. „Ekki hægt að segja“ ætti aðeins við ef þær toguðu í sitthvora áttina."],
+ hints:[
+  "Segulkrafturinn er miðsóknarkrafturinn: <span class='f'>qvB = mv²/r</span>. Einangraðu r: <span class='f'>r = m·v / (q·B)</span>",
+  "Hvar eru breyturnar? <b>v</b> er í teljara ⇒ stærra v gefur stærra r. <b>B</b> er í nefnara ⇒ minna B gefur stærra r.",
+  "Báðar breytingarnar stækka r. Þú ert með tvo radíusa: <b>r₁</b> (fyrir breytingu) og <b>r₂</b> (eftir breytingu). Settu m = q = 1 og settu inn tölur: <span class='f'>v₁ = 1, B₁ = 1</span> gefa <span class='f'>r₁ = 1/1 = 1</span>. <span class='f'>v₂ = 2, B₂ = 0,5</span> gefa <span class='f'>r₂ = 2/0,5 = 4</span>. Hvað er r₂/r₁?"
+ ],
+ methods:["tolur", "takn", "att"],
+ calc:{type:"compare",
+  note:"m og q eru föst. Auktu v og minnkaðu B. Prófaðu líka að auka bæði v og B – þá fer svarið eftir tölunum!",
+  vars:[{k:"m",l:"m",v:1},{k:"q",l:"q",v:1},{k:"v",l:"v",v:1},{k:"B",l:"B",v:1}],
+  outs:[{l:"r = m·v/(q·B)",f:v=>v.m*v.v/(v.q*v.B)}]},
+ sol:"<span class='f'>r = mv/(qB)</span>. v eykst (teljari ↑) og B minnkar (nefnari ↓) – hvort tveggja stækkar r. Radíusinn <b>eykst</b>."
+},
+{
+ topic:"Plötuþéttir",
+ sym:["Fyrir: <span class='f'>C₁ = ε₀·A / d</span>", "Flatarmálið eykst um þátt a > 1 og bilið minnkar um þátt b > 1: A → <b>a·A</b> og d → <b>d/b</b>. <span class='f'>C₂ = ε₀·(a·A) / (d/b)</span>", "Dragðu þættina fram fyrir: <span class='f'>C₂ = a·b · ε₀·A/d = a·b·C₁</span>", "a > 1 og b > 1 ⇒ <b>C₂ > C₁</b>. Rýmdin eykst – án þess að vita hve mikið breytingarnar voru."],
+ text:"Í plötuþétti er flatarmál platnanna aukið og bilið milli þeirra minnkað. Hvað gerist um rýmd þéttisins?",
+ opts:["Rýmdin eykst","Rýmdin minnkar","Rýmdin helst óbreytt","Ekki er hægt að segja til um það án útreikninga"],
+ ans:0,
+ fb:["","Skoðaðu hvar A og d eru í formúlunni – í teljara eða nefnara?","Breytingarnar vega ekki hvor aðra upp – þær ýta báðar í <b>sömu átt</b>.","Hér þarf ekki útreikninga því báðar breytingarnar ýta í <b>sömu átt</b>. Sjá líka spurningu 7!"],
+ hints:[
+  "Rýmd plötuþéttis: <span class='f'>C = ε₀·A / d</span>",
+  "<b>A</b> er í teljara ⇒ stærra A gefur stærra C. <b>d</b> er í nefnara ⇒ minna d gefur stærra C.",
+  "Báðar breytingarnar stækka C. Þú ert með tvær rýmdir: <b>C₁</b> (fyrir breytingu) og <b>C₂</b> (eftir breytingu). Settu ε₀ = 1 og settu inn tölur: <span class='f'>A₁ = 1, d₁ = 1</span> gefa <span class='f'>C₁ = 1/1 = 1</span>. <span class='f'>A₂ = 2, d₂ = 0,5</span> gefa <span class='f'>C₂ = 2/0,5 = 4</span>. Hvað er C₂/C₁?"
+ ],
+ methods:["tolur", "takn", "att"],
+ calc:{type:"compare",
+  note:"ε₀ er settur = 1 því hann breytist ekki.",
+  vars:[{k:"A",l:"A",v:1},{k:"d",l:"d",v:1}],
+  outs:[{l:"C = A/d",f:v=>v.A/v.d}]},
+ sol:"<span class='f'>C = ε₀A/d</span>. A eykst (teljari ↑) og d minnkar (nefnari ↓) – hvort tveggja stækkar C. Rýmdin <b>eykst</b>."
+},
+{
+ topic:"Viðnám og afl",
+ sym:["Settu flatarmálið inn í viðnámsformúluna: <span class='f'>R₁ = ρL/A = ρL / (πd²/4) = 4ρL / (πd²)</span>", "Skiptu út: L → <b>2L</b> og d → <b>2d</b>: <span class='f'>R₂ = 4ρ·(2L) / (π·(2d)²)</span>", "Leystu upp svigann: <span class='f'>(2d)² = 4d²</span>, svo <span class='f'>R₂ = 4ρ·2L / (π·4d²) = (2/4) · 4ρL/(πd²) = ½·R₁</span>", "Spennan er föst: <span class='f'>P₂ = V²/R₂ = V² / (½R₁) = 2 · V²/R₁ = 2·P₁</span>"],
+ letters:"ABCD",
+ text:"Hitaþráður er tengdur við fasta spennu og gefur frá sér aflið P. Honum er skipt út fyrir þráð úr sama efni sem er tvöfalt lengri og með tvöfalt stærra þvermál. Spennan er sú sama. Hvert verður aflið?",
+ opts:["P/2","P","2P","4P"],
+ ans:2,
+ fb:["Þetta fengist ef aðeins lengdin tvöfaldaðist. Hvað gerir tvöfalt <b>þvermál</b> við flatarmálið?","Þú hefur líklega látið flatarmálið tvöfaldast. En A = π·d²/4 – tvöfalt þvermál gefur <b>fjórfalt</b> flatarmál.","","Gleymdirðu að lengdin tvöfaldaðist líka? Eða notaðirðu P = I²R? Straumurinn er ekki fastur hér – það er <b>spennan</b> sem er föst, svo notaðu P = V²/R."],
+ hints:[
+  "Hér þarf tvær formúlur. Spennan er föst, svo notaðu <span class='f'>P = V²/R</span>. Viðnám þráðar: <span class='f'>R = ρ·L/A</span>",
+  "Varúð með þvermálið! Flatarmál þverskurðar er <span class='f'>A = π·d²/4</span>, svo tvöfalt þvermál gefur <b>fjórfalt</b> flatarmál. ρ (sama efni) og V eru föst.",
+  "Þú ert með tvö viðnám, <b>R₁</b> og <b>R₂</b>, og tvö afl, <b>P₁</b> og <b>P₂</b>. Settu ρ = 1 og settu inn tölur: <span class='f'>L₁ = 1, A₁ = 1</span> gefa <span class='f'>R₁ = 1/1 = 1</span>. <span class='f'>L₂ = 2, A₂ = 4</span> gefa <span class='f'>R₂ = 2/4 = 1/2</span>. R er í nefnara í P = V²/R – hvað er þá P₂/P₁?"
+ ],
+ methods:["tolur", "takn", "att"],
+ calc:{type:"compare",
+  note:"ρ og V eru sett = 1. Breyttu L og d (þvermáli) í dálkinum „Eftir“.",
+  vars:[{k:"L",l:"L (lengd)",v:1},{k:"d",l:"d (þvermál)",v:1}],
+  outs:[{l:"A = π·d²/4",f:v=>Math.PI*v.d*v.d/4},{l:"R = L/A",f:v=>v.L/(Math.PI*v.d*v.d/4)},{l:"P = V²/R",f:v=>(Math.PI*v.d*v.d/4)/v.L}]},
+ sol:"<span class='f'>R₂/R₁ = (L₂/L₁)·(A₁/A₂) = 2 · 1/4 = 1/2</span>. Með fasta spennu er <span class='f'>P = V²/R</span>, svo helmingi minna viðnám gefur <b>tvöfalt afl: 2P</b>."
+}
+];
+
+/* ---------- Ástand ---------- */
+const S = Q.map(()=>({tried:[],done:false,firstTry:false,hints:0,showCalc:false,showM:null,showField:false,after:null,vals:null,sym:0}));
+let cur = -1; // -1 = upphafssíða
+
+/* ---------- Hjálparföll ---------- */
+function fmt(x){
+  if(!isFinite(x)) return "–";
+  if(x===0) return "0";
+  const a=Math.abs(x);
+  let s;
+  if(a>=1e5||a<1e-3){ const e=Math.floor(Math.log10(a)); const m=x/Math.pow(10,e); s=m.toFixed(2).replace(/\.?0+$/,"")+"·10"+sup(e); }
+  else s=String(+x.toPrecision(3));
+  return s.replace(".",",");
+}
+function sup(n){const m={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};return String(n).split("").map(c=>m[c]).join("")}
+function nice(r){
+  if(!isFinite(r)||r<=0) return "";
+  if(Math.abs(r-1)<1e-9) return "óbreytt (×1)";
+  if(r>1){const n=Math.round(r); if(Math.abs(r-n)<1e-6) return "×"+n+" (stærra)"; return "×"+fmt(r)+" (stærra)";}
+  const n=Math.round(1/r); if(Math.abs(1/r-n)<1e-6) return "1/"+n+" af upprunalegu (minna)";
+  return "×"+fmt(r)+" (minna)";
+}
+function num(s){const x=parseFloat(String(s).replace(",",".")); return x;}
+
+/* ---------- Teikning ---------- */
+function render(){
+  const app=$("#app");
+  const prog = `<div class="progress">${Q.map((q,i)=>{
+    const st=S[i]; let c="dot"; if(i===cur)c+=" cur"; if(st.done)c+= st.firstTry?" ok":" ok2";
+    return `<button class="${c}" data-go="${i}" title="Spurning ${i+1}">${i+1}</button>`}).join("")}</div>`;
+  if(cur===-1){ app.innerHTML = prog + startHTML(); bind(); return; }
+  if(cur===Q.length){ app.innerHTML = prog + endHTML(); bind(); return; }
+  const q=Q[cur], st=S[cur], L=q.letters||"abcd";
+  let h = prog + `<div class="card">
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+     <span class="tag">${q.topic}</span><span class="note">Spurning ${cur+1} af ${Q.length}</span></div>
+   <div class="qtext">${q.text}</div>
+   <div class="opts">${q.opts.map((o,i)=>{
+     let c="opt"; if(st.tried.includes(i)) c+= i===q.ans?" right":" wrong";
+     const dis = st.done||st.tried.includes(i);
+     return `<button class="${c}" data-opt="${i}" ${dis?"disabled":""}><span class="let">${L[i]})</span><span>${o}</span></button>`}).join("")}</div>`;
+  const last = st.tried[st.tried.length-1];
+  if(last!==undefined){
+    if(last===q.ans) h+=`<div class="fb good"><b>${st.firstTry?"Rétt í fyrstu tilraun! 🎉":"Rétt!"}</b></div><div class="sol"><b>Lausn:</b> ${q.sol}</div>`;
+    else h+=`<div class="fb bad"><b>Ekki alveg.</b> ${q.fb[last]} Reyndu aftur${st.hints<q.hints.length?" – eða fáðu vísbendingu.":"."}</div>`;
+  }
+  // verkfæri
+  h+=`<div class="tools">
+     <button class="btn" id="hintBtn" ${st.hints>=q.hints.length?"disabled":""}>💡 ${st.hints===0?"Fá vísbendingu":"Næsta vísbending"} (${st.hints}/${q.hints.length})</button>
+     ${q.sym?`<button class="btn" id="symBtn" ${st.sym>=q.sym.length?"disabled":""}>✏️ Berðu saman formúlur (${st.sym}/${q.sym.length})</button>`:""}
+     ${q.calc.type==="wire"?`<button class="btn" id="calcBtn">🧭 Mynd${st.showCalc?" ▲":" ▼"}</button>`:""}
+   </div>`;
+  for(let i=0;i<st.hints;i++) h+=`<div class="hint"><b class="h">Vísbending ${i+1}:</b> ${q.hints[i]}</div>`;
+  if(q.sym&&st.sym>0) h+=`<div class="symbox"><h3>✏️ Engar tölur – berðu saman formúlurnar</h3><ol>${q.sym.slice(0,st.sym).map(s=>`<li>${s}</li>`).join("")}</ol>${st.sym<q.sym.length?`<div class="note">Hvað heldur þú að næsta skref sé? Prófaðu sjálf/ur á blaði áður en þú smellir.</div>`:""}</div>`;
+  h+=`<div class="methods">Aðferðir sem hjálpa hér: ${q.methods.map(m=>`<button class="chip" data-m="${m}">${METHODS[m].name.replace(/^\d+\. /,"")}</button>`).join("")}</div>`;
+  if(st.showM) h+=`<div class="mbox"><b>${METHODS[st.showM].name}</b><br>${METHODS[st.showM].txt}</div>`;
+  if(st.showCalc&&q.calc.type==="wire") h+=calcHTML(q,st);
+  h+=`<div class="nav"><button class="btn" id="prevBtn">← ${cur===0?"Upphaf":"Fyrri"}</button>
+      <button class="btn ${st.done?"primary":""}" id="nextBtn">${cur===Q.length-1?"Ljúka →":"Næsta →"}</button></div></div>`;
+  app.innerHTML=h; bind();
+}
+
+function startHTML(){
+  return `<div class="card">
+   <h2 style="margin-top:0;font-family:'Source Serif 4',serif">Hvernig leysi ég dæmi án talna?</h2>
+   <p>Í mörgum krossaspurningum eru engar tölur – aðeins sagt að ein stærð sé <b>tvöfölduð, helminguð eða þrefölduð</b>. Þá virka alltaf sömu fjögur skrefin:</p>
+   <ol class="steps">
+    <li><b>Finndu formúluna</b> sem tengir það sem spurt er um við það sem breytist.</li>
+    <li><b>Ákveddu hvað er fast.</b> Allt sem ekki breytist má setja = 1.</li>
+    <li><b>Settu inn þægilegar tölur</b> – fyrst upprunalega gildið (t.d. 1), svo nýja gildið (t.d. 2).</li>
+    <li><b>Berðu saman:</b> deildu nýja svarinu með því gamla. Það segir þér hversu mikið svarið breyttist.</li>
+   </ol>
+   <div class="ex"><b>Dæmi:</b> Hvað gerist um viðnám vírs ef lengdin er tvöfölduð?<br>
+   1. <span class="f">R = ρ·L/A</span> &nbsp; 2. ρ og A eru föst ⇒ ρ = A = 1, svo R = L &nbsp; 3. L₁ = 1 gefur R₁ = 1; L₂ = 2 gefur R₂ = 2 &nbsp; 4. R₂/R₁ = 2/1 = 2 ⇒ <b>viðnámið tvöfaldast</b>.</div>
+   <h3 style="margin-bottom:4px">Önnur leið: engar tölur – innsetningaraðferð</h3>
+   <p style="margin-top:0">Hér setjum við engar tölur inn. Við skrifum eina jöfnu fyrir hvort ástand, einangrum það sem jöfnurnar eiga sameiginlegt og setjum það inn í hina jöfnuna.</p>
+   <ol class="steps">
+    <li><b>Skrifaðu jöfnu fyrir upprunalega ástandið:</b><br><span class="f">R₁ = ρ·L/A</span></li>
+    <li><b>Skrifaðu jöfnu fyrir nýja ástandið.</b> Lengdin tvöfaldast, svo L verður 2L. ρ og A eru óbreytt:<br><span class="f">R₂ = ρ·(2L)/A</span></li>
+    <li><b>Dragðu töluna fram fyrir</b> og skrifaðu jöfnurnar hvora undir aðra. Þá sést að sama stærð stendur í báðum:<br>
+     <span class="f">R₁ = <span class="hl">ρ·L/A</span></span><br>
+     <span class="f">R₂ = 2 · (<span class="hl">ρ·L/A</span>)</span></li>
+    <li><b>Innsetning:</b> þar sem <span class="f"><span class="hl">ρ·L/A</span> = R₁</span> setjum við R₁ inn í stað <span class="f">(ρ·L/A)</span> í jöfnunni fyrir R₂:<br>
+     <span class="f">R₂ = 2 · <span class="hl">R₁</span></span> &nbsp;⇒&nbsp; <b>viðnámið tvöfaldast.</b></li>
+   </ol>
+   <div class="ex"><b>Sama aðferð þegar fleira breytist</b> (eins og í spurningu 9: tvöfalt lengri og tvöfalt þvermál, svo A verður 4A):<br>
+   <span class="f">R₂ = ρ·(2L)/(4A) = (2/4) · <span class="hl">(ρ·L/A)</span> = ½ · <span class="hl">R₁</span></span><br>
+   <span class="note">Gættu að veldum: ef r verður 3r í r² færðu (3r)² = 9r², ekki 3r².</span></div>
+   <p>Báðar leiðir gefa sama svar. Tölurnar eru oft auðveldari í byrjun, en innsetningaraðferðin er fljótlegri þegar þú ert orðin/n vön/vanur.</p>
+   <p>Í hverri spurningu getur þú:</p>
+   <ul><li>💡 beðið um <b>vísbendingar</b> – eina í einu,</li>
+   <li>✏️ notað <b>„Berðu saman formúlur“</b> til að sjá táknrænu leiðina skref fyrir skref,</li>
+   <li>📚 skoðað <b>aðferðabankann</b> efst á síðunni.</li></ul>
+   <p class="note">Reyndu fyrst sjálf/ur – en það er alveg í lagi að nota vísbendingarnar. Markmiðið er að læra aðferðina.</p>
+   <div class="nav"><span></span><button class="btn primary" id="nextBtn">Byrja →</button></div></div>`;
+}
+
+function endHTML(){
+  const done=S.filter(s=>s.done).length, first=S.filter(s=>s.firstTry).length, hints=S.reduce((a,s)=>a+s.hints,0);
+  return `<div class="card"><h2 style="margin-top:0;font-family:'Source Serif 4',serif">Samantekt</h2>
+   <p>Þú hefur leyst <b>${done} af ${Q.length}</b> spurningum, þar af <b>${first}</b> rétt í fyrstu tilraun. Þú notaðir samtals <b>${hints}</b> vísbendingar.</p>
+   ${done<Q.length?`<p>Ólokið: ${S.map((s,i)=>s.done?"":`<button class="chip" data-go="${i}">Spurning ${i+1}</button>`).join(" ")}</p>`:""}
+   <div class="ex"><b>Mundu skrefin fjögur:</b> formúla → hvað er fast (= 1) → settu inn tölur fyrir og eftir → deildu nýju með gömlu.<br>
+   <b>Eða án talna:</b> skiptu breytunni út í formúlunni (L → 2L), dragðu töluna fram fyrir og berðu saman við upprunalegu formúluna.<br>
+   <b>Og flýtileiðin:</b> ef tvær breytingar ýta svarinu í sömu átt (eins og í sp. 7 og 8) þarftu ekki að reikna.</div>
+   <div class="nav"><button class="btn" id="prevBtn">← Til baka</button><button class="btn primary" id="resetBtn">Byrja upp á nýtt</button></div></div>`;
+}
+
+function calcHTML(q,st){
+  const c=q.calc;
+  if(c.type==="wire"){
+    const f=st.showField;
+    const sym=(x,y,out)=> out
+      ? `<g><circle cx="${x}" cy="${y}" r="11" fill="none" stroke="#1f5f8b" stroke-width="2"/><circle cx="${x}" cy="${y}" r="3" fill="#1f5f8b"/></g>`
+      : `<g><circle cx="${x}" cy="${y}" r="11" fill="none" stroke="#b23a3a" stroke-width="2"/><line x1="${x-7}" y1="${y-7}" x2="${x+7}" y2="${y+7}" stroke="#b23a3a" stroke-width="2"/><line x1="${x+7}" y1="${y-7}" x2="${x-7}" y2="${y+7}" stroke="#b23a3a" stroke-width="2"/></g>`;
+    let field="";
+    if(f){ for(const y of [70,140,210]){ field+=sym(110,y,true)+sym(290,y,false);} }
+    return `<div class="calc"><h3>Mynd: vír í blaðfletinum</h3>
+     <svg viewBox="0 0 400 270" style="width:100%;max-width:420px;display:block;margin:6px auto">
+      <rect x="20" y="15" width="360" height="240" rx="8" fill="#fbfaf6" stroke="#e3dfd5"/>
+      <line x1="200" y1="245" x2="200" y2="30" stroke="#1f2430" stroke-width="4"/>
+      <polygon points="200,22 191,42 209,42" fill="#1f2430"/>
+      <text x="212" y="70" font-size="18" font-weight="700">I</text>
+      ${f?field:`<circle cx="300" cy="140" r="6" fill="#8a5a00"/><text x="312" y="145" font-size="16" fill="#8a5a00" font-weight="700">P</text>`}
+      ${f?`<text x="72" y="250" font-size="14" fill="#1f5f8b">⊙ út úr blaðinu</text><text x="250" y="250" font-size="14" fill="#b23a3a">⊗ inn í blaðið</text>`:""}
+     </svg>
+     <p class="note">⊙ = ör sem kemur á móti þér (oddurinn). ⊗ = ör sem fer frá þér (fjaðrirnar).</p>
+     <button class="btn" id="fieldBtn">${f?"Fela sviðið":"Sýna sviðið"}</button></div>`;
+  }
+  if(!st.vals){ st.vals={}; c.vars.forEach(v=>st.vals[v.k]=v.v); }
+  if(c.type==="single"){
+    const rows=c.vars.map(v=>`<tr><td>${v.l}</td><td><input inputmode="decimal" data-cv="${v.k}" data-side="b" value="${String(st.vals[v.k]).replace(".",",")}"></td></tr>`).join("");
+    return `<div class="calc"><h3>🔢 Prófaðu tölur</h3><div class="note">${c.note||""}</div>
+     <table><tr><th>Stærð</th><th>Gildi</th></tr>${rows}<tbody id="outs"></tbody></table></div>`;
+  }
+  if(!st.after){ st.after={}; c.vars.forEach(v=>st.after[v.k]=v.v); }
+  const rows=c.vars.map(v=>`<tr><td>${v.l}</td>
+     <td><input inputmode="decimal" data-cv="${v.k}" data-side="b" value="${String(st.vals[v.k]).replace(".",",")}"></td>
+     <td><input inputmode="decimal" data-cv="${v.k}" data-side="a" value="${String(st.after[v.k]).replace(".",",")}"></td><td></td></tr>`).join("");
+  return `<div class="calc"><h3>🔢 Prófaðu tölur: fyrir og eftir breytingu</h3><div class="note">${c.note||""}</div>
+   <table><tr><th>Stærð</th><th>Fyrir</th><th>Eftir</th><th>Eftir ÷ Fyrir</th></tr>${rows}<tbody id="outs"></tbody></table></div>`;
+}
+
+function updateOuts(){
+  if(cur<0||cur>=Q.length) return;
+  const q=Q[cur], st=S[cur], c=q.calc, tb=$("#outs"); if(!tb) return;
+  const bad=o=>Object.values(o).some(x=>!isFinite(x));
+  if(c.type==="single"){
+    tb.innerHTML=c.outs.map(o=>{const r=bad(st.vals)?NaN:o.f(st.vals);
+      return `<tr class="out"><td>${o.l}</td><td class="${o.ratio?"ratio":""}">${fmt(r)}${o.ratio&&isFinite(r)?` &nbsp;<span class="note">(${nice(r)})</span>`:""}</td></tr>`}).join("");
+    return;
+  }
+  tb.innerHTML=c.outs.map(o=>{
+    const b=bad(st.vals)?NaN:o.f(st.vals), a=bad(st.after)?NaN:o.f(st.after), r=a/b;
+    return `<tr class="out"><td>${o.l}</td><td>${fmt(b)}</td><td>${fmt(a)}</td><td class="ratio">${isFinite(r)?fmt(r)+`<br><span class="note">${nice(r)}</span>`:"–"}</td></tr>`}).join("");
+}
+
+/* ---------- Atburðir ---------- */
+function bind(){
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{cur=+b.dataset.go;render();scrollTo(0,0)});
+  document.querySelectorAll("[data-opt]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.opt, st=S[cur];
+    st.tried.push(i);
+    if(i===Q[cur].ans){ st.done=true; st.firstTry = st.tried.length===1; }
+    render();
+  });
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{const st=S[cur]; st.showM = st.showM===b.dataset.m?null:b.dataset.m; render();});
+  const hb=$("#hintBtn"); if(hb) hb.onclick=()=>{S[cur].hints++;render();};
+  const sb=$("#symBtn"); if(sb) sb.onclick=()=>{S[cur].sym++;render();};
+  const cb=$("#calcBtn"); if(cb) cb.onclick=()=>{S[cur].showCalc=!S[cur].showCalc;render();};
+  const fb=$("#fieldBtn"); if(fb) fb.onclick=()=>{S[cur].showField=!S[cur].showField;render();};
+  const nb=$("#nextBtn"); if(nb) nb.onclick=()=>{cur++;render();scrollTo(0,0)};
+  const pb=$("#prevBtn"); if(pb) pb.onclick=()=>{cur--;render();scrollTo(0,0)};
+  const rb=$("#resetBtn"); if(rb) rb.onclick=()=>{S.forEach((s,i)=>S[i]={tried:[],done:false,firstTry:false,hints:0,showCalc:false,showM:null,showField:false,after:null,vals:null,sym:0});cur=-1;render();};
+  document.querySelectorAll("[data-cv]").forEach(inp=>inp.oninput=()=>{
+    const st=S[cur]; const x=num(inp.value);
+    (inp.dataset.side==="a"?st.after:st.vals)[inp.dataset.cv]= isNaN(x)?NaN:x;
+    updateOuts();
+  });
+  updateOuts();
+}
+
+$("#bankList").innerHTML=Object.values(METHODS).map(m=>`<div><b>${m.name}</b><br>${m.txt}</div>`).join("");
+$("#bankBtn").onclick=()=>$("#overlay").classList.add("show");
+$("#closeBank").onclick=()=>$("#overlay").classList.remove("show");
+$("#overlay").onclick=e=>{if(e.target.id==="overlay")$("#overlay").classList.remove("show")};
+render();
+</script>
+</body>
+</html>
