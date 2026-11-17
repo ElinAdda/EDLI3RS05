@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rafmótor og endurnýtingarhemlun – hermir</title>
+<style>
+  :root{
+    --ink:#1f2933; --muted:#5f6b76; --line:#d9dee3; --bg:#f4f6f8; --card:#ffffff;
+    --drive:#e8710a; --regen:#1e8e3e; --heat:#d93025; --blue:#1a73e8; --purple:#8e44c9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+  header{padding:20px 24px 8px;max-width:1280px;margin:0 auto}
+  h1{font-size:1.45rem;margin:0 0 4px}
+  header p{margin:0;color:var(--muted)}
+  main{max-width:1280px;margin:0 auto;padding:12px 24px 40px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card h2{font-size:1rem;margin:0 0 10px}
+  canvas{display:block;width:100%}
+  .status{margin-top:10px;padding:10px 12px;border-left:5px solid var(--muted);background:#f7f8fa;border-radius:6px;min-height:3.2em;font-size:.95rem}
+  .status.drive{border-color:var(--drive);background:#fff4ea}
+  .status.regen{border-color:var(--regen);background:#ecf7ef}
+  .status.heat{border-color:var(--heat);background:#fdeeee}
+  .status .extra{display:block;margin-top:4px;color:#7a2a12}
+  .pedalwrap{margin:4px 0 12px}
+  .pedallabels{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+  .pedalval{font-size:1.25rem;font-weight:700;text-align:center;margin:2px 0 6px}
+  input[type=range]{width:100%}
+  #pedal{-webkit-appearance:none;appearance:none;height:14px;border-radius:7px;background:linear-gradient(to right,var(--regen),#e7eaee 50%,var(--drive))}
+  #pedal::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:pointer}
+  #pedal::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--ink);cursor:pointer}
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+  button{font:inherit;font-size:.9rem;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer}
+  button:hover{background:#f0f3f6}
+  button.g{border-color:#f2b583;background:#fff6ee}
+  button.b{border-color:#9ccfaa;background:#eef8f1}
+  button.full{grid-column:1/-1}
+  fieldset{border:1px solid var(--line);border-radius:8px;margin:0 0 12px;padding:8px 10px}
+  legend{font-size:.85rem;color:var(--muted);padding:0 4px}
+  label.opt{display:flex;gap:8px;align-items:flex-start;font-size:.92rem;margin:4px 0;cursor:pointer}
+  .row{display:flex;gap:8px}
+  .row button{flex:1}
+  .small{font-size:.82rem;color:var(--muted)}
+  .readouts{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:.92rem}
+  .readouts .k{color:var(--muted)}
+  .readouts .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  .readouts .sep{grid-column:1/-1;border-top:1px solid var(--line);margin:4px 0}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  td{padding:4px 6px;border-bottom:1px solid #eef1f4}
+  td.n{text-align:right;font-variant-numeric:tabular-nums}
+  tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+  .swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .theory{grid-column:1/-1}
+  .theory .cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .eq{font-family:"Cambria Math","Times New Roman",serif;font-size:1.05rem;background:#f7f8fa;padding:6px 10px;border-radius:6px;margin:6px 0}
+  .brk{font-size:.93rem}
+  .brk .big{font-size:1.6rem;font-weight:700;color:var(--regen)}
+  kbd{font-family:inherit;font-size:.8rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:#fff}
+  @media (max-width:900px){
+    main{grid-template-columns:1fr;padding:12px}
+    .theory .cols{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Rafmótor og endurnýtingarhemlun</h1>
+  <p>Rafhlaða → stýring → mótor → öxull með svinghjóli (svinghjólið hefur sömu tregðu og 1800 kg rafbíll). Gefðu í, slepptu og hemlaðu, og fylgstu með hvert orkan fer.</p>
+</header>
+
+<main>
+  <section class="card">
+    <canvas id="scene" aria-label="Hreyfimynd af rafhlöðu, stýringu, mótor og svinghjóli"></canvas>
+    <div id="status" class="status"></div>
+  </section>
+
+  <aside class="card">
+    <h2>Stjórnborð</h2>
+    <div class="pedalwrap">
+      <div class="pedallabels"><span>◀ Hemla</span><span>Gefa í ▶</span></div>
+      <input id="pedal" type="range" min="-100" max="100" step="1" value="0" aria-label="Inngjöf og hemlun">
+      <div id="pedalval" class="pedalval">Laus</div>
+    </div>
+    <div class="btns">
+      <button class="g" data-p="100">Full gjöf</button>
+      <button class="g" data-p="40">Hálf gjöf</button>
+      <button class="full" data-p="0">Sleppa (renna)</button>
+      <button class="b" data-p="-25">Hemla létt</button>
+      <button class="b" data-p="-100">Hemla fast</button>
+    </div>
+    <p class="small" style="margin-top:-4px">Lyklaborð: <kbd>↑</kbd>/<kbd>↓</kbd> breyta um 5 %, <kbd>bil</kbd> sleppir.</p>
+
+    <fieldset>
+      <legend>Hvernig á að hemla?</legend>
+      <label class="opt"><input type="radio" name="brake" value="regen" checked> <span><b>Endurnýting</b> – mótorinn verður rafali og hleður rafhlöðuna</span></label>
+      <label class="opt"><input type="radio" name="brake" value="rheo"> <span><b>Viðnámshemlun</b> – mótorinn verður rafali, orkan fer í varma í viðnámi</span></label>
+      <label class="opt"><input type="radio" name="brake" value="fric"> <span><b>Aðeins núningshemlar</b> – bremsuklossar, allt verður að varma</span></label>
+      <label class="opt" style="margin-top:8px"><input type="checkbox" id="blend" checked> <span>Núningshemlar bæta við þegar mótorinn ræður ekki við</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Hleðslustaða rafhlöðu</legend>
+      <input id="soc" type="range" min="5" max="100" step="1" value="70" aria-label="Hleðslustaða">
+      <div class="small">Stillt á <b id="socset">70 %</b>. Prófaðu 100 % og hemlaðu!</div>
+    </fieldset>
+
+    <div class="row">
+      <button id="pause">⏸ Hlé</button>
+      <button id="reset">↺ Byrja upp á nýtt</button>
+    </div>
+  </aside>
+
+  <section class="card">
+    <h2>Gröf (síðustu 40 s)</h2>
+    <canvas id="graph" aria-label="Gröf af hraða, straumi og spennum"></canvas>
+  </section>
+
+  <aside class="card">
+    <h2>Mæligildi</h2>
+    <div class="readouts" id="readouts"></div>
+  </aside>
+
+  <section class="card">
+    <h2>Hvert fór orkan? (frá byrjun)</h2>
+    <table id="energy"></table>
+    <p class="small" style="margin-bottom:0">Efnaorka rafhlöðunnar er reiknuð sem ε·I_raf. Hluti af henni tapast strax sem varmi í innra viðnáminu r.</p>
+  </section>
+
+  <aside class="card">
+    <h2>Síðasta hemlun</h2>
+    <div id="brk" class="brk"><span class="small">Gefðu í og hemlaðu svo til að sjá hve mikið af hreyfiorkunni skilar sér aftur í rafhlöðuna.</span></div>
+  </aside>
+
+  <section class="card theory">
+    <h2>Eðlisfræðin á bak við hermunina</h2>
+    <div class="cols">
+      <div>
+        <p>Mótorinn er hér einfaldaður sem jafnstraumsmótor með föstum seglum. Þegar hann snýst myndar hann <b>mótspennu</b> ε<sub>m</sub> sem vinnur á móti straumnum, og togið er í réttu hlutfalli við strauminn:</p>
+        <div class="eq">ε<sub>m</sub> = k<sub>m</sub>·ω &nbsp;&nbsp;&nbsp; τ = k<sub>m</sub>·I</div>
+        <p>Stýringin leggur spennuna d·V á mótorinn, þar sem d er stýrihlutfall (0–100 %) og V er pólspenna rafhlöðunnar:</p>
+        <div class="eq">d·V = ε<sub>m</sub> + I·R<sub>a</sub> &nbsp;⇒&nbsp; I = (d·V − ε<sub>m</sub>) / R<sub>a</sub></div>
+        <ul>
+          <li><b>Gjöf:</b> d·V &gt; ε<sub>m</sub> → I &gt; 0, togið knýr öxulinn áfram.</li>
+          <li><b>Endurnýting:</b> d·V &lt; ε<sub>m</sub> → I &lt; 0. Straumurinn snýst við, togið hemlar og mótorinn verður <b>rafali</b>.</li>
+        </ul>
+        <p>Rafhlaðan og hreyfingin:</p>
+        <div class="eq">V = ε − I<sub>raf</sub>·r &nbsp;&nbsp;&nbsp; I<sub>raf</sub> = d·I</div>
+        <div class="eq">J·dω/dt = τ − τ<sub>álag</sub> − τ<sub>núningur</sub></div>
+        <p class="small">Stýringin er höfð taplaus (V·I<sub>raf</sub> = d·V·I). Raunverulegir rafbílar nota riðstraumsmótor og áriðil, en eðlisfræðin er sú sama: með því að hafa spennuna á mótornum hærri eða lægri en mótspennuna ræður stýringin hvort orka streymir inn í mótorinn eða út úr honum.</p>
+        <p class="small">Gildi: 96 NMC-sellur í röð (ε ≈ 288–403 V eftir hleðslustöðu), r = 0,08 Ω, R<sub>a</sub> = 0,04 Ω, k<sub>m</sub> = 0,20 V·s/rad, I<sub>max</sub> = 800 A, J = 2,4 kg·m² (1800 kg bíll, gírhlutfall 9, hjólradíus 0,33 m), auk loftmótstöðu og veltiviðnáms. Hámarkspólspenna er 4,2 V á sellu (403 V) og lágmark 3,0 V (288 V).</p>
+      </div>
+      <div>
+        <h2>Spurningar til að kanna</h2>
+        <ol>
+          <li>Gefðu fulla gjöf úr kyrrstöðu. Hvers vegna er straumurinn úr rafhlöðunni (I<sub>raf</sub>) í byrjun miklu minni en straumurinn í mótornum (I)?</li>
+          <li>Hvers vegna minnkar togið smám saman við fulla gjöf þó þú haldir inngjöfinni í botni? Hvað ræður hámarkshraðanum?</li>
+          <li>Hemlaðu með endurnýtingu og berðu saman ε og V. Hvor er stærri, og af hverju?</li>
+          <li>Stilltu hleðslustöðuna á 100 % og hemlaðu. Hvað gerist, og hvers vegna má rafhlaðan ekki taka við orkunni?</li>
+          <li>Berðu saman hve stór hluti hreyfiorkunnar skilar sér í rafhlöðuna við <i>létta</i> og <i>fasta</i> hemlun. Af hverju munar svona miklu?</li>
+          <li>Hvers vegna dugar endurnýtingin ekki til að stöðva svinghjólið alveg? (Skoðaðu ε<sub>m</sub> þegar hraðinn er lítill.)</li>
+          <li>Berðu saman endurnýtingu og viðnámshemlun. Í hvoru tilfellinu er mótorinn rafali? Hver er munurinn?</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+// PHYSICS-START
+const P = {N:96, r:0.08, Rm:0.04, k:0.2, Imax:800, J:2.4, G:9, rw:0.33, m:1800,
+           Crr:0.01, CdA:0.6, rho:1.2, tauBrakeMax:400, capAh:170};
+const VMAX = P.N*4.2, VMIN = P.N*3.0;
+const socT = [0,.05,.1,.2,.3,.4,.5,.6,.7,.8,.9,1];
+const ocvT = [3.0,3.3,3.45,3.55,3.62,3.68,3.74,3.82,3.92,4.0,4.08,4.2];
+const clamp = (x,a,b) => Math.min(b, Math.max(a, x));
+function ocvCell(s){
+  s = clamp(s,0,1);
+  for (let i=1;i<socT.length;i++){
+    if (s <= socT[i]){ const f=(s-socT[i-1])/(socT[i]-socT[i-1]); return ocvT[i-1]+f*(ocvT[i]-ocvT[i-1]); }
+  }
+  return ocvT[ocvT.length-1];
+}
+function speedMS(w){ return w/P.G*P.rw; }
+function loadTau(w){
+  if (w <= 0) return 0;
+  const v = speedMS(w);
+  return (P.Crr*P.m*9.81 + 0.5*P.rho*P.CdA*v*v)*P.rw/P.G;
+}
+// Electrical state for a given duty cycle d
+function elecAt(d, eps, e){
+  const I = (d*eps - e)/(P.Rm + d*d*P.r);
+  const Ib = d*I;
+  return {d, I, Ib, V: eps - Ib*P.r};
+}
+// Controller: find d giving motor current Icmd (as near as possible)
+function electrical(Icmd, eps, e){
+  let d;
+  if (Math.abs(Icmd) < 1e-9) d = e/eps;
+  else {
+    const a = P.r*Icmd, b = -eps, c = e + Icmd*P.Rm;
+    const disc = b*b - 4*a*c;
+    d = disc < 0 ? 1 : (eps - Math.sqrt(disc))/(2*a);
+    if (!isFinite(d)) d = 1;
+  }
+  return elecAt(clamp(d,0,1), eps, e);
+}
+// Adds the battery voltage window (BMS): VMIN <= V <= VMAX
+function solve(Icmd, eps, e){
+  let s = electrical(Icmd, eps, e);
+  s.lim = null;
+  const bad = x => x.V > VMAX + 1e-6 || x.V < VMIN - 1e-6;
+  if (bad(s)){
+    const which = s.V > VMAX ? 'max' : 'min';
+    let lo = 0, hi = 1;
+    for (let i=0;i<40;i++){
+      const mid = (lo+hi)/2;
+      if (bad(electrical(Icmd*mid, eps, e))) hi = mid; else lo = mid;
+    }
+    s = electrical(Icmd*lo, eps, e);
+    s.lim = which;
+  }
+  return s;
+}
+function newState(soc){
+  return {w:0, th:0, soc, pedal:0, brake:'regen', blend:true, t:0, offA:0, offB:0,
+          E:{out:0, in:0, hr:0, hm:0, hh:0, fr:0, ld:0}, last:null};
+}
+function kinetic(S){ return 0.5*P.J*S.w*S.w; }
+function step(S, h){
+  const eps = P.N*ocvCell(S.soc), e = P.k*S.w, p = S.pedal;
+  let res, Icmd = 0, tauReq = 0, tauF = 0, mode, Ph = 0;
+  if (p > 0.005){
+    mode = 'drive'; Icmd = p*P.Imax; res = solve(Icmd, eps, e);
+  } else if (p < -0.005 && S.w > 0.01){
+    tauReq = -p*P.tauBrakeMax;
+    const Iwant = -Math.min(tauReq/P.k, P.Imax);
+    if (S.brake === 'regen'){
+      mode = 'regen'; Icmd = Iwant; res = solve(Icmd, eps, e);
+    } else if (S.brake === 'rheo'){
+      mode = 'rheo'; Icmd = Iwant;
+      const I = -Math.min(-Iwant, e/P.Rm);
+      res = {d:0, I, Ib:0, V:eps, lim:null};
+      Ph = Math.max(0, e*(-I) - I*I*P.Rm);
+    } else {
+      mode = 'fric'; res = {d:0, I:0, Ib:0, V:eps, lim:null};
+    }
+    const tauE = -P.k*res.I;
+    if (mode === 'fric' || S.blend) tauF = Math.max(0, tauReq - tauE);
+  } else {
+    mode = S.w > 0.01 ? 'coast' : 'stop';
+    res = {d: clamp(e/eps,0,1), I:0, Ib:0, V:eps, lim:null};
+  }
+  const tauM = P.k*res.I, tauL = loadTau(S.w);
+  const w0 = S.w;
+  let w1 = w0 + (tauM - tauL - tauF)/P.J*h;
+  if (w1 < 0) w1 = 0;
+  if (p <= 0.005 && w1 < 0.2) w1 = 0;
+  const wAvg = (w0 + w1)/2;
+  const E = S.E;
+  E.out += Math.max(0,  eps*res.Ib)*h;
+  E.in  += Math.max(0, -eps*res.Ib)*h;
+  E.hr  += res.Ib*res.Ib*P.r*h;
+  E.hm  += res.I*res.I*P.Rm*h;
+  E.hh  += Ph*h;
+  E.fr  += tauF*wAvg*h;
+  E.ld  += tauL*wAvg*h;
+  S.soc = clamp(S.soc - res.Ib*h/3600/P.capAh, 0, 1);
+  S.th += w0*h*0.012;
+  S.offA += Math.sign(res.Ib)*Math.sqrt(Math.abs(res.Ib))*3*h;
+  S.offB += Math.sign(res.I)*Math.sqrt(Math.abs(res.I))*3*h;
+  S.w = w1; S.t += h;
+  const lowSpeed = (mode === 'regen' || mode === 'rheo') && !res.lim && Math.abs(res.I) < Math.abs(Icmd) - 1;
+  S.last = Object.assign({}, res, {eps, e, mode, Icmd, tauReq, tauF, tauM, tauL, Ph, lowSpeed,
+                         Pm: (e + res.I*P.Rm)*res.I});
+}
+// PHYSICS-END
+
+// ---------- UI ----------
+const C = {ink:'#1f2933', muted:'#5f6b76', drive:'#e8710a', regen:'#1e8e3e', heat:'#d93025', blue:'#1a73e8', purple:'#8e44c9', idle:'#9aa5b1'};
+const $ = id => document.getElementById(id);
+function fmt(x, d=0){
+  if (!isFinite(x)) return '–';
+  let s = x.toFixed(d);
+  if (/^-0(\.0*)?$/.test(s)) s = s.slice(1);
+  return s.replace('.', ',').replace('-', '−');
+}
+const kmh = w => speedMS(w)*3.6;
+const rpm = w => w*60/(2*Math.PI);
+
+let S = newState(0.7);
+let paused = false;
+let hist = [], histT = 0;
+let brk = null, lastBrk = null;
+
+const W = 920, H = 380, GW = 920, GH = 400;
+let sctx, gctx;
+function setupCanvas(cv, w, h){
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = cv.clientWidth || w;
+  cv.style.height = (cssW*h/w) + 'px';
+  cv.width = Math.round(cssW*dpr); cv.height = Math.round(cssW*h/w*dpr);
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(cv.width/w, 0, 0, cv.height/h, 0, 0);
+  return ctx;
+}
+function resize(){ sctx = setupCanvas($('scene'), W, H); gctx = setupCanvas($('graph'), GW, GH); }
+window.addEventListener('resize', resize);
+
+// ---- controls ----
+function setPedal(v){
+  v = clamp(Math.round(v), -100, 100);
+  $('pedal').value = v; S.pedal = v/100; updatePedalLabel();
+}
+function updatePedalLabel(){
+  const v = Math.round(S.pedal*100), el = $('pedalval');
+  if (v > 0){ el.textContent = 'Gjöf ' + v + ' %'; el.style.color = C.drive; }
+  else if (v < 0){ el.textContent = 'Hemlun ' + (-v) + ' %'; el.style.color = C.regen; }
+  else { el.textContent = 'Laus (rennur)'; el.style.color = C.muted; }
+}
+$('pedal').addEventListener('input', e => { S.pedal = e.target.value/100; updatePedalLabel(); });
+document.querySelectorAll('button[data-p]').forEach(b => b.addEventListener('click', () => setPedal(+b.dataset.p)));
+document.querySelectorAll('input[name=brake]').forEach(r => r.addEventListener('change', e => { S.brake = e.target.value; }));
+$('blend').addEventListener('change', e => { S.blend = e.target.checked; });
+$('soc').addEventListener('input', e => { S.soc = e.target.value/100; $('socset').textContent = e.target.value + ' %'; });
+$('pause').addEventListener('click', () => { paused = !paused; $('pause').textContent = paused ? '▶ Áfram' : '⏸ Hlé'; });
+$('reset').addEventListener('click', () => {
+  const keep = {brake:S.brake, blend:S.blend};
+  S = newState($('soc').value/100); Object.assign(S, keep);
+  hist = []; histT = 0; brk = null; lastBrk = null; setPedal(0);
+  $('brk').innerHTML = '<span class="small">Gefðu í og hemlaðu svo til að sjá hve mikið af hreyfiorkunni skilar sér aftur í rafhlöðuna.</span>';
+});
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'BUTTON' || t.tagName === 'TEXTAREA')) return;
+  if (e.key === 'ArrowUp' || e.key === 'ArrowRight'){ setPedal(S.pedal*100 + 5); e.preventDefault(); }
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft'){ setPedal(S.pedal*100 - 5); e.preventDefault(); }
+  else if (e.key === ' '){ setPedal(0); e.preventDefault(); }
+});
+
+// ---- scene drawing ----
+function line(c, x1, y1, x2, y2){ c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke(); }
+function rrect(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+function text(c, s, x, y, opt={}){
+  c.font = (opt.bold ? '700 ' : '') + (opt.size || 14) + 'px system-ui,-apple-system,Segoe UI,Roboto,sans-serif';
+  c.fillStyle = opt.color || C.ink; c.textAlign = opt.align || 'left'; c.textBaseline = 'alphabetic';
+  c.fillText(s, x, y);
+}
+function dotsH(c, xa, xb, y, off, col){
+  const len = Math.abs(xb - xa), dir = Math.sign(xb - xa), sp = 18;
+  c.fillStyle = col;
+  for (let s = ((off % sp) + sp) % sp; s < len; s += sp){
+    c.beginPath(); c.arc(xa + dir*s, y, 4, 0, 2*Math.PI); c.fill();
+  }
+}
+function powerArrow(c, x1, x2, y, Pw, label){
+  const kW = Pw/1000;
+  if (Math.abs(Pw) < 50){
+    c.strokeStyle = '#cfd5db'; c.lineWidth = 2; line(c, x1, y, x2, y);
+    text(c, label + ': 0 kW', (x1+x2)/2, y-10, {align:'center', size:12, color:C.muted});
+    return;
+  }
+  const col = Pw > 0 ? C.drive : C.regen;
+  const th = clamp(2 + Math.sqrt(Math.abs(kW))*0.9, 2, 14);
+  const [a, b] = Pw > 0 ? [x1, x2] : [x2, x1];
+  const dir = Math.sign(b - a);
+  c.strokeStyle = col; c.fillStyle = col; c.lineWidth = th; c.lineCap = 'butt';
+  line(c, a, y, b - dir*(th+8), y);
+  c.beginPath(); c.moveTo(b, y); c.lineTo(b - dir*(th+12), y - th - 5); c.lineTo(b - dir*(th+12), y + th + 5); c.closePath(); c.fill();
+  c.lineCap = 'round';
+  text(c, label + ': ' + fmt(Math.abs(kW), 1) + ' kW', (x1+x2)/2, y - th - 8, {align:'center', size:12, color:col, bold:true});
+}
+function ringSeg(c, cx, cy, r1, r2, a1, a2, col){
+  c.beginPath(); c.arc(cx, cy, r2, a1, a2); c.arc(cx, cy, r1, a2, a1, true); c.closePath();
+  c.fillStyle = col; c.fill();
+}
+function drawScene(){
+  const c = sctx, L = S.last; if (!L) return;
+  c.clearRect(0, 0, W, H);
+  const yT = 150, yB = 250;
+  const colB = L.Ib > 0.5 ? C.drive : (L.Ib < -0.5 ? C.regen : C.idle);
+  const colM = L.mode === 'rheo' ? C.heat : (L.I > 0.5 ? C.drive : (L.I < -0.5 ? C.regen : C.idle));
+
+  // wires
+  c.lineCap = 'round'; c.lineWidth = 4; c.strokeStyle = '#5b6570';
+  line(c,190,yT,290,yT); line(c,190,yB,290,yB); line(c,430,yT,545,yT); line(c,430,yB,545,yB);
+  if (Math.abs(L.Ib) > 0.5){ dotsH(c,190,290,yT,S.offA,colB); dotsH(c,290,190,yB,S.offA,colB); }
+  if (Math.abs(L.I) > 0.5){ dotsH(c,430,545,yT,S.offB,colM); dotsH(c,545,430,yB,S.offB,colM); }
+
+  // power arrows
+  powerArrow(c, 194, 286, 62, L.V*L.Ib, 'V·I_raf');
+  powerArrow(c, 434, 540, 62, L.Pm, 'Rafafl mótors');
+  powerArrow(c, 680, 790, 62, L.tauM*S.w, 'τ·ω');
+
+  // battery
+  rrect(c,20,100,170,200,10); c.fillStyle='#fff'; c.fill(); c.strokeStyle='#c5ccd3'; c.lineWidth=2; c.stroke();
+  text(c,'Rafhlaða',32,124,{bold:true,size:16});
+  text(c,'96 sellur í röð',32,142,{size:12,color:C.muted});
+  text(c,'+',176,145,{bold:true,size:16}); text(c,'−',176,245,{bold:true,size:16});
+  text(c,'ε = ' + fmt(L.eps,1) + ' V',32,170,{size:15});
+  text(c,'r = 0,08 Ω',32,190,{size:13,color:C.muted});
+  const vCol = L.V > L.eps + 0.05 ? C.regen : (L.V < L.eps - 0.05 ? C.drive : C.ink);
+  text(c,'V = ' + fmt(L.V,1) + ' V',32,212,{size:15,bold:true,color:vCol});
+  text(c,'I_raf = ' + fmt(L.Ib,0) + ' A',32,232,{size:13,color:colB === C.idle ? C.muted : colB});
+  text(c,'Hleðsla ' + fmt(S.soc*100,2) + ' %',32,258,{size:12,color:C.muted});
+  rrect(c,32,264,140,14,4); c.fillStyle='#e7eaee'; c.fill();
+  rrect(c,32,264,Math.max(4,140*S.soc),14,4); c.fillStyle = S.soc > 0.2 ? '#34a853' : '#e37400'; c.fill();
+  const pr = L.Ib*L.Ib*P.r;
+  text(c,'Varmi í r: ' + fmt(pr/1000,1) + ' kW',105,322,{align:'center',size:12,color: pr > 100 ? C.heat : C.muted});
+
+  // controller
+  rrect(c,290,100,140,200,10); c.fillStyle='#fff'; c.fill(); c.strokeStyle='#c5ccd3'; c.lineWidth=2; c.stroke();
+  text(c,'Stýring',302,124,{bold:true,size:16});
+  text(c,'(í rafbíl: áriðill)',302,142,{size:12,color:C.muted});
+  if (L.mode === 'rheo' || L.mode === 'fric'){
+    text(c,'Mótor aftengdur',302,172,{size:13,color:C.muted});
+    text(c,'rafhlöðunni',302,190,{size:13,color:C.muted});
+  } else {
+    text(c,'d = ' + fmt(L.d*100,0) + ' %',302,172,{size:15});
+    // PWM wave
+    c.strokeStyle = C.purple; c.lineWidth = 2; c.beginPath();
+    const x0 = 302, pw = 38, yl = 214, yh = 186;
+    for (let i=0;i<3;i++){
+      const xs = x0 + i*pw, xd = xs + pw*L.d;
+      c.moveTo(xs, yl); c.lineTo(xs, yh); c.lineTo(xd, yh); c.lineTo(xd, yl); c.lineTo(xs+pw, yl);
+    }
+    c.stroke();
+    text(c,'d·V = ' + fmt(L.d*L.V,0) + ' V',302,240,{size:14,bold:true,color:C.drive});
+  }
+  text(c,'I = ' + fmt(L.I,0) + ' A',302,264,{size:13,color: colM === C.idle ? C.muted : colM});
+  text(c,'(mótorstraumur)',302,282,{size:11,color:C.muted});
+
+  // brake resistor
+  const rheoSel = S.brake === 'rheo';
+  c.setLineDash(rheoSel ? [] : [4,4]); c.lineWidth = 2; c.strokeStyle = rheoSel ? '#5b6570' : '#cfd5db';
+  line(c,335,300,335,318); line(c,385,300,385,318);
+  const hA = clamp(L.Ph/120000, 0, 1);
+  rrect(c,312,318,96,30,6);
+  c.fillStyle = hA > 0.01 ? `rgba(217,48,37,${0.15+0.85*hA})` : '#fff'; c.fill(); c.stroke(); c.setLineDash([]);
+  text(c,'Hemlaviðnám',360,338,{align:'center',size:12,color: hA > 0.4 ? '#fff' : (rheoSel ? C.ink : '#aab3bc'), bold:rheoSel});
+  if (L.Ph > 100) text(c,fmt(L.Ph/1000,1) + ' kW varmi',360,366,{align:'center',size:12,color:C.heat,bold:true});
+
+  // motor (front view)
+  const mx = 600, my = 200;
+  text(c,'Mótor',mx,112,{align:'center',bold:true,size:16});
+  c.beginPath(); c.arc(mx,my,75,0,2*Math.PI); c.fillStyle='#eef1f4'; c.fill(); c.strokeStyle='#8a96a3'; c.lineWidth=3; c.stroke();
+  ringSeg(c,mx,my,58,72,-Math.PI*5/6,-Math.PI/6,'#d64545');
+  ringSeg(c,mx,my,58,72,Math.PI/6,Math.PI*5/6,'#3b6fd6');
+  text(c,'N',mx,my-58,{align:'center',bold:true,size:13,color:'#fff'});
+  text(c,'S',mx,my+70,{align:'center',bold:true,size:13,color:'#fff'});
+  c.save(); c.translate(mx,my); c.rotate(S.th);
+  c.beginPath(); c.arc(0,0,46,0,2*Math.PI); c.fillStyle='#c3ccd5'; c.fill();
+  rrect(c,-42,-9,84,18,4); c.fillStyle = colM === C.idle ? '#c77d2e' : colM; c.fill();
+  c.strokeStyle='#7a4a17'; c.lineWidth=1; c.stroke();
+  c.beginPath(); c.arc(0,0,7,0,2*Math.PI); c.fillStyle='#4a5560'; c.fill();
+  c.restore();
+  text(c,'ε_m = ' + fmt(L.e,0) + ' V',mx,300,{align:'center',size:14,bold:true,color:C.purple});
+  text(c,'τ = ' + fmt(L.tauM,0) + ' N·m',mx,318,{align:'center',size:13});
+  const pm = L.I*L.I*P.Rm;
+  text(c,'Varmi í vafningum: ' + fmt(pm/1000,1) + ' kW',mx,338,{align:'center',size:12,color: pm > 100 ? C.heat : C.muted});
+
+  // shaft
+  c.fillStyle='#9aa5b1'; c.fillRect(672,192,80,16);
+  c.strokeStyle='#6b7680'; c.lineWidth=2;
+  const sh = ((S.th*12) % 16 + 16) % 16;
+  for (let x = 672 + sh; x < 752; x += 16) line(c, x, 193, x+6, 207);
+
+  // flywheel / wheel
+  const wx = 820, wy = 200, wr = 82;
+  text(c,'Öxull + svinghjól',wx,104,{align:'center',bold:true,size:15});
+  c.beginPath(); c.arc(wx,wy,wr,0,2*Math.PI); c.fillStyle='#2f3740'; c.fill();
+  c.beginPath(); c.arc(wx,wy,wr-14,0,2*Math.PI); c.fillStyle='#dfe4e9'; c.fill();
+  c.save(); c.translate(wx,wy); c.rotate(S.th/3);
+  c.strokeStyle='#7d8893'; c.lineWidth=6;
+  for (let i=0;i<6;i++){ const a=i*Math.PI/3; line(c,0,0,Math.cos(a)*(wr-16),Math.sin(a)*(wr-16)); }
+  c.beginPath(); c.arc(wr-28,0,5,0,2*Math.PI); c.fillStyle='#d64545'; c.fill();
+  c.restore();
+  c.beginPath(); c.arc(wx,wy,12,0,2*Math.PI); c.fillStyle='#4a5560'; c.fill();
+  // brake caliper
+  const Pf = L.tauF*S.w, fA = clamp(Pf/100000,0,1);
+  c.save(); c.translate(wx + Math.cos(-0.9)*(wr-6), wy + Math.sin(-0.9)*(wr-6)); c.rotate(-0.9 + Math.PI/2);
+  rrect(c,-16,-10,32,20,4); c.fillStyle = fA > 0.01 ? `rgb(${Math.round(120+135*fA)},${Math.round(130-90*fA)},${Math.round(140-110*fA)})` : '#78838e'; c.fill();
+  c.restore();
+  text(c, fmt(kmh(S.w),0) + ' km/klst · ' + fmt(rpm(S.w),0) + ' sn/mín', wx, 306, {align:'center', size:13, bold:true});
+  text(c,'Núningshemlar: ' + fmt(Pf/1000,1) + ' kW varmi', wx, 324, {align:'center', size:12, color: Pf > 100 ? C.heat : C.muted});
+  text(c,'Snúningurinn er sýndur hægar en í raun', wx, 372, {align:'center', size:11, color:'#9aa5b1'});
+}
+
+// ---- graphs ----
+function strip(c, y0, h, title, ymin, ymax, series, X, t0, zero){
+  const x0 = 60, x1 = GW - 20;
+  c.fillStyle = '#fafbfc'; c.fillRect(x0, y0, x1-x0, h);
+  c.strokeStyle = '#e3e7eb'; c.lineWidth = 1; c.strokeRect(x0, y0, x1-x0, h);
+  const Y = v => y0 + h - (v - ymin)/(ymax - ymin)*h;
+  text(c, title, x0+6, y0+15, {size:12, bold:true});
+  text(c, fmt(ymax,0), x0-6, y0+10, {align:'right', size:11, color:C.muted});
+  text(c, fmt(ymin,0), x0-6, y0+h, {align:'right', size:11, color:C.muted});
+  if (zero){
+    c.strokeStyle = '#b8c0c8'; c.setLineDash([3,3]); line(c, x0, Y(0), x1, Y(0)); c.setLineDash([]);
+    text(c, '0', x0-6, Y(0)+4, {align:'right', size:11, color:C.muted});
+  }
+  // legend
+  let lx = x1 - 6;
+  c.font = '12px system-ui,sans-serif';
+  for (let i = series.length-1; i >= 0; i--){
+    const s = series[i]; const w = c.measureText(s.lab).width;
+    text(c, s.lab, lx, y0+15, {align:'right', size:12, color:s.col});
+    lx -= w + 6;
+    c.strokeStyle = s.col; c.lineWidth = 2; c.setLineDash(s.dash || []); line(c, lx-16, y0+11, lx-2, y0+11); c.setLineDash([]);
+    lx -= 26;
+  }
+  c.save(); c.beginPath(); c.rect(x0, y0, x1-x0, h); c.clip();
+  for (const s of series){
+    const draw = () => {
+      c.beginPath(); let first = true;
+      for (const p of hist){ if (p.t < t0) continue; if (!isFinite(p[s.k])){ first = true; continue; } const x = X(p.t), y = Y(clamp(p[s.k], ymin, ymax)); if (first){ c.moveTo(x,y); first=false; } else c.lineTo(x,y); }
+      c.stroke();
+    };
+    c.lineWidth = 2; c.setLineDash(s.dash || []);
+    if (s.split){
+      c.save(); c.beginPath(); c.rect(x0, y0, x1-x0, Y(0)-y0); c.clip(); c.strokeStyle = C.drive; draw(); c.restore();
+      c.save(); c.beginPath(); c.rect(x0, Y(0), x1-x0, y0+h-Y(0)); c.clip(); c.strokeStyle = C.regen; draw(); c.restore();
+    } else { c.strokeStyle = s.col; draw(); }
+    c.setLineDash([]);
+  }
+  c.restore();
+}
+function drawGraph(){
+  const c = gctx; c.clearRect(0,0,GW,GH);
+  const t1 = Math.max(S.t, 40), t0 = t1 - 40;
+  const X = t => 60 + (t - t0)/40*(GW - 80);
+  strip(c, 8, 82, 'Hraði (km/klst)', 0, 220, [{k:'v', col:C.ink, lab:'hraði'}], X, t0);
+  strip(c, 104, 110, 'Straumur rafhlöðu I_raf (A)', -800, 800, [{k:'Ib', col:C.drive, lab:'+ afhleðsla / − hleðsla', split:true}], X, t0, true);
+  text(c, '↑ úr rafhlöðu', GW-26, 138, {align:'right', size:11, color:C.drive});
+  text(c, '↓ inn í rafhlöðu', GW-26, 208, {align:'right', size:11, color:C.regen});
+  strip(c, 228, 145, 'Spennur (V)', 0, 420, [
+    {k:'eps', col:'#59636e', dash:[6,4], lab:'ε'},
+    {k:'V', col:C.blue, lab:'V'},
+    {k:'em', col:C.purple, lab:'ε_m'},
+    {k:'dv', col:C.drive, lab:'d·V'}], X, t0);
+  // time axis
+  for (let t = Math.ceil(t0/10)*10; t <= t1; t += 10){
+    const x = X(t); c.strokeStyle = '#e3e7eb'; line(c, x, 373, x, 378);
+    text(c, fmt(t,0) + ' s', x, 392, {align:'center', size:11, color:C.muted});
+  }
+}
+
+// ---- readouts ----
+function rows(arr){
+  return arr.map(r => r === '-' ? '<div class="sep"></div>' : `<div class="k">${r[0]}</div><div class="v" style="${r[2]?'color:'+r[2]:''}">${r[1]}</div>`).join('');
+}
+function updateText(){
+  const L = S.last; if (!L) return;
+  const Pb = L.V*L.Ib;
+  $('readouts').innerHTML = rows([
+    ['Hraði', fmt(kmh(S.w),0) + ' km/klst'],
+    ['Snúningshraði mótors', fmt(rpm(S.w),0) + ' sn/mín'],
+    '-',
+    ['Íspenna rafhlöðu ε', fmt(L.eps,1) + ' V'],
+    ['Pólspenna V', fmt(L.V,1) + ' V', L.V > L.eps+0.05 ? C.regen : (L.V < L.eps-0.05 ? C.drive : '')],
+    ['Straumur rafhlöðu I_raf', fmt(L.Ib,0) + ' A'],
+    ['Afl rafhlöðu V·I_raf', fmt(Pb/1000,1) + ' kW', Pb > 50 ? C.drive : (Pb < -50 ? C.regen : '')],
+    ['Hleðslustaða', fmt(S.soc*100,3) + ' %'],
+    '-',
+    ['Stýrihlutfall d', (L.mode==='rheo'||L.mode==='fric') ? '–' : fmt(L.d*100,0) + ' %'],
+    ['Spenna á mótor d·V', (L.mode==='rheo'||L.mode==='fric') ? '–' : fmt(L.d*L.V,0) + ' V'],
+    ['Mótspenna ε_m = k_m·ω', fmt(L.e,0) + ' V', C.purple],
+    ['Mótorstraumur I', fmt(L.I,0) + ' A'],
+    ['Tog mótors τ = k_m·I', fmt(L.tauM,0) + ' N·m'],
+    ['Tog núningshemla', fmt(L.tauF,0) + ' N·m'],
+    '-',
+    ['Hreyfiorka ½Jω²', fmt(kinetic(S)/1000,0) + ' kJ'],
+  ]);
+
+  const E = S.E, K = kinetic(S);
+  const net = E.out - E.in;
+  const r = (lab, val, col) => `<tr><td><span class="swatch" style="background:${col}"></span>${lab}</td><td class="n">${fmt(val/1000,0)} kJ</td><td class="n">${fmt(val/3600,1)} Wh</td></tr>`;
+  $('energy').innerHTML =
+    r('Tekið úr rafhlöðu (efnaorka)', E.out, C.drive) +
+    r('Skilað aftur í rafhlöðu', E.in, C.regen) +
+    `<tr class="tot"><td>Nettó úr rafhlöðu</td><td class="n">${fmt(net/1000,0)} kJ</td><td class="n">${fmt(net/3600,1)} Wh</td></tr>` +
+    `<tr><td colspan="3" class="small" style="padding-top:10px">… og hún er nú hér:</td></tr>` +
+    r('Hreyfiorka svinghjóls', K, C.ink) +
+    r('Varmi í innra viðnámi rafhlöðu (r)', E.hr, '#f28b82') +
+    r('Varmi í vafningum mótors (R_a)', E.hm, '#ea4335') +
+    r('Varmi í hemlaviðnámi', E.hh, '#b31412') +
+    r('Varmi í núningshemlum', E.fr, '#7a1a0e') +
+    r('Loftmótstaða og veltiviðnám', E.ld, '#9aa5b1') +
+    `<tr class="tot"><td>Samtals</td><td class="n">${fmt((K+E.hr+E.hm+E.hh+E.fr+E.ld)/1000,0)} kJ</td><td class="n">${fmt((K+E.hr+E.hm+E.hh+E.fr+E.ld)/3600,1)} Wh</td></tr>`;
+
+  // status
+  const st = $('status');
+  let cls = '', msg = '', extra = '';
+  const em = fmt(L.e,0), dv = fmt(L.d*L.V,0);
+  switch (L.mode){
+    case 'drive':
+      cls = 'drive';
+      if (L.lim === 'min') msg = `<b>Rafhlaðan er nánast tóm.</b> Pólspennan má ekki fara undir 3,0 V á sellu (288 V), svo stjórnkerfið takmarkar strauminn og aflið.`;
+      else if (L.d > 0.999) msg = `<b>Full spenna á mótornum (d = 100 %).</b> Stýringin getur ekki lagt hærri spennu á mótorinn en V = ${fmt(L.V,0)} V. Mótspennan ε<sub>m</sub> = ${em} V nálgast hana, svo straumurinn (og togið) minnkar eftir því sem hraðinn eykst. Það ræður hámarkshraðanum.`;
+      else msg = `<b>Gjöf.</b> Stýringin leggur d·V = ${dv} V á mótorinn, sem er hærra en mótspennan ε<sub>m</sub> = ${em} V. Straumur fer <i>inn</i> í mótorinn og myndar tog. Rafhlaðan gefur frá sér orku, svo pólspennan V er lægri en íspennan ε (V = ε − I<sub>raf</sub>·r).`;
+      break;
+    case 'regen':
+      cls = 'regen';
+      if (L.lim === 'max'){ cls = 'heat'; msg = `<b>Rafhlaðan er of full til að taka við orku.</b> Pólspennan má ekki fara yfir 4,2 V á sellu (403 V), svo stjórnkerfið takmarkar endurnýtinguna${L.Ib < -0.5 ? '' : ' alveg'}.`; }
+      else if (L.lowSpeed){ cls = 'heat'; msg = `<b>Lítill hraði.</b> Mótspennan ε<sub>m</sub> = ${em} V er orðin svo lág að mótorinn getur ekki lengur ýtt nægum straumi inn í rafhlöðuna. Endurnýtingin dvínar.`; }
+      else msg = `<b>Endurnýting.</b> Stýringin lækkar spennuna á mótornum <i>niður fyrir</i> mótspennuna (d·V = ${dv} V &lt; ε<sub>m</sub> = ${em} V). Straumurinn snýst við: mótorinn verður <b>rafali</b> og hleður rafhlöðuna. Nú er pólspennan <i>hærri</i> en íspennan: V = ε + |I<sub>raf</sub>|·r = ${fmt(L.V,1)} V.`;
+      break;
+    case 'rheo':
+      cls = 'heat';
+      msg = L.lowSpeed ? `<b>Viðnámshemlun á litlum hraða.</b> Mótspennan ε<sub>m</sub> = ${em} V er of lág til að halda uppi hemlunarstraumnum.`
+                       : `<b>Viðnámshemlun.</b> Mótorinn er rafali (ε<sub>m</sub> = ${em} V), en straumurinn fer í hemlaviðnám í stað rafhlöðunnar. Hreyfiorkan verður að varma, eins og í sumum lestum.`;
+      break;
+    case 'fric':
+      cls = 'heat'; msg = `<b>Aðeins núningshemlar.</b> Enginn straumur í mótornum. Öll hreyfiorkan verður að varma í bremsuklossunum.`;
+      break;
+    case 'coast':
+      msg = `<b>Rennur.</b> Stýringin jafnar spennuna á mótornum við mótspennuna (d·V = ε<sub>m</sub> = ${em} V), svo enginn straumur fer um mótorinn. Loftmótstaða og veltiviðnám hægja smám saman á.`;
+      break;
+    default:
+      msg = `<b>Kyrrstaða.</b> Gefðu í með sleðanum, hnöppunum eða <kbd>↑</kbd>.`;
+  }
+  if ((L.mode === 'regen' || L.mode === 'rheo') && L.tauF > 0.5)
+    extra = `+ Núningshemlarnir bæta við ${fmt(L.tauF,0)} N·m af því ${fmt(L.tauReq,0)} N·m hemlunartogi sem beðið var um. Sá hluti orkunnar verður að varma.`;
+  else if ((L.mode === 'regen' || L.mode === 'rheo') && !S.blend && L.tauReq - (-L.tauM) > 0.5)
+    extra = `Núningshemlar eru óvirkir, svo aðeins mótorinn hemlar (${fmt(-L.tauM,0)} af ${fmt(L.tauReq,0)} N·m).`;
+  st.className = 'status ' + cls;
+  st.innerHTML = msg + (extra ? `<span class="extra">${extra}</span>` : '');
+
+  // braking event
+  if (lastBrk){
+    const b = lastBrk, pct = b.dK > 1 ? 100*b.ret/b.dK : 0;
+    const mname = {regen:'endurnýting', rheo:'viðnámshemlun', fric:'núningshemlar'}[b.mode];
+    $('brk').innerHTML =
+      `<div class="small">${brk ? 'Hemlun í gangi' : 'Lokið'} · ${mname} · ${fmt(b.v0,0)} → ${fmt(b.v1,0)} km/klst</div>
+       <div class="big">${fmt(pct,0)} %</div>
+       <div>af hreyfiorkunni sem tapaðist fór aftur í rafhlöðuna.</div>
+       <table style="margin-top:8px">
+         <tr><td>Hreyfiorka minnkaði um</td><td class="n">${fmt(b.dK/1000,0)} kJ</td></tr>
+         <tr><td style="color:${C.regen}">Í rafhlöðuna (efnaorka)</td><td class="n">${fmt(b.ret/1000,0)} kJ</td></tr>
+         <tr><td>Varmi í r og R_a</td><td class="n">${fmt(b.ohm/1000,0)} kJ</td></tr>
+         <tr><td>Varmi í hemlaviðnámi</td><td class="n">${fmt(b.hh/1000,0)} kJ</td></tr>
+         <tr><td>Varmi í núningshemlum</td><td class="n">${fmt(b.fr/1000,0)} kJ</td></tr>
+         <tr><td>Loft- og veltiviðnám</td><td class="n">${fmt(b.ld/1000,0)} kJ</td></tr>
+       </table>`;
+  }
+}
+
+function trackBraking(){
+  const braking = S.pedal < -0.005 && (S.w > 0.01 || brk);
+  const E = S.E;
+  if (braking && !brk && S.w > 0.01)
+    brk = {K0:kinetic(S), v0:kmh(S.w), in0:E.in, out0:E.out, fr0:E.fr, hh0:E.hh, hm0:E.hm, hr0:E.hr, ld0:E.ld, mode:S.brake};
+  if (brk){
+    lastBrk = {mode:brk.mode, v0:brk.v0, v1:kmh(S.w), dK:brk.K0 - kinetic(S),
+               ret:(E.in - brk.in0) - (E.out - brk.out0),
+               ohm:(E.hm - brk.hm0) + (E.hr - brk.hr0), hh:E.hh - brk.hh0, fr:E.fr - brk.fr0, ld:E.ld - brk.ld0};
+    if (!(S.pedal < -0.005) || S.w <= 0 || S.brake !== brk.mode) brk = null;
+  }
+}
+
+// ---- main loop ----
+let lastTs = null, textTimer = 0;
+function frame(ts){
+  if (lastTs === null) lastTs = ts;
+  let dt = Math.min(0.05, (ts - lastTs)/1000); lastTs = ts;
+  if (!paused){
+    const n = 20;
+    for (let i=0;i<n;i++) step(S, dt/n);
+    trackBraking();
+    histT += dt;
+    if (histT >= 0.1 || !hist.length){
+      histT = 0;
+      const L = S.last;
+      hist.push({t:S.t, v:kmh(S.w), Ib:L.Ib, V:L.V, eps:L.eps, em:L.e,
+                 dv: (L.mode==='rheo'||L.mode==='fric') ? NaN : L.d*L.V});
+      while (hist.length && hist[0].t < S.t - 42) hist.shift();
+    }
+  }
+  drawScene(); drawGraph();
+  textTimer += dt;
+  if (textTimer > 0.12 || paused){ textTimer = 0; updateText(); }
+  requestAnimationFrame(frame);
+}
+resize();
+step(S, 0.001);
+updatePedalLabel();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
