@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arduino-borðið og stakrænir útgangar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Kennslubókarsíða: ein lesdálkur (~68 stafir), myndir mega fara breiðar, spássíubox fyrir hugtök og misskilning */
+:root{
+  --paper:#FBFCFD; --panel:#F0F3F6; --ink:#16212E; --muted:#4C5A69; --rule:#D6DDE4;
+  --accent:#1F5FAD; --accent-soft:#E3ECF7;
+  --pcol:#C2362B; --pcol-soft:#F7E2DF; --ncol:#1F5FAD; --ncol-soft:#DFE9F6;
+  --ok:#1E7A44; --ok-soft:#DDF1E5; --bad:#B3261E; --bad-soft:#F8E1DF;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-head:"IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121820; --panel:#1B2430; --ink:#E4EAF0; --muted:#A3B1BF; --rule:#2E3A48;
+    --accent:#7EB0EE; --accent-soft:#1C2E45;
+    --pcol:#F08A7E; --pcol-soft:#3A2220; --ncol:#7EB0EE; --ncol-soft:#1C2E45;
+    --ok:#6BCB93; --ok-soft:#173427; --bad:#F08A7E; --bad-soft:#3A2220;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121820; --panel:#1B2430; --ink:#E4EAF0; --muted:#A3B1BF; --rule:#2E3A48;
+  --accent:#7EB0EE; --accent-soft:#1C2E45;
+  --pcol:#F08A7E; --pcol-soft:#3A2220; --ncol:#7EB0EE; --ncol-soft:#1C2E45;
+  --ok:#6BCB93; --ok-soft:#173427; --bad:#F08A7E; --bad-soft:#3A2220;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-body);font-size:19px;line-height:1.6;padding:0 20px 64px}
+.wrap{max-width:760px;margin:0 auto}
+.wide{max-width:980px;margin:0 auto}
+header.top{max-width:760px;margin:0 auto;padding:40px 0 8px;border-bottom:3px solid var(--ink)}
+.kicker{font-family:var(--f-head);font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0}
+h1{font-family:var(--f-head);font-size:2.6rem;line-height:1.1;margin:.25em 0 .2em;text-wrap:balance}
+.meta{font-family:var(--f-head);font-size:.85rem;color:var(--muted);margin:0 0 16px}
+h2{font-family:var(--f-head);font-size:1.5rem;line-height:1.25;margin:2.4em 0 .5em;text-wrap:balance;display:flex;gap:.6em;align-items:baseline}
+h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;min-width:1.4em}
+h3{font-family:var(--f-head);font-size:1.1rem;margin:1.6em 0 .3em}
+p{margin:.7em 0}
+sub{font-size:.72em;line-height:0}
+.var{font-style:italic}
+a{color:var(--accent)}
+nav.toc{font-family:var(--f-head);font-size:.92rem;background:var(--panel);border-radius:10px;padding:14px 20px;margin:24px 0}
+nav.toc ol{margin:.4em 0 0;padding-left:1.4em;columns:2;column-gap:28px}
+nav.toc li{margin:.15em 0;break-inside:avoid}
+.goals{border-left:4px solid var(--accent);padding:4px 0 4px 18px;margin:20px 0}
+.goals ul{margin:.3em 0;padding-left:1.2em}
+.box{border-radius:10px;padding:14px 20px;margin:22px 0;font-size:.95em}
+.box .bt{font-family:var(--f-head);font-weight:700;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+.box.think{background:var(--accent-soft)}
+.box.think .bt{color:var(--accent)}
+.box.warn{background:var(--pcol-soft)}
+.box.warn .bt{color:var(--pcol)}
+.box.terms{background:var(--panel)}
+.box.terms dl{margin:.3em 0;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px}
+.box.terms dt{font-family:var(--f-head);font-weight:700}
+.box.terms dd{margin:0}
+@media (max-width:520px){.box.terms dl{grid-template-columns:1fr}.box.terms dd{margin-bottom:6px}}
+figure{margin:24px 0}
+figcaption{font-family:var(--f-head);font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.45}
+figcaption b{color:var(--ink)}
+.fig3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fig3 figure{margin:0}
+@media (max-width:720px){.fig3{grid-template-columns:1fr;max-width:380px;margin:0 auto}}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--f-head);fill:var(--ink)}
+.bond{stroke:var(--rule);stroke-width:6}
+.el{fill:var(--ink)}
+.hole{fill:var(--paper);stroke:var(--pcol);stroke-width:4;stroke-dasharray:5 4}
+.atom{fill:var(--paper);stroke:var(--muted);stroke-width:4}
+.atom-n{fill:var(--ncol-soft);stroke:var(--ncol)}
+.atom-p{fill:var(--pcol-soft);stroke:var(--pcol)}
+.atomlab{font-size:28px;font-weight:700;text-anchor:middle}
+.free{fill:var(--ncol)}
+.free-ring{fill:none;stroke:var(--ncol);stroke-width:3;stroke-dasharray:5 4}
+.preg{fill:var(--pcol-soft)} .nreg{fill:var(--ncol-soft)}
+.dep{fill:var(--paper);stroke:var(--rule);stroke-width:2;stroke-dasharray:8 6}
+.ion{fill:var(--paper);stroke:var(--muted);stroke-width:2}
+.ionmark{stroke:var(--muted);stroke-width:3}
+.lab{font-size:20px;font-weight:700;text-anchor:middle;fill:var(--muted)}
+.lab-p{fill:var(--pcol)} .lab-n{fill:var(--ncol)}
+.small{font-size:17px;text-anchor:middle;fill:var(--muted)}
+.arrow{stroke:var(--ink);stroke-width:3}
+.ahead,.axhead{fill:var(--ink)}
+.ledbody{fill:var(--pcol-soft);stroke:var(--pcol);stroke-width:4}
+.metal{fill:none;stroke:var(--muted);stroke-width:4}
+.chip{fill:var(--pcol)}
+.wire{fill:none;stroke:var(--muted);stroke-width:3}
+.leg{stroke:var(--muted);stroke-width:8}
+.lead line{stroke:var(--muted);stroke-width:2}
+.badge circle{fill:var(--accent)}
+.badgetxt text{fill:var(--paper);font-size:22px;font-weight:700;text-anchor:middle}
+.lab2{font-size:22px;font-weight:600}
+.lab2.end{text-anchor:end}
+.ledfig{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:28px;align-items:start}
+@media (max-width:640px){.ledfig{grid-template-columns:1fr}.ledfig svg{max-width:320px;margin:0 auto}}
+.parts{padding-left:1.4em;margin:0}
+.parts li{margin:.35em 0}
+.syms{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:720px){.syms{grid-template-columns:repeat(2,1fr)}}
+.sym{margin:0;background:var(--panel);border-radius:10px;padding:12px}
+.sym figcaption{display:flex;flex-direction:column;align-items:center;text-align:center}
+.sym figcaption b{font-size:1rem}
+.sw{stroke:var(--ink);stroke-width:4;fill:none}
+.sw.thick{stroke-width:5}
+.sw.xthick{stroke-width:10}
+.nofill{fill:none}
+.sa{stroke:var(--pcol);stroke-width:4}
+#sah path{fill:var(--pcol)}
+.symletter{font-size:34px;font-weight:700;text-anchor:middle}
+.symtxt{font-size:22px;font-weight:700;text-anchor:middle}
+.ax{stroke:var(--ink);stroke-width:3}
+.dash{stroke:var(--muted);stroke-width:2;stroke-dasharray:8 7}
+.curve{fill:none;stroke:var(--pcol);stroke-width:6}
+.axlab{font-size:24px;font-weight:700;font-style:italic}
+.axlab .sub{font-size:16px;font-style:normal}
+.tablewrap{overflow-x:auto;margin:18px 0}
+table{border-collapse:collapse;width:100%;font-family:var(--f-head);font-size:.9rem;font-variant-numeric:tabular-nums}
+th{text-align:left;border-bottom:2px solid var(--ink);padding:8px 10px;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:8px 10px;vertical-align:top}
+td.num{white-space:nowrap}
+.eq{display:flex;align-items:center;justify-content:center;gap:.5em;font-size:1.5rem;background:var(--panel);border-radius:10px;padding:18px;margin:20px 0;font-family:var(--f-body)}
+.frac{display:inline-flex;flex-direction:column;align-items:center}
+.frac .n{border-bottom:2px solid var(--ink);padding:0 .3em .1em}
+.frac .d{padding:.1em .3em 0}
+.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+.steps li{counter-increment:s;position:relative;padding:10px 14px 10px 54px;border-bottom:1px solid var(--rule)}
+.steps li::before{content:counter(s);position:absolute;left:10px;top:10px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--paper);font-family:var(--f-head);font-weight:700;font-size:.9rem;display:grid;place-items:center}
+.result{font-family:var(--f-head);font-weight:700}
+/* holu-hermir */
+.holes{background:var(--panel);border-radius:10px;padding:18px 20px;margin:22px 0}
+.track{position:relative;display:flex;justify-content:space-between;align-items:center;padding:14px 6px;margin:4px 0 12px}
+.track::before{content:"";position:absolute;left:0;right:0;top:50%;height:6px;margin-top:-3px;background:var(--rule);border-radius:3px}
+.slot{position:relative;width:34px;height:34px;border-radius:50%;display:block}
+.slot.e{background:var(--ink)}
+.slot.h{background:var(--paper);border:4px dashed var(--pcol)}
+.slot.moved{animation:pop .45s ease-out}
+@keyframes pop{from{transform:translateX(-46px);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.slot.moved{animation:none}}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--f-head);font-size:.92rem}
+button{font-family:var(--f-head);font-size:.95rem;font-weight:600;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.status{color:var(--muted)}
+/* sjálfspróf */
+.q{border:1px solid var(--rule);border-radius:10px;padding:14px 18px;margin:16px 0}
+.q p.qt{font-weight:600;margin:.2em 0 .6em}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts button{text-align:left;font-weight:400;line-height:1.4}
+.opts button.right{background:var(--ok-soft);border-color:var(--ok)}
+.opts button.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.fb{font-family:var(--f-head);font-size:.9rem;margin:.6em 0 0;min-height:1.2em}
+.fb.ok{color:var(--ok)} .fb.no{color:var(--bad)}
+.score{font-family:var(--f-head);font-weight:700}
+details{background:var(--panel);border-radius:10px;padding:10px 16px;margin:14px 0;font-size:.95em}
+summary{font-family:var(--f-head);font-weight:600;cursor:pointer}
+.next{border-top:3px solid var(--ink);margin-top:48px;padding-top:8px}
+.next ol li{margin:.3em 0}
+.foot{font-family:var(--f-head);font-size:.8rem;color:var(--muted);margin-top:40px}
+
+nav.chapters{max-width:980px;margin:14px auto 0;display:flex;gap:8px;flex-wrap:wrap;font-family:var(--f-head);font-size:.82rem}
+nav.chapters a{padding:5px 12px;border:1px solid var(--rule);border-radius:999px;text-decoration:none;color:var(--ink);background:var(--paper)}
+nav.chapters a[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+nav.chapters a:hover{border-color:var(--accent)}
+code{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.86em;background:var(--panel);padding:.05em .32em;border-radius:4px}
+pre.code{background:var(--panel);border-radius:10px;padding:14px 18px;overflow-x:auto;font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.84rem;line-height:1.6;margin:18px 0;tab-size:2}
+pre.code code{background:none;padding:0;font-size:1em}
+.cm{color:var(--muted);font-style:italic}
+.kw{color:var(--accent);font-weight:600}
+.st{color:var(--pcol)}
+ol.rules li{margin:.5em 0}
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:40px;font-family:var(--f-head);font-size:.92rem}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--rule);border-radius:10px;text-decoration:none;color:var(--ink);max-width:48%}
+.pager a span{display:block;font-size:.78rem;color:var(--muted)}
+.pager a.nx{margin-left:auto;text-align:right}
+/* forritarakeyrsla */
+.tracer{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start;background:var(--panel);border-radius:10px;padding:16px;margin:20px 0}
+@media (max-width:640px){.tracer{grid-template-columns:1fr}}
+.tracer pre.code{background:var(--paper);margin:0}
+.trace .ln{display:block;padding:0 6px;border-radius:4px}
+.trace .ln.on{background:var(--accent-soft);outline:2px solid var(--accent)}
+.trace .no{display:inline-block;width:1.8em;color:var(--muted);user-select:none}
+.tstate{display:flex;flex-direction:column;gap:10px}
+.tled{width:56px;height:56px;border-radius:50%;background:var(--pcol-soft);border:3px solid var(--pcol);transition:background .2s,box-shadow .2s}
+.tled.on{background:var(--pcol);box-shadow:0 0 24px var(--pcol)}
+@media (prefers-reduced-motion: reduce){.tled{transition:none}}
+.tclock{font-family:var(--f-head);margin:0}
+.texp{margin:0;font-size:.95rem;min-height:3.2em}
+/* reiknivél */
+.calc{background:var(--panel);border-radius:10px;padding:16px 18px;margin:20px 0}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;font-family:var(--f-head);font-size:.88rem}
+@media (max-width:560px){.cgrid{grid-template-columns:1fr}}
+.cgrid label{display:flex;flex-direction:column;gap:4px;font-weight:600}
+.cgrid select{font:inherit;font-weight:400;padding:7px 8px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)}
+.cout{display:flex;gap:18px;align-items:center;margin-top:16px}
+.cbulb{flex:none;width:64px;height:64px;border-radius:50%;border:3px solid var(--muted);background:var(--paper)}
+.cbig{font-family:var(--f-head);font-size:1.8rem;font-weight:700;margin:0;font-variant-numeric:tabular-nums}
+.cwork{font-family:var(--f-head);font-size:.88rem;color:var(--muted);margin:0 0 8px}
+.cbar{position:relative;height:12px;border-radius:6px;background:var(--rule);width:min(360px,60vw)}
+.cbar div{height:100%;border-radius:6px;background:var(--ok)}
+.cbar span{position:absolute;top:-4px;width:3px;height:20px;background:var(--ink)}
+.cverdict{font-family:var(--f-head);font-size:.9rem;margin:8px 0 0}
+.cverdict.bad{color:var(--bad)} .cverdict.ok{color:var(--ok)}
+/* fljótandi */
+.floatdemo{background:var(--panel);border-radius:10px;padding:16px 18px;margin:20px 0}
+.floatdemo button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+pre.serial{font-family:"IBM Plex Mono",ui-monospace,monospace;background:var(--paper);border-radius:8px;padding:10px 14px;height:11.5em;overflow:hidden;margin:12px 0 6px;font-size:.88rem;line-height:1.35}
+/* svg extras */
+.sig{fill:none;stroke-width:4}
+.sig.d{stroke:var(--accent)} .sig.a{stroke:var(--pcol)}
+.grid{stroke:var(--rule);stroke-width:1}
+.tick{font-size:15px;fill:var(--muted)}
+.cap{font-size:17px;font-weight:700}
+.pin-d{fill:var(--accent)} .pin-p{fill:var(--pcol)} .pin-a{fill:var(--ok)} .pin-n{fill:var(--rule)}
+.board{fill:var(--accent-soft);stroke:var(--muted);stroke-width:2}
+.box2{fill:var(--paper);stroke:var(--muted);stroke-width:2}
+.glab{font-size:17px;font-weight:700}
+.plab{font-size:14px}
+.qlab{font-size:14px;fill:var(--muted)}
+.wire2{stroke:var(--ink);stroke-width:3;fill:none}
+.zone-lo{fill:var(--ncol-soft)} .zone-hi{fill:var(--pcol-soft)} .zone-mid{fill:var(--panel);stroke:var(--muted);stroke-dasharray:6 5}
+.flowbox{fill:var(--paper);stroke:var(--muted);stroke-width:2}
+.flowbox.acc{fill:var(--accent-soft);stroke:var(--accent)}
+.fl{stroke:var(--muted);stroke-width:2.5;fill:none}
+.outsim{background:var(--panel);border-radius:10px;padding:16px 18px;margin:20px 0 8px}
+.outsim svg{background:var(--paper);border-radius:8px}
+.oread{font-family:var(--f-head);font-size:.95rem;margin:10px 0 0;font-weight:600}
+.figcap{font-family:var(--f-head);font-size:.85rem;color:var(--muted);margin:0 0 20px}
+.flow{fill:none;stroke:var(--ok);stroke-width:3;stroke-dasharray:8 8;animation:flowmove 0.9s linear infinite;transition:opacity .3s}
+@keyframes flowmove{to{stroke-dashoffset:-16}}
+@media (prefers-reduced-motion: reduce){.flow{animation:none}#sw-lever,#sw-glow{transition:none!important}}
+.anat{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:30px}
+</style>
+</head>
+<body>
+<nav class="chapters" aria-label="Kaflar"><a href="index.html">Yfirlit</a><a href="kafli1-ljosdiodan.html">1. Ljósdíóðan</a><a href="kafli2-forritun.html">2. Fyrstu skrefin í forritun</a><a href="kafli3-utgangar.html" aria-current="page">3. Arduino-borðið og stakrænir útgangar</a><a href="kafli4-inngangar.html">4. Stakrænir inngangar</a></nav>
+<header class="top">
+  <p class="kicker">EÐLI3RS05 · Arduino · Kafli 3</p>
+  <h1>Arduino-borðið og stakrænir útgangar</h1>
+  <p class="meta">Lesefni fyrir kennslustund 2 · um 25 mínútna lestur · sjálfspróf í lokin</p>
+</header>
+<main class="wrap">
+  <div class="goals">
+    <p><b>Þegar þú hefur lesið kaflann getur þú:</b></p>
+    <ul>
+      <li>útskýrt muninn á stakrænu og hliðrænu merki</li>
+      <li>fundið stakrænu pinnana, aflpinnana og hliðrænu inngangana á Arduino UNO</li>
+      <li>útskýrt hvað GND, 5V, 3.3V og VIN gera</li>
+      <li>reiknað strauminn í LED-rás sem Arduino-pinni knýr og borið hann saman við straummörk pinnans</li>
+    </ul>
+  </div>
+
+  <div class="box think">
+    <span class="bt">Spáðu fyrst</span>
+    Arduino-pinni gefur 5 V. Má tengja LED beint á milli pinnans og GND, án viðnáms? Skrifaðu svarið hjá þér. Svarið er í kafla 5.
+  </div>
+
+  <nav class="toc" aria-label="Efnisyfirlit">
+    <b>Efni kaflans</b>
+    <ol>
+      <li><a href="#stakraent">Stakrænt og hliðrænt</a></li>
+      <li><a href="#bordid">Ferð um borðið</a></li>
+      <li><a href="#afl">Aflpinnarnir</a></li>
+      <li><a href="#utgangur">Stakrænn útgangur</a></li>
+      <li><a href="#straumur">Straummörk og reikningur</a></li>
+      <li><a href="#reiknivel">Straumreiknivél</a></li>
+      <li><a href="#verkefni">Verkefni í hermunum</a></li>
+      <li><a href="#prof">Sjálfspróf</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="stakraent"><span class="num">1</span>Stakrænt og hliðrænt</h2>
+  <p><b>Stakrænt</b> merki (e. <i>digital</i>) hefur aðeins tvö gildi: HIGH og LOW, eða 1 og 0. Á Arduino UNO er HIGH = 5 V og LOW = 0 V. Ljósrofi heima er stakrænn: annaðhvort kveikt eða slökkt.</p>
+  <p><b>Hliðrænt</b> merki (e. <i>analog</i>) getur haft hvaða gildi sem er á bilinu, t.d. 2,37 V. Ljósdeyfir er hliðrænn. Hliðrænu inngangarnir koma síðar, þegar við notum ljósnema og hitanema.</p>
+</main>
+
+<div class="wrap"><figure><svg viewBox="0 0 760 230" role="img" aria-label="Stakrænt merki sem stekkur milli 0 og 5 V og hliðrænt merki sem breytist samfellt">
+<line x1="60" y1="60" x2="380" y2="60" class="grid"/><line x1="60" y1="150" x2="380" y2="150" class="grid"/>
+<line x1="420" y1="60" x2="740" y2="60" class="grid"/><line x1="420" y1="150" x2="740" y2="150" class="grid"/>
+<text x="52" y="65" class="tick" text-anchor="end">5 V</text><text x="52" y="155" class="tick" text-anchor="end">0 V</text>
+<path d="M60 60 V60 H100 V150 H140 V150 H180 V60 H220 V150 H260 V60 H300 V60 H340 V150 H380" class="sig d"/>
+<path d="M420 105.0 L424 97.6 L428 90.6 L432 84.3 L436 79.1 L440 75.0 L444 72.2 L448 70.6 L452 70.2 L456 70.7 L460 71.8 L464 73.2 L468 74.7 L472 76.0 L476 76.8 L480 77.1 L484 76.8 L488 76.1 L492 75.0 L496 73.9 L500 73.1 L504 72.8 L508 73.3 L512 74.9 L516 77.7 L520 81.7 L524 86.9 L528 93.1 L532 100.0 L536 107.4 L540 114.7 L544 121.8 L548 128.1 L552 133.4 L556 137.6 L560 140.4 L564 141.9 L568 142.2 L572 141.6 L576 140.2 L580 138.3 L584 136.4 L588 134.6 L592 133.3 L596 132.4 L600 132.1 L604 132.4 L608 133.0 L612 133.7 L616 134.2 L620 134.4 L624 133.7 L628 132.2 L632 129.4 L636 125.5 L640 120.5 L644 114.4 L648 107.6 L652 100.3 L656 93.0 L660 85.9 L664 79.6 L668 74.2 L672 70.1 L676 67.3 L680 65.8 L684 65.6 L688 66.4 L692 68.1 L696 70.3 L700 72.7 L704 74.9 L708 76.8 L712 78.2 L716 79.1 L720 79.4 L724 79.2 L728 78.9 L732 78.6 L736 78.7 L740 79.4" class="sig a"/>
+<text x="220" y="200" class="cap" text-anchor="middle">Stakrænt</text><text x="220" y="222" class="qlab" text-anchor="middle">aðeins HIGH eða LOW</text>
+<text x="580" y="200" class="cap" text-anchor="middle">Hliðrænt</text><text x="580" y="222" class="qlab" text-anchor="middle">hvaða gildi sem er á bilinu</text>
+</svg><figcaption><b>Stakrænt og hliðrænt merki.</b> Stakræna merkið stekkur milli 0 V og 5 V. Hliðræna merkið getur verið hvar sem er á milli.</figcaption></figure></div>
+
+<main class="wrap">
+  <h2 id="bordid"><span class="num">2</span>Ferð um borðið</h2>
+  <p>Á Arduino UNO eru tvær raðir af tengjum, kallaðar <b>pinnar</b>. Í UNO-herminum getur þú fært bendilinn yfir pinna og þá birtist nafn hans.</p>
+</main>
+
+<div class="wide"><figure><svg viewBox="0 0 1000 520" role="img" aria-label="Arduino UNO séð ofan frá með pinnahópum merktum"><rect x="110" y="70" width="850" height="400" rx="16" class="board"/><rect x="70" y="105" width="100" height="80" rx="6" class="box2"/><text x="120" y="152" class="glab" text-anchor="middle">USB</text><rect x="70" y="350" width="110" height="80" rx="6" class="box2"/><text x="125" y="386" class="plab" text-anchor="middle">Rafmagns-</text><text x="125" y="406" class="plab" text-anchor="middle">tengi</text><rect x="430" y="245" width="250" height="70" rx="6" class="box2"/><text x="555" y="287" class="qlab" text-anchor="middle" style="font-size:17px">Örgjörvi</text><rect x="372" y="200" width="20" height="12" rx="2" class="pin-d"/><text x="400" y="211" class="qlab">ljósið L (tengt D13)</text><rect x="240" y="86" width="20" height="20" rx="3" class="pin-n"/><rect x="270" y="86" width="20" height="20" rx="3" class="pin-n"/><rect x="300" y="86" width="20" height="20" rx="3" class="pin-n"/><rect x="330" y="86" width="20" height="20" rx="3" class="pin-n"/><rect x="360" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="390" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="420" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="450" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="480" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="510" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="560" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="590" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="620" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="650" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="680" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="710" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="740" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="770" y="86" width="20" height="20" rx="3" class="pin-d"/><rect x="380" y="436" width="20" height="20" rx="3" class="pin-n"/><rect x="410" y="436" width="20" height="20" rx="3" class="pin-n"/><rect x="440" y="436" width="20" height="20" rx="3" class="pin-n"/><rect x="470" y="436" width="20" height="20" rx="3" class="pin-p"/><rect x="500" y="436" width="20" height="20" rx="3" class="pin-p"/><rect x="530" y="436" width="20" height="20" rx="3" class="pin-p"/><rect x="560" y="436" width="20" height="20" rx="3" class="pin-p"/><rect x="590" y="436" width="20" height="20" rx="3" class="pin-p"/><rect x="650" y="436" width="20" height="20" rx="3" class="pin-a"/><rect x="680" y="436" width="20" height="20" rx="3" class="pin-a"/><rect x="710" y="436" width="20" height="20" rx="3" class="pin-a"/><rect x="740" y="436" width="20" height="20" rx="3" class="pin-a"/><rect x="770" y="436" width="20" height="20" rx="3" class="pin-a"/><rect x="800" y="436" width="20" height="20" rx="3" class="pin-a"/><line x1="360" y1="118" x2="530" y2="118" class="wire2" style="stroke:var(--accent)"/><line x1="560" y1="118" x2="790" y2="118" class="wire2" style="stroke:var(--accent)"/><text x="445.0" y="142" class="glab" text-anchor="middle">D13 … D8</text><text x="675.0" y="142" class="glab" text-anchor="middle">D7 … D0</text><text x="340" y="142" class="qlab" text-anchor="middle">GND</text><text x="280" y="170" class="qlab" text-anchor="middle">SDA, SCL, AREF</text><text x="575.0" y="170" class="qlab" text-anchor="middle">~3, ~5, ~6, ~9, ~10, ~11 geta líka gefið PWM</text><text x="802" y="101" class="qlab">D0, D1: raðskjár</text><text x="535" y="56" class="glab" text-anchor="middle" style="fill:var(--accent)">Stakrænir inngangar og útgangar</text><text x="495.0" y="420" class="glab" text-anchor="middle">Aflpinnar</text><text x="735.0" y="420" class="glab" text-anchor="middle">Hliðrænir inngangar</text><text x="480" y="484" class="plab" text-anchor="middle">3.3V</text><text x="510" y="504" class="plab" text-anchor="middle">5V</text><text x="555.0" y="484" class="plab" text-anchor="middle">GND</text><text x="600" y="504" class="plab" text-anchor="middle">VIN</text><text x="420" y="504" class="qlab" text-anchor="middle">IOREF, RESET</text><text x="735.0" y="484" class="plab" text-anchor="middle">A0 … A5</text></svg><figcaption><b>Arduino UNO séð ofan frá.</b> Efri röðin er stakrænir pinnar sem forritið stýrir. Í neðri röðinni eru fastar spennur og hliðrænu inngangarnir.</figcaption></figure></div>
+
+<main class="wrap">
+  <ul>
+    <li><b>Stakrænir pinnar D0–D13</b> eru í efri röðinni. Hver þeirra getur verið inngangur eða útgangur.</li>
+    <li>Pinnar merktir <b>~</b> (3, 5, 6, 9, 10 og 11) geta líka gefið PWM, sem kemur síðar.</li>
+    <li><b>D0 og D1</b> eru notaðir fyrir samskipti við tölvuna (raðskjáinn). Forðastu að tengja við þá.</li>
+    <li><b>D13</b> er líka tengdur við litla ljósið <b>L</b> á borðinu.</li>
+    <li><b>Hliðrænir inngangar A0–A5</b> eru neðst til hægri. Þá má líka nota sem stakræna pinna.</li>
+  </ul>
+
+  <h2 id="afl"><span class="num">3</span>Aflpinnarnir</h2>
+  <p>Aflpinnarnir gefa fastar spennur. Forritið stýrir þeim ekki.</p>
+  <div class="box terms">
+    <span class="bt">Aflpinnar</span>
+    <dl>
+      <dt>GND</dt><dd>Jörð, viðmiðið fyrir allar spennur á borðinu (0 V). Allir GND-pinnar eru tengdir saman. Straumurinn í hverri rás verður að komast aftur í GND.</dd>
+      <dt>5V</dt><dd>Stöðug 5 V spenna, t.d. fyrir nema og fyrir LED sem á alltaf að loga.</dd>
+      <dt>3.3V</dt><dd>Stöðug 3,3 V spenna fyrir íhluti sem þola ekki 5 V. Þolir minni straum en 5V.</dd>
+      <dt>VIN</dt><dd>Inngangur fyrir ytri spennugjafa, t.d. 9 V rafhlöðu þegar borðið er ekki tengt við tölvu.</dd>
+    </dl>
+  </div>
+  <div class="box warn">
+    <span class="bt">Aldrei</span>
+    Tengdu aldrei 9 V rafhlöðu við 5V- eða 3.3V-pinnann, og tengdu aldrei 5V beint í GND. Það myndi skemma borðið. UNO-hermirinn varar við hvoru tveggja.
+  </div>
+
+  <h2 id="utgangur"><span class="num">4</span>Stakrænn útgangur</h2>
+  <p>Þegar pinni er stilltur sem <b>útgangur</b> virkar hann eins og rofi sem forritið stýrir. Með <code>digitalWrite(pinni, HIGH)</code> tengist pinninn við 5 V, og með <code>digitalWrite(pinni, LOW)</code> við 0 V.</p>
+</main>
+
+<div class="wrap">
+  <div class="outsim" aria-labelledby="outsim-title">
+    <h3 id="outsim-title" style="margin-top:0">Keyrðu forritið lið fyrir lið</h3>
+    <p style="margin-top:0">Ýttu á <b>Næsta skref</b> og fylgstu með rofanum inni í Arduino, spennunni á D13 og ljósinu.</p>
+    <figure style="margin:0"><svg viewBox="0 0 760 260" role="img" aria-label="Útgangspinni sem rofi milli 5 V og 0 V, tengdur gegnum viðnám í LED og GND">
+<rect x="30" y="30" width="250" height="200" rx="12" class="board"/>
+<text x="155" y="56" class="glab" text-anchor="middle">Inni í Arduino</text>
+<text x="72" y="106" class="plab" id="sw-l5">5 V</text><text x="72" y="182" class="plab" id="sw-l0">0 V</text>
+<circle cx="137" cy="100" r="6" class="el" id="sw-c5"/><circle cx="137" cy="176" r="6" class="el" id="sw-c0"/>
+<g id="sw-lever" style="transform-origin:230px 138px;transition:transform .35s ease"><line x1="230" y1="138" x2="132" y2="138" class="wire2" style="stroke-width:4"/></g>
+<circle cx="230" cy="138" r="6" class="el"/>
+<text x="196" y="214" class="qlab" text-anchor="middle" id="sw-mode">inngangur</text>
+<line x1="230" y1="138" x2="330" y2="138" class="wire2" id="sw-w1"/>
+<text x="306" y="126" class="plab" text-anchor="middle">D13</text>
+<text x="306" y="166" class="glab" text-anchor="middle" id="sw-v" style="fill:var(--muted)">?</text>
+<path d="M330 138 H360 l6 -14 l12 28 l12 -28 l12 28 l12 -28 l12 28 l6 -14 H470" class="wire2"/>
+<text x="408" y="110" class="plab" text-anchor="middle">1 kΩ</text>
+<circle cx="507" cy="138" r="30" id="sw-glow" style="fill:var(--pcol);opacity:0;transition:opacity .3s"/>
+<polygon points="490,118 490,158 524,138" class="sw nofill" style="stroke:var(--pcol)"/><line x1="524" y1="118" x2="524" y2="158" style="stroke:var(--pcol);stroke-width:5"/>
+<line x1="470" y1="138" x2="490" y2="138" class="wire2"/><line x1="524" y1="138" x2="600" y2="138" class="wire2"/>
+<text x="507" y="190" class="plab" text-anchor="middle">LED</text>
+<line x1="600" y1="138" x2="600" y2="200" class="wire2"/><line x1="580" y1="200" x2="620" y2="200" class="wire2"/><line x1="588" y1="208" x2="612" y2="208" class="wire2"/><line x1="596" y1="216" x2="604" y2="216" class="wire2"/>
+<text x="640" y="206" class="plab">GND</text>
+<path id="sw-flow" d="M240 132 H330 M470 132 H600 M606 138 V196" class="flow" style="opacity:0"/>
+<text x="562" y="108" class="qlab" text-anchor="middle" id="sw-i" style="opacity:0">I ≈ 3,2 mA</text>
+</svg></figure>
+    <p class="oread" id="oread" aria-live="polite">D13 er inngangur: rofinn er ekki tengdur við neitt.</p>
+    <div class="tracer" style="margin:12px 0 0;padding:0;background:none">
+      <pre class="code trace" id="ocode" aria-hidden="true"></pre>
+      <div class="tstate">
+        <p class="tclock">Tími: <b id="otime">0,0 s</b></p>
+        <p class="texp" id="oexp">Ýttu á Næsta skref til að byrja.</p>
+        <div class="ctrl">
+          <button class="primary" id="ostep" type="button">Næsta skref</button>
+          <button id="oreset" type="button">Byrja aftur</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="figcap"><b>Útgangur sem rofi.</b> Forritið velur hvort pinninn tengist 5 V eða 0 V. Viðnámið og LED eru utan við borðið, eins og í kafla 1.</p>
+</div>
+
+<main class="wrap">
+  <p>Þetta er sama rás og í kafla 1, nema spennugjafinn er nú pinninn. Í stað 9 V rafhlöðu er spennan 5 V, og forritið kveikir og slekkur.</p>
+
+  <h2 id="straumur"><span class="num">5</span>Straummörk og reikningur</h2>
+  <p>Stakrænn pinni er <b>ekki</b> aflgjafi. Hann þolir aðeins lítinn straum, og það er mismikið eftir borðum:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Borð</th><th>Ráðlagður hámarksstraumur á pinna</th><th>Algert hámark</th></tr></thead>
+    <tbody>
+      <tr><td>UNO R3</td><td class="num">20 mA</td><td class="num">40 mA</td></tr>
+      <tr><td>UNO R4 Minima</td><td class="num">8 mA</td><td class="num">8 mA</td></tr>
+    </tbody>
+  </table></div>
+  <p>Svarið við spurningunni í upphafi: <b>Nei.</b> Án viðnáms takmarkar ekkert strauminn, eins og í kafla 1. Bæði díóðan og pinninn gætu skemmst. Viðnámið reiknum við með sömu jöfnu og áður, nema nú er spenna gjafans HIGH = 5 V:</p>
+  <div class="eq" role="math" aria-label="R jafnt og V HIGH mínus V F, deilt með I">
+    <span class="var">R</span> =
+    <span class="frac"><span class="n"><span class="var">V</span><sub>HIGH</sub> − <span class="var">V</span><sub>F</sub></span><span class="d"><span class="var">I</span></span></span>
+  </div>
+  <h3>Sýnidæmi: minnsta viðnám fyrir rauða LED</h3>
+  <ol class="steps">
+    <li>Spennan sem viðnámið tekur: 5 V − 1,8 V = 3,2 V.</li>
+    <li><b>UNO R3</b>, 20 mA: <span class="var">R</span> = 3,2 V / 0,020 A = <span class="result">160 Ω</span>.</li>
+    <li><b>UNO R4 Minima</b>, 8 mA: <span class="var">R</span> = 3,2 V / 0,008 A = <span class="result">400 Ω</span>.</li>
+    <li>Í pakkanum eru 100 Ω, 1 kΩ, 4,7 kΩ, 10 kΩ, 47 kΩ, 100 kΩ og 1 MΩ. 100 Ω er of lítið fyrir bæði borð, svo við veljum <span class="result">1 kΩ</span>.</li>
+    <li>Straumurinn verður þá <span class="var">I</span> = 3,2 V / 1000 Ω = <span class="result">3,2 mA</span>, vel innan marka á báðum borðum.</li>
+  </ol>
+  <p>Ef tvær LED loga í einu, hvor á sínum pinna, leggjast straumarnir saman í GND. Það er lögmál Kirchhoffs um straum: straumurinn sem fer inn í punkt er jafn straumnum sem fer út úr honum.</p>
+
+  <h2 id="reiknivel"><span class="num">6</span>Straumreiknivél</h2>
+  <p>Prófaðu mismunandi samsetningar. Reiknivélin notar sömu forspennur og UNO-hermirinn.</p>
+  <div class="calc">
+    <div class="cgrid">
+      <label for="cboard">Borð
+        <select id="cboard"><option value="r3">UNO R3</option><option value="r4">UNO R4 Minima</option></select></label>
+      <label for="csrc">Spennugjafi
+        <select id="csrc"><option value="pin">Stakrænn pinni, HIGH = 5 V</option><option value="v33">3.3V-pinninn</option></select></label>
+      <label for="cled">LED
+        <select id="cled"><option value="1.75">Rauð, V_F = 1,75 V</option><option value="1.85">Gul, V_F = 1,85 V</option><option value="1.95">Græn, V_F = 1,95 V</option><option value="2.7">Blá, V_F = 2,7 V</option></select></label>
+      <label for="cres">Viðnám
+        <select id="cres"><option value="100">100 Ω</option><option value="1000" selected>1 kΩ</option><option value="4700">4,7 kΩ</option><option value="10000">10 kΩ</option><option value="47000">47 kΩ</option></select></label>
+    </div>
+    <div class="cout">
+      <div class="cbulb" id="cbulb" aria-hidden="true"></div>
+      <div>
+        <p class="cbig" id="cI">3,3 mA</p>
+        <p id="cwork" class="cwork">I = (5 − 1,75) V / 1000 Ω</p>
+        <div class="cbar" aria-hidden="true"><div id="cfill"></div><span id="cmark"></span></div>
+        <p id="cverdict" class="cverdict" aria-live="polite">Innan marka.</p>
+      </div>
+    </div>
+  </div>
+  <p>Hvað gerist með bláa LED á 3.3V-pinnanum? Og hvaða viðnám getur þú notað á R4 Minima?</p>
+
+  <h2 id="verkefni"><span class="num">7</span>Verkefni í hermunum</h2>
+  <h3>Í brauðbrettisherminum</h3>
+  <p>Brauðbrettishermirinn hefur fjölmæli sem mælir bæði spennu og straum. Þar getur þú mælt strauminn beint, sem er ekki hægt í UNO-herminum.</p>
+  <ol>
+    <li>Opnaðu <a href="https://elinadda.github.io/EDLI3RS05/Brau%C3%B0brettishermir%20%E2%80%93%20rafhla%C3%B0a%2C%20vi%C3%B0n%C3%A1m%20og%20d%C3%AD%C3%B3%C3%B0a.html">brauðbrettisherminn</a> og veldu dæmið um straummælingu í gegnum viðnám. Hvernig er straummælirinn tengdur, í röð eða samhliða?</li>
+    <li>Opnaðu dæmið þar sem straummælir er tengdur samhliða. Hvað er að og hvers vegna?</li>
+    <li>Finndu minnsta viðnám sem heldur rauðri LED undir 20 mA við 9 V. Reiknaðu fyrst og prófaðu svo.</li>
+  </ol>
+  <h3>Í UNO-herminum</h3>
+  <ol>
+    <li><b>Arduino sem spennugjafi.</b> Veldu <i>Tómt brauðbretti</i>. Mældu spennuna á 5V- og 3.3V-pinnunum miðað við GND.</li>
+    <li><b>LED án forrits.</b> Tengdu 5V → 1 kΩ → rauð LED → GND. Reiknaðu strauminn, mældu svo spennuna yfir viðnámið og reiknaðu strauminn út frá henni. Færðu vírinn yfir á 3.3V og endurtaktu.</li>
+    <li><b>Pinninn sem rofi.</b> Opnaðu <i>dæmi 2 · Blikkandi LED</i>. Mældu spennuna á D13 þegar ljósið logar og þegar það er slökkt.</li>
+    <li><b>Umferðarljós.</b> Tengdu rauða, gula og græna LED við D2, D3 og D4, hverja með sínu 1 kΩ viðnámi. Skrifaðu forrit sem líkir eftir umferðarljósi. Reiknaðu heildarstrauminn í GND þegar rauða og gula loga saman.</li>
+    <li><b>Áskorun.</b> Prófaðu umferðarljósið á UNO R4 Minima. Þola pinnarnir enn strauminn?</li>
+  </ol>
+  <p>Vistaðu rásina og kóðann með <i>Vista / hlaða</i> og skilaðu í Canvas ásamt útreikningum.</p>
+
+  <h2 id="prof"><span class="num">8</span>Sjálfspróf</h2>
+  <p>Smelltu á svarið sem þú telur rétt. Þú getur reynt aftur.</p>
+  <div id="quiz"></div>
+  <p class="score" id="score" aria-live="polite"></p>
+</main>
+<main class="wrap"><div class="pager"><a href="kafli2-forritun.html"><span>Fyrri kafli</span>2. Fyrstu skrefin í forritun</a><a class="nx" href="kafli4-inngangar.html"><span>Næsti kafli</span>4. Stakrænir inngangar</a></div></main><main class="wrap"><p class="foot">EÐLI3RS05 · Menntaskólinn á Egilsstöðum · Elín Adda Steinarsdóttir</p></main>
+<script>
+(function(){
+  var code=document.getElementById('ocode'); if(!code) return;
+  var L=['<span class="kw">const int</span> LED = 13;','','<span class="kw">void</span> setup() {','  pinMode(LED, OUTPUT);','}','','<span class="kw">void</span> loop() {','  digitalWrite(LED, HIGH);','  delay(500);','  digitalWrite(LED, LOW);','  delay(500);','}'];
+  var S=[
+   {l:0,t:'Breytan LED fær gildið 13.'},
+   {l:2,t:'setup() byrjar. Pinninn er enn inngangur, svo rofinn er ekki tengdur við neitt.'},
+   {l:3,t:'pinMode gerir D13 að útgangi. Rofinn tengist 0 V (LOW) til að byrja með.',m:'low'},
+   {l:4,t:'setup() er búið. Nú tekur loop() við.'},
+   {l:6,t:'loop() byrjar efst.'},
+   {l:7,t:'digitalWrite(LED, HIGH): rofinn færist í 5 V. Straumur fer gegnum viðnámið og LED, og hún lýsir.',m:'high'},
+   {l:8,t:'Bíður í 500 ms. Rofinn situr kyrr í 5 V á meðan.',dt:0.5},
+   {l:9,t:'digitalWrite(LED, LOW): rofinn færist í 0 V. Enginn spennumunur, enginn straumur, ekkert ljós.',m:'low'},
+   {l:10,t:'Bíður í 500 ms. Rofinn situr í 0 V.',dt:0.5},
+   {l:11,t:'Endi loop(). Forritið fer aftur efst í loop().'}
+  ];
+  code.innerHTML=L.map(function(s,i){return '<span class="ln"><span class="no">'+(i+1)+'</span>'+(s||' ')+'</span>';}).join('');
+  var lines=code.querySelectorAll('.ln'),k=-1,time=0,mode='in';
+  var $=function(id){return document.getElementById(id);};
+  function draw(){
+    var ang={in:0,high:22,low:-22}[mode];
+    $('sw-lever').style.transform='rotate('+ang+'deg)';
+    var hi=mode==='high';
+    $('sw-glow').style.opacity=hi?0.45:0;
+    $('sw-flow').style.opacity=hi?1:0; $('sw-i').style.opacity=hi?1:0;
+    $('sw-v').textContent=mode==='in'?'?':(hi?'5 V':'0 V');
+    $('sw-v').style.fill=hi?'var(--pcol)':'var(--muted)';
+    $('sw-mode').textContent=mode==='in'?'inngangur':'útgangur';
+    $('sw-c5').style.fill=hi?'var(--pcol)':'';
+    $('sw-c0').style.fill=mode==='low'?'var(--accent)':'';
+    $('oread').textContent=mode==='in'?'D13 er inngangur: rofinn er ekki tengdur við neitt.':(hi?'D13 = 5 V · straumur um 3,2 mA · LED logar':'D13 = 0 V · enginn straumur · LED slökkt');
+    $('otime').textContent=time.toFixed(1).replace('.',',')+' s';
+    [].forEach.call(lines,function(e){e.classList.remove('on');});
+    if(k>=0){lines[S[k].l].classList.add('on');$('oexp').textContent=S[k].t;}
+    else $('oexp').textContent='Ýttu á Næsta skref til að byrja.';
+  }
+  $('ostep').addEventListener('click',function(){
+    k++; if(k>=S.length) k=4;
+    var st=S[k]; if(st.m) mode=st.m; if(st.dt) time+=st.dt; draw();
+  });
+  $('oreset').addEventListener('click',function(){k=-1;time=0;mode='in';draw();});
+  draw();
+})();
+
+(function(){
+  var ids=['cboard','csrc','cled','cres']; if(!document.getElementById('cboard')) return;
+  var lim={r3:{pin:20,max:40,v33:50},r4:{pin:8,max:8,v33:100}};
+  var col={'1.75':'#e0453a','1.85':'#e8c22a','1.95':'#3bbf5c','2.7':'#3d7fe0'};
+  function f(x,d){return x.toFixed(d).replace('.',',');}
+  function upd(){
+    var b=document.getElementById('cboard').value,src=document.getElementById('csrc').value;
+    var vf=parseFloat(document.getElementById('cled').value),R=parseFloat(document.getElementById('cres').value);
+    var V=src==='pin'?5:3.3, I=Math.max(0,(V-vf)/R*1000);
+    var L=src==='pin'?lim[b].pin:lim[b].v33;
+    document.getElementById('cI').textContent=(I<0.1&&I>0?f(I,2):f(I,1))+' mA';
+    document.getElementById('cwork').textContent='I = ('+f(V,1)+' − '+f(vf,2)+') V / '+(R>=1000?f(R/1000,1).replace(',0','')+' kΩ':R+' Ω');
+    var scale=Math.max(L*1.5,I*1.1), fill=document.getElementById('cfill');
+    fill.style.width=Math.min(100,I/scale*100)+'%'; fill.style.background=I>L?'var(--bad)':'var(--ok)';
+    document.getElementById('cmark').style.left=(L/scale*100)+'%';
+    var v=document.getElementById('cverdict');
+    var bn=b==='r3'?'UNO R3':'UNO R4 Minima';
+    if(I<=0){v.className='cverdict bad';v.textContent='Spennan er lægri en forspennan, svo díóðan lýsir ekki.';}
+    else if(I>L){v.className='cverdict bad';v.textContent='Of mikill straumur. Mörkin eru '+L+' mA ('+(src==='pin'?'pinni á ':'3.3V á ')+bn+'). Veldu stærra viðnám.';}
+    else{v.className='cverdict ok';v.textContent='Innan marka (strikið sýnir '+L+' mA'+(src==='pin'?' á pinna':' á 3.3V')+' á '+bn+').'+(I<1?' Díóðan lýsir þó mjög dauft.':'');}
+    var bulb=document.getElementById('cbulb'), br=Math.min(1,Math.sqrt(I/10));
+    bulb.style.background=I>0?col[document.getElementById('cled').value]:'var(--paper)';
+    bulb.style.opacity=I>0?(0.25+0.75*br):1; bulb.style.boxShadow=I>0?'0 0 '+Math.round(28*br)+'px '+col[document.getElementById('cled').value]:'none';
+  }
+  ids.forEach(function(i){document.getElementById(i).addEventListener('change',upd);});
+  upd();
+})();
+var Q=[
+ {q:'Hvaða spennu gefur stakrænn útgangur á UNO þegar hann er HIGH?',o:['3,3 V','5 V','9 V'],a:1,e:'Rétt. HIGH = 5 V og LOW = 0 V.'},
+ {q:'Hvaða pinna er best að forðast þegar raðskjárinn er notaður?',o:['D0 og D1','D12 og D13','A0 og A1'],a:0,e:'Rétt. D0 og D1 sjá um samskipti við tölvuna.'},
+ {q:'Rauð LED (<i>V</i><sub>F</sub> = 1,8 V) á pinna á UNO R4 Minima, hámark 8 mA. Hvert er minnsta viðnámið?',o:['160 Ω','400 Ω','1000 Ω'],a:1,e:'Rétt. (5 − 1,8) V / 0,008 A = 400 Ω.'},
+ {q:'Hvar á að tengja 9 V rafhlöðu ef borðið á að ganga án tölvu?',o:['Við 5V','Við VIN','Við D13'],a:1,e:'Rétt. VIN er inngangur fyrir ytri spennugjafa.'},
+ {q:'Hver er munurinn á 5V-pinnanum og D13?',o:['Enginn','5V gefur alltaf 5 V, en forritið stýrir D13','D13 gefur meiri straum'],a:1,e:'Rétt. Forritið stýrir aðeins stakrænu pinnunum.'},
+ {q:'Rauð (1,8 V) og græn (1,95 V) LED loga saman, hvor á sínum pinna með 1 kΩ. Hver er heildarstraumurinn í GND?',o:['Um 3,2 mA','Um 6,3 mA','Um 10 mA'],a:1,e:'Rétt. 3,2 mA + 3,05 mA ≈ 6,3 mA. Straumarnir leggjast saman.'}
+];
+(function(){
+  var box=document.getElementById('quiz'); if(!box) return;
+  var right=new Array(Q.length).fill(false);
+  Q.forEach(function(it,qi){
+    var d=document.createElement('div');d.className='q';
+    var p=document.createElement('p');p.className='qt';p.innerHTML=(qi+1)+'. '+it.q;d.appendChild(p);
+    var opts=document.createElement('div');opts.className='opts';
+    var fb=document.createElement('p');fb.className='fb';fb.setAttribute('aria-live','polite');
+    it.o.forEach(function(t,oi){
+      var b=document.createElement('button');b.type='button';b.id='q'+qi+'o'+oi;b.innerHTML=t;
+      b.addEventListener('click',function(){
+        [].forEach.call(opts.children,function(x){x.classList.remove('right','wrong');});
+        if(oi===it.a){b.classList.add('right');fb.className='fb ok';fb.innerHTML=it.e;right[qi]=true;}
+        else{b.classList.add('wrong');fb.className='fb no';fb.textContent='Ekki alveg. Lestu kaflann aftur og reyndu annað svar.';}
+        var c=right.filter(Boolean).length;
+        document.getElementById('score').textContent='Rétt svarað: '+c+' af '+Q.length+(c===Q.length?'. Vel gert!':'');
+      });
+      opts.appendChild(b);
+    });
+    d.appendChild(opts);d.appendChild(fb);box.appendChild(d);
+  });
+})();
+
+(function(){
+  /* Ef síðan er inni í Canvas (iframe): segja Canvas hve há hún er, og opna ytri hlekki í nýjum flipa */
+  var inFrame=false; try{inFrame=window.self!==window.top;}catch(e){inFrame=true;}
+  [].forEach.call(document.querySelectorAll('a[href^="http"]'),function(a){a.target='_blank';a.rel='noopener';});
+  if(!inFrame) return;
+  var last=0;
+  function send(){
+    var h=Math.ceil(document.documentElement.scrollHeight);
+    if(Math.abs(h-last)<4) return; last=h;
+    try{window.parent.postMessage(JSON.stringify({subject:'lti.frameResize',height:h}),'*');}catch(e){}
+  }
+  window.addEventListener('load',send); window.addEventListener('resize',send);
+  document.addEventListener('toggle',send,true); document.addEventListener('click',function(){setTimeout(send,350);});
+  if(window.ResizeObserver){new ResizeObserver(send).observe(document.body);}
+  setTimeout(send,300);
+})();
+</script>
+</body>
+</html>

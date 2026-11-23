@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ljósdíóðan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Kennslubókarsíða: ein lesdálkur (~68 stafir), myndir mega fara breiðar, spássíubox fyrir hugtök og misskilning */
+:root{
+  --paper:#FBFCFD; --panel:#F0F3F6; --ink:#16212E; --muted:#4C5A69; --rule:#D6DDE4;
+  --accent:#1F5FAD; --accent-soft:#E3ECF7;
+  --pcol:#C2362B; --pcol-soft:#F7E2DF; --ncol:#1F5FAD; --ncol-soft:#DFE9F6;
+  --ok:#1E7A44; --ok-soft:#DDF1E5; --bad:#B3261E; --bad-soft:#F8E1DF;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-head:"IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#121820; --panel:#1B2430; --ink:#E4EAF0; --muted:#A3B1BF; --rule:#2E3A48;
+    --accent:#7EB0EE; --accent-soft:#1C2E45;
+    --pcol:#F08A7E; --pcol-soft:#3A2220; --ncol:#7EB0EE; --ncol-soft:#1C2E45;
+    --ok:#6BCB93; --ok-soft:#173427; --bad:#F08A7E; --bad-soft:#3A2220;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121820; --panel:#1B2430; --ink:#E4EAF0; --muted:#A3B1BF; --rule:#2E3A48;
+  --accent:#7EB0EE; --accent-soft:#1C2E45;
+  --pcol:#F08A7E; --pcol-soft:#3A2220; --ncol:#7EB0EE; --ncol-soft:#1C2E45;
+  --ok:#6BCB93; --ok-soft:#173427; --bad:#F08A7E; --bad-soft:#3A2220;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-body);font-size:19px;line-height:1.6;padding:0 20px 64px}
+.wrap{max-width:760px;margin:0 auto}
+.wide{max-width:980px;margin:0 auto}
+header.top{max-width:760px;margin:0 auto;padding:40px 0 8px;border-bottom:3px solid var(--ink)}
+.kicker{font-family:var(--f-head);font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0}
+h1{font-family:var(--f-head);font-size:2.6rem;line-height:1.1;margin:.25em 0 .2em;text-wrap:balance}
+.meta{font-family:var(--f-head);font-size:.85rem;color:var(--muted);margin:0 0 16px}
+h2{font-family:var(--f-head);font-size:1.5rem;line-height:1.25;margin:2.4em 0 .5em;text-wrap:balance;display:flex;gap:.6em;align-items:baseline}
+h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;min-width:1.4em}
+h3{font-family:var(--f-head);font-size:1.1rem;margin:1.6em 0 .3em}
+p{margin:.7em 0}
+sub{font-size:.72em;line-height:0}
+.var{font-style:italic}
+a{color:var(--accent)}
+nav.toc{font-family:var(--f-head);font-size:.92rem;background:var(--panel);border-radius:10px;padding:14px 20px;margin:24px 0}
+nav.toc ol{margin:.4em 0 0;padding-left:1.4em;columns:2;column-gap:28px}
+nav.toc li{margin:.15em 0;break-inside:avoid}
+.goals{border-left:4px solid var(--accent);padding:4px 0 4px 18px;margin:20px 0}
+.goals ul{margin:.3em 0;padding-left:1.2em}
+.box{border-radius:10px;padding:14px 20px;margin:22px 0;font-size:.95em}
+.box .bt{font-family:var(--f-head);font-weight:700;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+.box.think{background:var(--accent-soft)}
+.box.think .bt{color:var(--accent)}
+.box.warn{background:var(--pcol-soft)}
+.box.warn .bt{color:var(--pcol)}
+.box.terms{background:var(--panel)}
+.box.terms dl{margin:.3em 0;display:grid;grid-template-columns:max-content 1fr;gap:4px 16px}
+.box.terms dt{font-family:var(--f-head);font-weight:700}
+.box.terms dd{margin:0}
+@media (max-width:520px){.box.terms dl{grid-template-columns:1fr}.box.terms dd{margin-bottom:6px}}
+figure{margin:24px 0}
+figcaption{font-family:var(--f-head);font-size:.85rem;color:var(--muted);margin-top:8px;line-height:1.45}
+figcaption b{color:var(--ink)}
+.fig3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fig3 figure{margin:0}
+@media (max-width:720px){.fig3{grid-template-columns:1fr;max-width:380px;margin:0 auto}}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--f-head);fill:var(--ink)}
+.bond{stroke:var(--rule);stroke-width:6}
+.el{fill:var(--ink)}
+.hole{fill:var(--paper);stroke:var(--pcol);stroke-width:4;stroke-dasharray:5 4}
+.atom{fill:var(--paper);stroke:var(--muted);stroke-width:4}
+.atom-n{fill:var(--ncol-soft);stroke:var(--ncol)}
+.atom-p{fill:var(--pcol-soft);stroke:var(--pcol)}
+.atomlab{font-size:28px;font-weight:700;text-anchor:middle}
+.free{fill:var(--ncol)}
+.free-ring{fill:none;stroke:var(--ncol);stroke-width:3;stroke-dasharray:5 4}
+.preg{fill:var(--pcol-soft)} .nreg{fill:var(--ncol-soft)}
+.dep{fill:var(--paper);stroke:var(--rule);stroke-width:2;stroke-dasharray:8 6}
+.ion{fill:var(--paper);stroke:var(--muted);stroke-width:2}
+.ionmark{stroke:var(--muted);stroke-width:3}
+.lab{font-size:20px;font-weight:700;text-anchor:middle;fill:var(--muted)}
+.lab-p{fill:var(--pcol)} .lab-n{fill:var(--ncol)}
+.small{font-size:17px;text-anchor:middle;fill:var(--muted)}
+.arrow{stroke:var(--ink);stroke-width:3}
+.ahead,.axhead{fill:var(--ink)}
+.ledbody{fill:var(--pcol-soft);stroke:var(--pcol);stroke-width:4}
+.metal{fill:none;stroke:var(--muted);stroke-width:4}
+.chip{fill:var(--pcol)}
+.wire{fill:none;stroke:var(--muted);stroke-width:3}
+.leg{stroke:var(--muted);stroke-width:8}
+.lead line{stroke:var(--muted);stroke-width:2}
+.badge circle{fill:var(--accent)}
+.badgetxt text{fill:var(--paper);font-size:22px;font-weight:700;text-anchor:middle}
+.lab2{font-size:22px;font-weight:600}
+.lab2.end{text-anchor:end}
+.ledfig{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:28px;align-items:start}
+@media (max-width:640px){.ledfig{grid-template-columns:1fr}.ledfig svg{max-width:320px;margin:0 auto}}
+.parts{padding-left:1.4em;margin:0}
+.parts li{margin:.35em 0}
+.syms{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:720px){.syms{grid-template-columns:repeat(2,1fr)}}
+.sym{margin:0;background:var(--panel);border-radius:10px;padding:12px}
+.sym figcaption{display:flex;flex-direction:column;align-items:center;text-align:center}
+.sym figcaption b{font-size:1rem}
+.sw{stroke:var(--ink);stroke-width:4;fill:none}
+.sw.thick{stroke-width:5}
+.sw.xthick{stroke-width:10}
+.nofill{fill:none}
+.sa{stroke:var(--pcol);stroke-width:4}
+#sah path{fill:var(--pcol)}
+.symletter{font-size:34px;font-weight:700;text-anchor:middle}
+.symtxt{font-size:22px;font-weight:700;text-anchor:middle}
+.ax{stroke:var(--ink);stroke-width:3}
+.dash{stroke:var(--muted);stroke-width:2;stroke-dasharray:8 7}
+.curve{fill:none;stroke:var(--pcol);stroke-width:6}
+.axlab{font-size:24px;font-weight:700;font-style:italic}
+.axlab .sub{font-size:16px;font-style:normal}
+.tablewrap{overflow-x:auto;margin:18px 0}
+table{border-collapse:collapse;width:100%;font-family:var(--f-head);font-size:.9rem;font-variant-numeric:tabular-nums}
+th{text-align:left;border-bottom:2px solid var(--ink);padding:8px 10px;white-space:nowrap}
+td{border-bottom:1px solid var(--rule);padding:8px 10px;vertical-align:top}
+td.num{white-space:nowrap}
+.eq{display:flex;align-items:center;justify-content:center;gap:.5em;font-size:1.5rem;background:var(--panel);border-radius:10px;padding:18px;margin:20px 0;font-family:var(--f-body)}
+.frac{display:inline-flex;flex-direction:column;align-items:center}
+.frac .n{border-bottom:2px solid var(--ink);padding:0 .3em .1em}
+.frac .d{padding:.1em .3em 0}
+.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+.steps li{counter-increment:s;position:relative;padding:10px 14px 10px 54px;border-bottom:1px solid var(--rule)}
+.steps li::before{content:counter(s);position:absolute;left:10px;top:10px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--paper);font-family:var(--f-head);font-weight:700;font-size:.9rem;display:grid;place-items:center}
+.result{font-family:var(--f-head);font-weight:700}
+/* holu-hermir */
+.holes{background:var(--panel);border-radius:10px;padding:18px 20px;margin:22px 0}
+.track{position:relative;display:flex;justify-content:space-between;align-items:center;padding:14px 6px;margin:4px 0 12px}
+.track::before{content:"";position:absolute;left:0;right:0;top:50%;height:6px;margin-top:-3px;background:var(--rule);border-radius:3px}
+.slot{position:relative;width:34px;height:34px;border-radius:50%;display:block}
+.slot.e{background:var(--ink)}
+.slot.h{background:var(--paper);border:4px dashed var(--pcol)}
+.slot.moved{animation:pop .45s ease-out}
+@keyframes pop{from{transform:translateX(-46px);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.slot.moved{animation:none}}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--f-head);font-size:.92rem}
+button{font-family:var(--f-head);font-size:.95rem;font-weight:600;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.status{color:var(--muted)}
+/* sjálfspróf */
+.q{border:1px solid var(--rule);border-radius:10px;padding:14px 18px;margin:16px 0}
+.q p.qt{font-weight:600;margin:.2em 0 .6em}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts button{text-align:left;font-weight:400;line-height:1.4}
+.opts button.right{background:var(--ok-soft);border-color:var(--ok)}
+.opts button.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.fb{font-family:var(--f-head);font-size:.9rem;margin:.6em 0 0;min-height:1.2em}
+.fb.ok{color:var(--ok)} .fb.no{color:var(--bad)}
+.score{font-family:var(--f-head);font-weight:700}
+details{background:var(--panel);border-radius:10px;padding:10px 16px;margin:14px 0;font-size:.95em}
+summary{font-family:var(--f-head);font-weight:600;cursor:pointer}
+.next{border-top:3px solid var(--ink);margin-top:48px;padding-top:8px}
+.next ol li{margin:.3em 0}
+.foot{font-family:var(--f-head);font-size:.8rem;color:var(--muted);margin-top:40px}
+
+nav.chapters{max-width:980px;margin:14px auto 0;display:flex;gap:8px;flex-wrap:wrap;font-family:var(--f-head);font-size:.82rem}
+nav.chapters a{padding:5px 12px;border:1px solid var(--rule);border-radius:999px;text-decoration:none;color:var(--ink);background:var(--paper)}
+nav.chapters a[aria-current="page"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+nav.chapters a:hover{border-color:var(--accent)}
+code{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.86em;background:var(--panel);padding:.05em .32em;border-radius:4px}
+pre.code{background:var(--panel);border-radius:10px;padding:14px 18px;overflow-x:auto;font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;font-size:.84rem;line-height:1.6;margin:18px 0;tab-size:2}
+pre.code code{background:none;padding:0;font-size:1em}
+.cm{color:var(--muted);font-style:italic}
+.kw{color:var(--accent);font-weight:600}
+.st{color:var(--pcol)}
+ol.rules li{margin:.5em 0}
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:40px;font-family:var(--f-head);font-size:.92rem}
+.pager a{display:block;padding:10px 14px;border:1px solid var(--rule);border-radius:10px;text-decoration:none;color:var(--ink);max-width:48%}
+.pager a span{display:block;font-size:.78rem;color:var(--muted)}
+.pager a.nx{margin-left:auto;text-align:right}
+/* forritarakeyrsla */
+.tracer{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start;background:var(--panel);border-radius:10px;padding:16px;margin:20px 0}
+@media (max-width:640px){.tracer{grid-template-columns:1fr}}
+.tracer pre.code{background:var(--paper);margin:0}
+.trace .ln{display:block;padding:0 6px;border-radius:4px}
+.trace .ln.on{background:var(--accent-soft);outline:2px solid var(--accent)}
+.trace .no{display:inline-block;width:1.8em;color:var(--muted);user-select:none}
+.tstate{display:flex;flex-direction:column;gap:10px}
+.tled{width:56px;height:56px;border-radius:50%;background:var(--pcol-soft);border:3px solid var(--pcol);transition:background .2s,box-shadow .2s}
+.tled.on{background:var(--pcol);box-shadow:0 0 24px var(--pcol)}
+@media (prefers-reduced-motion: reduce){.tled{transition:none}}
+.tclock{font-family:var(--f-head);margin:0}
+.texp{margin:0;font-size:.95rem;min-height:3.2em}
+/* reiknivél */
+.calc{background:var(--panel);border-radius:10px;padding:16px 18px;margin:20px 0}
+.cgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;font-family:var(--f-head);font-size:.88rem}
+@media (max-width:560px){.cgrid{grid-template-columns:1fr}}
+.cgrid label{display:flex;flex-direction:column;gap:4px;font-weight:600}
+.cgrid select{font:inherit;font-weight:400;padding:7px 8px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)}
+.cout{display:flex;gap:18px;align-items:center;margin-top:16px}
+.cbulb{flex:none;width:64px;height:64px;border-radius:50%;border:3px solid var(--muted);background:var(--paper)}
+.cbig{font-family:var(--f-head);font-size:1.8rem;font-weight:700;margin:0;font-variant-numeric:tabular-nums}
+.cwork{font-family:var(--f-head);font-size:.88rem;color:var(--muted);margin:0 0 8px}
+.cbar{position:relative;height:12px;border-radius:6px;background:var(--rule);width:min(360px,60vw)}
+.cbar div{height:100%;border-radius:6px;background:var(--ok)}
+.cbar span{position:absolute;top:-4px;width:3px;height:20px;background:var(--ink)}
+.cverdict{font-family:var(--f-head);font-size:.9rem;margin:8px 0 0}
+.cverdict.bad{color:var(--bad)} .cverdict.ok{color:var(--ok)}
+/* fljótandi */
+.floatdemo{background:var(--panel);border-radius:10px;padding:16px 18px;margin:20px 0}
+.floatdemo button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+pre.serial{font-family:"IBM Plex Mono",ui-monospace,monospace;background:var(--paper);border-radius:8px;padding:10px 14px;height:11.5em;overflow:hidden;margin:12px 0 6px;font-size:.88rem;line-height:1.35}
+/* svg extras */
+.sig{fill:none;stroke-width:4}
+.sig.d{stroke:var(--accent)} .sig.a{stroke:var(--pcol)}
+.grid{stroke:var(--rule);stroke-width:1}
+.tick{font-size:15px;fill:var(--muted)}
+.cap{font-size:17px;font-weight:700}
+.pin-d{fill:var(--accent)} .pin-p{fill:var(--pcol)} .pin-a{fill:var(--ok)} .pin-n{fill:var(--rule)}
+.board{fill:var(--accent-soft);stroke:var(--muted);stroke-width:2}
+.box2{fill:var(--paper);stroke:var(--muted);stroke-width:2}
+.glab{font-size:17px;font-weight:700}
+.plab{font-size:14px}
+.qlab{font-size:14px;fill:var(--muted)}
+.wire2{stroke:var(--ink);stroke-width:3;fill:none}
+.zone-lo{fill:var(--ncol-soft)} .zone-hi{fill:var(--pcol-soft)} .zone-mid{fill:var(--panel);stroke:var(--muted);stroke-dasharray:6 5}
+.flowbox{fill:var(--paper);stroke:var(--muted);stroke-width:2}
+.flowbox.acc{fill:var(--accent-soft);stroke:var(--accent)}
+.fl{stroke:var(--muted);stroke-width:2.5;fill:none}
+.outsim{background:var(--panel);border-radius:10px;padding:16px 18px;margin:20px 0 8px}
+.outsim svg{background:var(--paper);border-radius:8px}
+.oread{font-family:var(--f-head);font-size:.95rem;margin:10px 0 0;font-weight:600}
+.figcap{font-family:var(--f-head);font-size:.85rem;color:var(--muted);margin:0 0 20px}
+.flow{fill:none;stroke:var(--ok);stroke-width:3;stroke-dasharray:8 8;animation:flowmove 0.9s linear infinite;transition:opacity .3s}
+@keyframes flowmove{to{stroke-dashoffset:-16}}
+@media (prefers-reduced-motion: reduce){.flow{animation:none}#sw-lever,#sw-glow{transition:none!important}}
+.anat{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:30px}
+</style>
+</head>
+<body>
+<nav class="chapters" aria-label="Kaflar"><a href="index.html">Yfirlit</a><a href="kafli1-ljosdiodan.html" aria-current="page">1. Ljósdíóðan</a><a href="kafli2-forritun.html">2. Fyrstu skrefin í forritun</a><a href="kafli3-utgangar.html">3. Arduino-borðið og stakrænir útgangar</a><a href="kafli4-inngangar.html">4. Stakrænir inngangar</a></nav>
+<header class="top">
+  <p class="kicker">EÐLI3RS05 · Arduino · Kafli 1</p>
+  <h1>Ljósdíóðan</h1>
+  <p class="meta">Lesefni fyrir fyrstu kennslustund · um 30 mínútna lestur · sjálfspróf í lokin</p>
+</header>
+
+<main class="wrap">
+  <div class="goals">
+    <p><b>Þegar þú hefur lesið kaflann getur þú:</b></p>
+    <ul>
+      <li>útskýrt hvað p- og n-svæði eru og hvers vegna díóða leiðir aðeins í eina átt</li>
+      <li>þekkt forskaut og bakskaut, bæði á íhlutnum og í rásarteikningu</li>
+      <li>lesið helstu kennistærðir úr gagnablaði LED</li>
+      <li>reiknað viðnámið sem LED þarf í röð við sig</li>
+    </ul>
+  </div>
+
+  <div class="box think">
+    <span class="bt">Spáðu fyrst</span>
+    Hvað heldur þú að gerist ef ljósdíóða er tengd beint við 9 V rafhlöðu, án nokkurs annars í rásinni? Skrifaðu svarið hjá þér áður en þú lest áfram. Svarið er í kafla 7.
+  </div>
+
+  <nav class="toc" aria-label="Efnisyfirlit">
+    <b>Efni kaflans</b>
+    <ol>
+      <li><a href="#halfleidarar">Hálfleiðarar og íbæting</a></li>
+      <li><a href="#holur">Hvernig rafeindahola færist</a></li>
+      <li><a href="#pn">pn-samskeytin</a></li>
+      <li><a href="#ljos">Hvers vegna ljós?</a></li>
+      <li><a href="#ihlutur">Íhluturinn</a></li>
+      <li><a href="#takn">Rásartákn og kennistærðir</a></li>
+      <li><a href="#vidnam">Af hverju viðnám?</a></li>
+      <li><a href="#daemi">Sýnidæmi</a></li>
+      <li><a href="#prof">Sjálfspróf</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="halfleidarar"><span class="num">1</span>Hálfleiðarar og íbæting</h2>
+  <p>Sá hluti díóðunnar sem gefur frá sér ljós er gerður úr <b>hálfleiðara</b>. Málmur leiðir vel af því að hann hefur lausar rafeindir. Plast leiðir ekki af því að allar rafeindirnar eru bundnar. Hreinn hálfleiðari eins og kísill er nær plasti en málmi.</p>
+  <p>Kísilatóm hefur 4 gildisrafeindir. Í kristalnum myndar hvert atóm samgild tengi við 4 nágranna, og í hverju tengi eru tvær rafeindir, ein frá hvoru atómi. Þegar allar rafeindirnar eru uppteknar í tengjum er engin laus til að bera straum. Til að breyta því er örlitlu af öðru frumefni bætt í kristalinn. Það kallast <b>íbæting</b>.</p>
+</main>
+
+<div class="wide">
+  <div class="fig3">
+    <figure><svg viewBox="0 0 500 480" role="img" aria-label="Kristalgrind úr hreinum kísli"><line x1="0" y1="100" x2="110" y2="100" class="bond"/><line x1="110" y1="100" x2="250" y2="100" class="bond"/><line x1="250" y1="100" x2="390" y2="100" class="bond"/><line x1="390" y1="100" x2="500" y2="100" class="bond"/><line x1="0" y1="240" x2="110" y2="240" class="bond"/><line x1="110" y1="240" x2="250" y2="240" class="bond"/><line x1="250" y1="240" x2="390" y2="240" class="bond"/><line x1="390" y1="240" x2="500" y2="240" class="bond"/><line x1="0" y1="380" x2="110" y2="380" class="bond"/><line x1="110" y1="380" x2="250" y2="380" class="bond"/><line x1="250" y1="380" x2="390" y2="380" class="bond"/><line x1="390" y1="380" x2="500" y2="380" class="bond"/><line x1="110" y1="0" x2="110" y2="100" class="bond"/><line x1="110" y1="100" x2="110" y2="240" class="bond"/><line x1="110" y1="240" x2="110" y2="380" class="bond"/><line x1="110" y1="380" x2="110" y2="480" class="bond"/><line x1="250" y1="0" x2="250" y2="100" class="bond"/><line x1="250" y1="100" x2="250" y2="240" class="bond"/><line x1="250" y1="240" x2="250" y2="380" class="bond"/><line x1="250" y1="380" x2="250" y2="480" class="bond"/><line x1="390" y1="0" x2="390" y2="100" class="bond"/><line x1="390" y1="100" x2="390" y2="240" class="bond"/><line x1="390" y1="240" x2="390" y2="380" class="bond"/><line x1="390" y1="380" x2="390" y2="480" class="bond"/><circle cx="55.0" cy="89" r="7" class="el"/><circle cx="55.0" cy="111" r="7" class="el"/><circle cx="180.0" cy="89" r="7" class="el"/><circle cx="180.0" cy="111" r="7" class="el"/><circle cx="320.0" cy="89" r="7" class="el"/><circle cx="320.0" cy="111" r="7" class="el"/><circle cx="445.0" cy="89" r="7" class="el"/><circle cx="445.0" cy="111" r="7" class="el"/><circle cx="55.0" cy="229" r="7" class="el"/><circle cx="55.0" cy="251" r="7" class="el"/><circle cx="180.0" cy="229" r="7" class="el"/><circle cx="180.0" cy="251" r="7" class="el"/><circle cx="320.0" cy="229" r="7" class="el"/><circle cx="320.0" cy="251" r="7" class="el"/><circle cx="445.0" cy="229" r="7" class="el"/><circle cx="445.0" cy="251" r="7" class="el"/><circle cx="55.0" cy="369" r="7" class="el"/><circle cx="55.0" cy="391" r="7" class="el"/><circle cx="180.0" cy="369" r="7" class="el"/><circle cx="180.0" cy="391" r="7" class="el"/><circle cx="320.0" cy="369" r="7" class="el"/><circle cx="320.0" cy="391" r="7" class="el"/><circle cx="445.0" cy="369" r="7" class="el"/><circle cx="445.0" cy="391" r="7" class="el"/><circle cx="99" cy="50.0" r="7" class="el"/><circle cx="121" cy="50.0" r="7" class="el"/><circle cx="99" cy="170.0" r="7" class="el"/><circle cx="121" cy="170.0" r="7" class="el"/><circle cx="99" cy="310.0" r="7" class="el"/><circle cx="121" cy="310.0" r="7" class="el"/><circle cx="99" cy="430.0" r="7" class="el"/><circle cx="121" cy="430.0" r="7" class="el"/><circle cx="239" cy="50.0" r="7" class="el"/><circle cx="261" cy="50.0" r="7" class="el"/><circle cx="239" cy="170.0" r="7" class="el"/><circle cx="261" cy="170.0" r="7" class="el"/><circle cx="239" cy="310.0" r="7" class="el"/><circle cx="261" cy="310.0" r="7" class="el"/><circle cx="239" cy="430.0" r="7" class="el"/><circle cx="261" cy="430.0" r="7" class="el"/><circle cx="379" cy="50.0" r="7" class="el"/><circle cx="401" cy="50.0" r="7" class="el"/><circle cx="379" cy="170.0" r="7" class="el"/><circle cx="401" cy="170.0" r="7" class="el"/><circle cx="379" cy="310.0" r="7" class="el"/><circle cx="401" cy="310.0" r="7" class="el"/><circle cx="379" cy="430.0" r="7" class="el"/><circle cx="401" cy="430.0" r="7" class="el"/><circle cx="110" cy="100" r="36" class="atom"/><text x="110" y="110" class="atomlab">Si</text><circle cx="250" cy="100" r="36" class="atom"/><text x="250" y="110" class="atomlab">Si</text><circle cx="390" cy="100" r="36" class="atom"/><text x="390" y="110" class="atomlab">Si</text><circle cx="110" cy="240" r="36" class="atom"/><text x="110" y="250" class="atomlab">Si</text><circle cx="250" cy="240" r="36" class="atom"/><text x="250" y="250" class="atomlab">Si</text><circle cx="390" cy="240" r="36" class="atom"/><text x="390" y="250" class="atomlab">Si</text><circle cx="110" cy="380" r="36" class="atom"/><text x="110" y="390" class="atomlab">Si</text><circle cx="250" cy="380" r="36" class="atom"/><text x="250" y="390" class="atomlab">Si</text><circle cx="390" cy="380" r="36" class="atom"/><text x="390" y="390" class="atomlab">Si</text></svg><figcaption><b>Hreinn kísill.</b> Allar rafeindir eru uppteknar í samgildum tengjum. Engin rafeind er laus.</figcaption></figure>
+    <figure><svg viewBox="0 0 500 480" role="img" aria-label="Kísilgrind með einu fosfóratómi og einni lausri rafeind"><line x1="0" y1="100" x2="110" y2="100" class="bond"/><line x1="110" y1="100" x2="250" y2="100" class="bond"/><line x1="250" y1="100" x2="390" y2="100" class="bond"/><line x1="390" y1="100" x2="500" y2="100" class="bond"/><line x1="0" y1="240" x2="110" y2="240" class="bond"/><line x1="110" y1="240" x2="250" y2="240" class="bond"/><line x1="250" y1="240" x2="390" y2="240" class="bond"/><line x1="390" y1="240" x2="500" y2="240" class="bond"/><line x1="0" y1="380" x2="110" y2="380" class="bond"/><line x1="110" y1="380" x2="250" y2="380" class="bond"/><line x1="250" y1="380" x2="390" y2="380" class="bond"/><line x1="390" y1="380" x2="500" y2="380" class="bond"/><line x1="110" y1="0" x2="110" y2="100" class="bond"/><line x1="110" y1="100" x2="110" y2="240" class="bond"/><line x1="110" y1="240" x2="110" y2="380" class="bond"/><line x1="110" y1="380" x2="110" y2="480" class="bond"/><line x1="250" y1="0" x2="250" y2="100" class="bond"/><line x1="250" y1="100" x2="250" y2="240" class="bond"/><line x1="250" y1="240" x2="250" y2="380" class="bond"/><line x1="250" y1="380" x2="250" y2="480" class="bond"/><line x1="390" y1="0" x2="390" y2="100" class="bond"/><line x1="390" y1="100" x2="390" y2="240" class="bond"/><line x1="390" y1="240" x2="390" y2="380" class="bond"/><line x1="390" y1="380" x2="390" y2="480" class="bond"/><circle cx="55.0" cy="89" r="7" class="el"/><circle cx="55.0" cy="111" r="7" class="el"/><circle cx="180.0" cy="89" r="7" class="el"/><circle cx="180.0" cy="111" r="7" class="el"/><circle cx="320.0" cy="89" r="7" class="el"/><circle cx="320.0" cy="111" r="7" class="el"/><circle cx="445.0" cy="89" r="7" class="el"/><circle cx="445.0" cy="111" r="7" class="el"/><circle cx="55.0" cy="229" r="7" class="el"/><circle cx="55.0" cy="251" r="7" class="el"/><circle cx="180.0" cy="229" r="7" class="el"/><circle cx="180.0" cy="251" r="7" class="el"/><circle cx="320.0" cy="229" r="7" class="el"/><circle cx="320.0" cy="251" r="7" class="el"/><circle cx="445.0" cy="229" r="7" class="el"/><circle cx="445.0" cy="251" r="7" class="el"/><circle cx="55.0" cy="369" r="7" class="el"/><circle cx="55.0" cy="391" r="7" class="el"/><circle cx="180.0" cy="369" r="7" class="el"/><circle cx="180.0" cy="391" r="7" class="el"/><circle cx="320.0" cy="369" r="7" class="el"/><circle cx="320.0" cy="391" r="7" class="el"/><circle cx="445.0" cy="369" r="7" class="el"/><circle cx="445.0" cy="391" r="7" class="el"/><circle cx="99" cy="50.0" r="7" class="el"/><circle cx="121" cy="50.0" r="7" class="el"/><circle cx="99" cy="170.0" r="7" class="el"/><circle cx="121" cy="170.0" r="7" class="el"/><circle cx="99" cy="310.0" r="7" class="el"/><circle cx="121" cy="310.0" r="7" class="el"/><circle cx="99" cy="430.0" r="7" class="el"/><circle cx="121" cy="430.0" r="7" class="el"/><circle cx="239" cy="50.0" r="7" class="el"/><circle cx="261" cy="50.0" r="7" class="el"/><circle cx="239" cy="170.0" r="7" class="el"/><circle cx="261" cy="170.0" r="7" class="el"/><circle cx="239" cy="310.0" r="7" class="el"/><circle cx="261" cy="310.0" r="7" class="el"/><circle cx="239" cy="430.0" r="7" class="el"/><circle cx="261" cy="430.0" r="7" class="el"/><circle cx="379" cy="50.0" r="7" class="el"/><circle cx="401" cy="50.0" r="7" class="el"/><circle cx="379" cy="170.0" r="7" class="el"/><circle cx="401" cy="170.0" r="7" class="el"/><circle cx="379" cy="310.0" r="7" class="el"/><circle cx="401" cy="310.0" r="7" class="el"/><circle cx="379" cy="430.0" r="7" class="el"/><circle cx="401" cy="430.0" r="7" class="el"/><circle cx="110" cy="100" r="36" class="atom"/><text x="110" y="110" class="atomlab">Si</text><circle cx="250" cy="100" r="36" class="atom"/><text x="250" y="110" class="atomlab">Si</text><circle cx="390" cy="100" r="36" class="atom"/><text x="390" y="110" class="atomlab">Si</text><circle cx="110" cy="240" r="36" class="atom"/><text x="110" y="250" class="atomlab">Si</text><circle cx="250" cy="240" r="36" class="atom atom-n"/><text x="250" y="250" class="atomlab">P</text><circle cx="390" cy="240" r="36" class="atom"/><text x="390" y="250" class="atomlab">Si</text><circle cx="110" cy="380" r="36" class="atom"/><text x="110" y="390" class="atomlab">Si</text><circle cx="250" cy="380" r="36" class="atom"/><text x="250" y="390" class="atomlab">Si</text><circle cx="390" cy="380" r="36" class="atom"/><text x="390" y="390" class="atomlab">Si</text><circle cx="312" cy="180" r="22" class="free-ring"/><circle cx="312" cy="180" r="11" class="free"/></svg><figcaption><b>n-gerð: fosfór, 5 gildisrafeindir.</b> Fjórar fara í tengi. Sú fimmta (blá) passar hvergi og getur flakkað um kristalinn.</figcaption></figure>
+    <figure><svg viewBox="0 0 500 480" role="img" aria-label="Kísilgrind með einu bóratómi og einni rafeindaholu"><line x1="0" y1="100" x2="110" y2="100" class="bond"/><line x1="110" y1="100" x2="250" y2="100" class="bond"/><line x1="250" y1="100" x2="390" y2="100" class="bond"/><line x1="390" y1="100" x2="500" y2="100" class="bond"/><line x1="0" y1="240" x2="110" y2="240" class="bond"/><line x1="110" y1="240" x2="250" y2="240" class="bond"/><line x1="250" y1="240" x2="390" y2="240" class="bond"/><line x1="390" y1="240" x2="500" y2="240" class="bond"/><line x1="0" y1="380" x2="110" y2="380" class="bond"/><line x1="110" y1="380" x2="250" y2="380" class="bond"/><line x1="250" y1="380" x2="390" y2="380" class="bond"/><line x1="390" y1="380" x2="500" y2="380" class="bond"/><line x1="110" y1="0" x2="110" y2="100" class="bond"/><line x1="110" y1="100" x2="110" y2="240" class="bond"/><line x1="110" y1="240" x2="110" y2="380" class="bond"/><line x1="110" y1="380" x2="110" y2="480" class="bond"/><line x1="250" y1="0" x2="250" y2="100" class="bond"/><line x1="250" y1="100" x2="250" y2="240" class="bond"/><line x1="250" y1="240" x2="250" y2="380" class="bond"/><line x1="250" y1="380" x2="250" y2="480" class="bond"/><line x1="390" y1="0" x2="390" y2="100" class="bond"/><line x1="390" y1="100" x2="390" y2="240" class="bond"/><line x1="390" y1="240" x2="390" y2="380" class="bond"/><line x1="390" y1="380" x2="390" y2="480" class="bond"/><circle cx="55.0" cy="89" r="7" class="el"/><circle cx="55.0" cy="111" r="7" class="el"/><circle cx="180.0" cy="89" r="7" class="el"/><circle cx="180.0" cy="111" r="7" class="el"/><circle cx="320.0" cy="89" r="7" class="el"/><circle cx="320.0" cy="111" r="7" class="el"/><circle cx="445.0" cy="89" r="7" class="el"/><circle cx="445.0" cy="111" r="7" class="el"/><circle cx="55.0" cy="229" r="7" class="el"/><circle cx="55.0" cy="251" r="7" class="el"/><circle cx="180.0" cy="229" r="7" class="el"/><circle cx="180.0" cy="251" r="7" class="el"/><circle cx="320.0" cy="229" r="7" class="el"/><circle cx="320.0" cy="251" r="13" class="hole"/><circle cx="445.0" cy="229" r="7" class="el"/><circle cx="445.0" cy="251" r="7" class="el"/><circle cx="55.0" cy="369" r="7" class="el"/><circle cx="55.0" cy="391" r="7" class="el"/><circle cx="180.0" cy="369" r="7" class="el"/><circle cx="180.0" cy="391" r="7" class="el"/><circle cx="320.0" cy="369" r="7" class="el"/><circle cx="320.0" cy="391" r="7" class="el"/><circle cx="445.0" cy="369" r="7" class="el"/><circle cx="445.0" cy="391" r="7" class="el"/><circle cx="99" cy="50.0" r="7" class="el"/><circle cx="121" cy="50.0" r="7" class="el"/><circle cx="99" cy="170.0" r="7" class="el"/><circle cx="121" cy="170.0" r="7" class="el"/><circle cx="99" cy="310.0" r="7" class="el"/><circle cx="121" cy="310.0" r="7" class="el"/><circle cx="99" cy="430.0" r="7" class="el"/><circle cx="121" cy="430.0" r="7" class="el"/><circle cx="239" cy="50.0" r="7" class="el"/><circle cx="261" cy="50.0" r="7" class="el"/><circle cx="239" cy="170.0" r="7" class="el"/><circle cx="261" cy="170.0" r="7" class="el"/><circle cx="239" cy="310.0" r="7" class="el"/><circle cx="261" cy="310.0" r="7" class="el"/><circle cx="239" cy="430.0" r="7" class="el"/><circle cx="261" cy="430.0" r="7" class="el"/><circle cx="379" cy="50.0" r="7" class="el"/><circle cx="401" cy="50.0" r="7" class="el"/><circle cx="379" cy="170.0" r="7" class="el"/><circle cx="401" cy="170.0" r="7" class="el"/><circle cx="379" cy="310.0" r="7" class="el"/><circle cx="401" cy="310.0" r="7" class="el"/><circle cx="379" cy="430.0" r="7" class="el"/><circle cx="401" cy="430.0" r="7" class="el"/><circle cx="110" cy="100" r="36" class="atom"/><text x="110" y="110" class="atomlab">Si</text><circle cx="250" cy="100" r="36" class="atom"/><text x="250" y="110" class="atomlab">Si</text><circle cx="390" cy="100" r="36" class="atom"/><text x="390" y="110" class="atomlab">Si</text><circle cx="110" cy="240" r="36" class="atom"/><text x="110" y="250" class="atomlab">Si</text><circle cx="250" cy="240" r="36" class="atom atom-p"/><text x="250" y="250" class="atomlab">B</text><circle cx="390" cy="240" r="36" class="atom"/><text x="390" y="250" class="atomlab">Si</text><circle cx="110" cy="380" r="36" class="atom"/><text x="110" y="390" class="atomlab">Si</text><circle cx="250" cy="380" r="36" class="atom"/><text x="250" y="390" class="atomlab">Si</text><circle cx="390" cy="380" r="36" class="atom"/><text x="390" y="390" class="atomlab">Si</text></svg><figcaption><b>p-gerð: bór, 3 gildisrafeindir.</b> Eitt tengi fær aðeins eina rafeind. Þar er <b>rafeindahola</b> (rauði hringurinn).</figcaption></figure>
+  </div>
+</div>
+
+<main class="wrap">
+  <p>Í <b>n-gerð</b> eru lausu hleðsluberarnir rafeindir, sem eru neikvæðar (n). Í <b>p-gerð</b> eru þeir rafeindaholur, sem haga sér eins og jákvæðar hleðslur (p). Þumalputtareglan er þessi: atóm með einni gildisrafeind <i>færra</i> en atómið sem það leysir af hólmi gefur rafeindaholu, en atóm með einni <i>fleira</i> gefur lausa rafeind.</p>
+
+  <div class="box warn">
+    <span class="bt">Algengur misskilningur</span>
+    n-efni er <b>ekki</b> neikvætt hlaðið og p-efni er ekki jákvætt hlaðið. Fosfóratóm hefur 15 róteindir og 15 rafeindir, svo efnið er rafhlutlaust í heild. Bókstafirnir segja aðeins hvaða hleðsluberar eru <i>lausir</i> að hreyfast.
+  </div>
+
+  <div class="box terms">
+    <span class="bt">Hugtök</span>
+    <dl>
+      <dt>Gildisrafeind</dt><dd>Rafeind í ysta hvolfi atóms. Það eru þær sem mynda tengi.</dd>
+      <dt>Íbæting</dt><dd>Örlitlu af öðru frumefni bætt í hálfleiðara til að fá lausa hleðslubera.</dd>
+      <dt>Hleðsluberi</dt><dd>Það sem ber strauminn: laus rafeind (−) eða rafeindahola (+).</dd>
+      <dt>Rafeindahola</dt><dd>Staður í tengi þar sem rafeind vantar. Hún færist og hagar sér eins og jákvæð hleðsla. (e. <i>hole</i>)</dd>
+    </dl>
+  </div>
+
+  <h2 id="holur"><span class="num">2</span>Hvernig rafeindahola færist</h2>
+  <p>Rafeindahola er ekki hlutur. Hún er staður þar sem rafeind vantar. Þegar rafeind úr næsta tengi stekkur í rafeindaholuna fyllist hún, en ný rafeindahola myndast þar sem rafeindin var. Rafeindirnar færast því í aðra áttina og rafeindaholan í hina.</p>
+
+  <div class="holes" aria-labelledby="holes-title">
+    <h3 id="holes-title" style="margin-top:0">Prófaðu sjálf</h3>
+    <p style="margin-top:0">Ýttu á <b>Næsta skref</b>. Fylgstu með rauða hringnum.</p>
+    <div class="track" id="track" aria-hidden="true"><span class="slot" data-i="0"></span><span class="slot" data-i="1"></span><span class="slot" data-i="2"></span><span class="slot" data-i="3"></span><span class="slot" data-i="4"></span><span class="slot" data-i="5"></span><span class="slot" data-i="6"></span></div>
+    <div class="ctrl">
+      <button class="primary" id="hstep" type="button">Næsta skref</button>
+      <button id="hreset" type="button">Byrja aftur</button>
+      <span class="status" id="hstatus" aria-live="polite">Skref 0: rafeindaholan er í sæti 6.</span>
+    </div>
+  </div>
+
+  <p>Þetta er eins og <b>loftbóla í vatnsglasi</b>. Bólan fer upp af því að vatnið fer niður, og bólan sjálf er bara staður þar sem vatnið vantar. Samt er miklu auðveldara að fylgjast með bólunni en öllu vatninu. Eins er auðveldara að fylgjast með einni rafeindaholu en öllum rafeindunum sem stökkva.</p>
+
+  <h2 id="pn"><span class="num">3</span>pn-samskeytin</h2>
+  <p>Díóða er <b>einn samfelldur kristall</b>, p-gerð öðrum megin og n-gerð hinum megin. Þar sem svæðin mætast dreifast lausar rafeindir úr n-svæðinu yfir í p-svæðið og fylla rafeindaholur. Eftir verður þunnt lag án lausra hleðslubera. Það kallast <b>rúmhleðslusvæði</b> pn-samskeytanna, af því að þar situr föst rafhleðsla: jónirnar sem urðu eftir.</p>
+</main>
+
+<div class="wide"><figure><svg viewBox="0 0 920 305" role="img" aria-label="pn-samskeyti: rafeindaholur í p-svæði, rúmhleðslusvæði með föstum jónum, lausar rafeindir í n-svæði"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ahead"/></marker></defs><rect x="0" y="40" width="380" height="200" rx="14" class="preg"/><rect x="380" y="40" width="160" height="200" class="dep"/><rect x="540" y="40" width="380" height="200" rx="14" class="nreg"/><circle cx="50" cy="85" r="12" class="hole"/><circle cx="590" cy="85" r="10" class="free"/><circle cx="80" cy="140" r="12" class="hole"/><circle cx="620" cy="140" r="10" class="free"/><circle cx="50" cy="195" r="12" class="hole"/><circle cx="590" cy="195" r="10" class="free"/><circle cx="120" cy="85" r="12" class="hole"/><circle cx="660" cy="85" r="10" class="free"/><circle cx="150" cy="140" r="12" class="hole"/><circle cx="690" cy="140" r="10" class="free"/><circle cx="120" cy="195" r="12" class="hole"/><circle cx="660" cy="195" r="10" class="free"/><circle cx="190" cy="85" r="12" class="hole"/><circle cx="730" cy="85" r="10" class="free"/><circle cx="220" cy="140" r="12" class="hole"/><circle cx="760" cy="140" r="10" class="free"/><circle cx="190" cy="195" r="12" class="hole"/><circle cx="730" cy="195" r="10" class="free"/><circle cx="260" cy="85" r="12" class="hole"/><circle cx="800" cy="85" r="10" class="free"/><circle cx="290" cy="140" r="12" class="hole"/><circle cx="830" cy="140" r="10" class="free"/><circle cx="260" cy="195" r="12" class="hole"/><circle cx="800" cy="195" r="10" class="free"/><circle cx="330" cy="85" r="12" class="hole"/><circle cx="870" cy="85" r="10" class="free"/><circle cx="360" cy="140" r="12" class="hole"/><circle cx="900" cy="140" r="10" class="free"/><circle cx="330" cy="195" r="12" class="hole"/><circle cx="870" cy="195" r="10" class="free"/><circle cx="415" cy="85" r="15" class="ion"/><line x1="408" y1="85" x2="422" y2="85" class="ionmark"/><circle cx="455" cy="85" r="15" class="ion"/><line x1="448" y1="85" x2="462" y2="85" class="ionmark"/><circle cx="415" cy="140" r="15" class="ion"/><line x1="408" y1="140" x2="422" y2="140" class="ionmark"/><circle cx="455" cy="140" r="15" class="ion"/><line x1="448" y1="140" x2="462" y2="140" class="ionmark"/><circle cx="415" cy="195" r="15" class="ion"/><line x1="408" y1="195" x2="422" y2="195" class="ionmark"/><circle cx="455" cy="195" r="15" class="ion"/><line x1="448" y1="195" x2="462" y2="195" class="ionmark"/><circle cx="490" cy="85" r="15" class="ion"/><line x1="483" y1="85" x2="497" y2="85" class="ionmark"/><line x1="490" y1="78" x2="490" y2="92" class="ionmark"/><circle cx="525" cy="85" r="15" class="ion"/><line x1="518" y1="85" x2="532" y2="85" class="ionmark"/><line x1="525" y1="78" x2="525" y2="92" class="ionmark"/><circle cx="490" cy="140" r="15" class="ion"/><line x1="483" y1="140" x2="497" y2="140" class="ionmark"/><line x1="490" y1="133" x2="490" y2="147" class="ionmark"/><circle cx="525" cy="140" r="15" class="ion"/><line x1="518" y1="140" x2="532" y2="140" class="ionmark"/><line x1="525" y1="133" x2="525" y2="147" class="ionmark"/><circle cx="490" cy="195" r="15" class="ion"/><line x1="483" y1="195" x2="497" y2="195" class="ionmark"/><line x1="490" y1="188" x2="490" y2="202" class="ionmark"/><circle cx="525" cy="195" r="15" class="ion"/><line x1="518" y1="195" x2="532" y2="195" class="ionmark"/><line x1="525" y1="188" x2="525" y2="202" class="ionmark"/><text x="190" y="26" class="lab lab-p">p-svæði: rafeindaholur</text><text x="460" y="26" class="lab" style="font-size:17px">rúmhleðslusvæði</text><text x="730" y="26" class="lab lab-n">n-svæði: lausar rafeindir</text><line x1="525" y1="265" x2="420" y2="265" class="arrow" marker-end="url(#ah)"/><text x="472" y="292" class="small">innra rafsvið</text></svg><figcaption><b>pn-samskeytin.</b> Í rúmhleðslusvæðinu sitja fastar jónir: neikvæðar p-megin, þar sem rafeindir fylltu rafeindaholur, og jákvæðar n-megin, þar sem rafeindir fóru. Jónirnar mynda innra rafsvið sem virkar eins og þröskuldur.</figcaption></figure></div>
+
+<main class="wrap">
+  <p>Innra rafsviðið ýtir á móti fleiri rafeindum sem vilja fara yfir. Til að straumur fari þarf að tengja spennu sem vinnur á móti þröskuldinum:</p>
+  <ul>
+    <li><b>Leiðsluátt</b> (+ á p, − á n). Rúmhleðslusvæðið þrengist. Þegar spennan fer yfir þröskuldinn fer straumur. Sú spenna kallast <b>forspenna</b>, <span class="var">V</span><sub>F</sub>.</li>
+    <li><b>Bakátt</b> (− á p, + á n). Ytri spennan dregur lausu rafeindirnar og rafeindaholurnar <i>frá</i> samskeytunum. Rúmhleðslusvæðið breikkar og aðeins örlítill lekastraumur fer, svo díóðan hegðar sér eins og opinn rofi. Öll spenna gjafans lendir þá á díóðunni, því ekkert spennufall verður yfir viðnáminu þegar enginn straumur fer.</li>
+  </ul>
+  <details>
+    <summary>Skemmist díóða ef henni er snúið öfugt?</summary>
+    <p>Yfirleitt ekki, en það fer eftir spennunni. Rúmhleðslusvæðið þolir aðeins ákveðna bakspennu. Ef hún verður of há brotnar einangrunin niður (gegnumbrot) og straumur fer skyndilega að renna afturábak. Ef ekkert takmarkar þann straum hitnar díóðan og skemmist. Hámarks bakspenna LED, <span class="var">V</span><sub>R</sub>, er oftast 5 V.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Rás</th><th>Bakspenna</th><th>Hvað gerist</th></tr></thead>
+      <tbody>
+        <tr><td>Arduino-pinni, 5 V, með 1 kΩ</td><td class="num">5 V</td><td>Innan marka. Lýsir ekki en skemmist ekki.</td></tr>
+        <tr><td>9 V rafhlaða með 1 kΩ</td><td class="num">9 V</td><td>Yfir <span class="var">V</span><sub>R</sub>. Lifir oftast af því viðnámið takmarkar strauminn, en það er utan forskriftar.</td></tr>
+        <tr><td>9 V rafhlaða án viðnáms</td><td class="num">9 V</td><td>Mest hætta: ekkert takmarkar strauminn ef gegnumbrot verður.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Reglan: Ef díóða lýsir ekki, snúðu henni við, en láttu hana ekki sitja öfuga við 9 V.</p>
+  </details>
+  <div class="box think"><span class="bt">Tenging við fyrri hluta áfangans</span>Rúmhleðslusvæðið er hlaðið svæði með rafsviði á milli jákvæðra og neikvæðra hleðslna, líkt og í þétti. Forspennan er spennan sem þarf til að yfirvinna það svið.</div>
+
+  <h2 id="ljos"><span class="num">4</span>Hvers vegna ljós?</h2>
+  <p>Þegar rafeind fellur ofan í rafeindaholu losnar orka sem nemur <b>orkubili</b> efnisins. Í kísli fer sú orka í varma. Í efnunum sem LED eru gerðar úr kemur hún út sem <b>ljóseind</b> með orkuna <span class="var">E</span> = <span class="var">hc</span>/<span class="var">λ</span>. Stærra orkubil gefur meiri orku og þar með styttri bylgjulengd, svo ljósið verður blárra.</p>
+  <p>Til að ljóseind myndist þarf rafeindin að hafa fengið að minnsta kosti þessa orku frá spennugjafanum. Þess vegna er forspennan í voltum um það bil jöfn orku ljóseindarinnar í rafeindavoltum.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Litur</th><th>Bylgjulengd</th><th>Orka ljóseindar</th><th>Forspenna <span class="var">V</span><sub>F</sub></th></tr></thead>
+    <tbody>
+      <tr><td>Rautt</td><td class="num">650 nm</td><td class="num">1,9 eV</td><td class="num">1,8–2,2 V</td></tr>
+      <tr><td>Gult</td><td class="num">590 nm</td><td class="num">2,1 eV</td><td class="num">2,0–2,2 V</td></tr>
+      <tr><td>Grænt</td><td class="num">525 nm</td><td class="num">2,4 eV</td><td class="num">2,0–3,2 V</td></tr>
+      <tr><td>Blátt</td><td class="num">460 nm</td><td class="num">2,7 eV</td><td class="num">3,0–3,4 V</td></tr>
+    </tbody>
+  </table></div>
+  <p>Orkan er reiknuð með <span class="var">E</span> ≈ 1240 eV·nm / <span class="var">λ</span>. Fyrir rautt ljós er það 1240 / 650 ≈ 1,9 eV. Forspennan er oft aðeins hærri en orka ljóseindarinnar vegna innra viðnáms díóðunnar.</p>
+
+  <h3>Úr hverju eru LED þá gerðar?</h3>
+  <p>Ekki kísli, heldur efnasamböndum frumefna úr 13. og 15. flokki lotukerfisins, t.d. gallíni (3 gildisrafeindir) og arseni (5). Að meðaltali eru þá <b>4 gildisrafeindir á atóm</b>, eins og í kísli, svo kristallinn byggist eins upp. Með því að blanda frumefnunum í mismunandi hlutföllum er hægt að stilla orkubilið og þar með litinn.</p>
+  <ul>
+    <li><b>Rauðar og gular LED:</b> AlGaInP (ál-gallín-indín-fosfíð) eða GaAsP (gallín-arseníð-fosfíð).</li>
+    <li><b>Bláar og grænar LED:</b> InGaN (indín-gallín-nítríð).</li>
+    <li><b>Hvítar LED:</b> blá InGaN-díóða með gulu flúrljómandi dufti ofan á. Blanda af bláu og gulu ljósi sýnist hvít. Hvít LED hefur því sömu forspennu og blá, um 3 V.</li>
+  </ul>
+  <div class="box warn"><span class="bt">Varúð með orðið fosfór</span>Flúrljómandi duftið í hvítum LED kallast oft „fosfór“, en það er ekki frumefnið fosfór (P). Orðið er notað um öll efni sem gefa frá sér ljós eftir að hafa gleypt ljós.</div>
+
+  <h2 id="ihlutur"><span class="num">5</span>Íhluturinn</h2>
+  <div class="ledfig">
+    <figure style="margin:0"><svg viewBox="0 0 640 700" role="img" aria-label="Ljósdíóða séð frá hlið með númeruðum hlutum">
+<path d="M204 460 V196 A96 96 0 0 1 396 196 V460 Z" class="ledbody"/><rect x="180" y="460" width="216" height="28" rx="4" class="ledbody"/>
+<rect x="236" y="320" width="32" height="140" class="metal"/><path d="M320 260 H384 V460 H352 V308 L320 290 Z" class="metal"/>
+<rect x="338" y="240" width="32" height="20" class="chip"/><path d="M252 320 Q262 220 340 242" class="wire"/>
+<line x1="252" y1="488" x2="252" y2="670" class="leg"/><line x1="368" y1="488" x2="368" y2="600" class="leg"/>
+<g class="lead"><line x1="372" y1="250" x2="430" y2="250"/><line x1="386" y1="380" x2="430" y2="380"/><line x1="396" y1="474" x2="430" y2="474"/><line x1="380" y1="140" x2="430" y2="140"/><line x1="252" y1="630" x2="200" y2="630"/><line x1="368" y1="570" x2="430" y2="570"/></g>
+<g class="badge"><circle cx="452" cy="140" r="20"/><circle cx="452" cy="250" r="20"/><circle cx="452" cy="380" r="20"/><circle cx="452" cy="474" r="20"/><circle cx="178" cy="630" r="20"/><circle cx="452" cy="570" r="20"/></g>
+<g class="badgetxt"><text x="452" y="148">1</text><text x="452" y="258">2</text><text x="452" y="388">3</text><text x="452" y="482">4</text><text x="178" y="638">5</text><text x="452" y="578">6</text></g>
+<text x="478" y="148" class="lab2">Plasthylki</text><text x="478" y="258" class="lab2">Díóðukubbur</text><text x="478" y="388" class="lab2">Skál (−)</text><text x="478" y="482" class="lab2">Flatur kantur</text><text x="150" y="638" class="lab2 end">Forskaut +</text><text x="478" y="578" class="lab2">Bakskaut −</text>
+</svg></figure>
+    <div>
+      <ol class="parts">
+        <li><b>Plasthylki</b> verndar kubbinn og er linsa.</li>
+        <li><b>Díóðukubbur</b> er pn-samskeytin, þar sem ljósið myndast.</li>
+        <li><b>Endurkastsskál</b> á bakskautinu beinir ljósinu upp.</li>
+        <li><b>Flatur kantur</b> á hylkinu merkir bakskautið (−).</li>
+        <li><b>Forskaut (+), anóða</b>, er langi fóturinn.</li>
+        <li><b>Bakskaut (−), katóða</b>, er stuttur fótur.</li>
+      </ol>
+      <p>Straumur fer inn um forskautið og út um bakskautið. Öruggustu merkin eru langi fóturinn og flati kanturinn. Skálin inni í hylkinu er oft stærri hlutinn, en það er ekki algilt.</p>
+    </div>
+  </div>
+
+  <h2 id="takn"><span class="num">6</span>Rásartákn og kennistærðir</h2>
+  <p>Í rásarteikningum notum við tákn í stað mynda af íhlutunum. Í díóðutákninu bendir þríhyrningurinn í straumstefnuna, frá + til −, og strikið er bakskautið. Örvarnar tvær í LED-tákninu tákna ljósið.</p>
+</main>
+
+<div class="wide">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="sah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker></defs></svg>
+  <div class="syms"><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="LED"><line x1="20" y1="60" x2="90" y2="60" class="sw"/><line x1="134" y1="60" x2="220" y2="60" class="sw"/><polygon points="90,32 90,88 134,60" class="sw nofill"/><line x1="134" y1="32" x2="134" y2="88" class="sw thick"/><line x1="112" y1="28" x2="132" y2="8" class="sa" marker-end="url(#sah)"/><line x1="128" y1="34" x2="148" y2="14" class="sa" marker-end="url(#sah)"/></svg><figcaption><b>LED</b><span>A (+) → K (−)</span></figcaption></figure><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="Díóða"><line x1="20" y1="60" x2="90" y2="60" class="sw"/><line x1="134" y1="60" x2="220" y2="60" class="sw"/><polygon points="90,32 90,88 134,60" class="sw nofill"/><line x1="134" y1="32" x2="134" y2="88" class="sw thick"/></svg><figcaption><b>Díóða</b><span>leiðir í eina átt</span></figcaption></figure><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="Viðnám"><line x1="20" y1="60" x2="80" y2="60" class="sw"/><rect x="80" y="42" width="80" height="36" class="sw nofill"/><line x1="160" y1="60" x2="220" y2="60" class="sw"/></svg><figcaption><b>Viðnám</b><span>evrópskt tákn (IEC)</span></figcaption></figure><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="Viðnám"><path d="M20 60 H78 l6 -16 l12 32 l12 -32 l12 32 l12 -32 l12 32 l6 -16 H220" class="sw nofill"/></svg><figcaption><b>Viðnám</b><span>bandarískt tákn</span></figcaption></figure><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="Rafhlaða"><line x1="20" y1="60" x2="108" y2="60" class="sw"/><line x1="132" y1="60" x2="220" y2="60" class="sw"/><line x1="108" y1="22" x2="108" y2="98" class="sw"/><line x1="132" y1="40" x2="132" y2="80" class="sw xthick"/><text x="96" y="22" class="symtxt">+</text></svg><figcaption><b>Rafhlaða</b><span>langa strikið er +</span></figcaption></figure><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="Jörð (GND)"><line x1="120" y1="8" x2="120" y2="60" class="sw"/><line x1="84" y1="60" x2="156" y2="60" class="sw"/><line x1="98" y1="76" x2="142" y2="76" class="sw"/><line x1="112" y1="92" x2="128" y2="92" class="sw"/></svg><figcaption><b>Jörð (GND)</b><span>viðmið, 0 V</span></figcaption></figure><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="Spennumælir"><line x1="20" y1="60" x2="88" y2="60" class="sw"/><line x1="152" y1="60" x2="220" y2="60" class="sw"/><circle cx="120" cy="60" r="32" class="sw nofill"/><text x="120" y="72" class="symletter">V</text></svg><figcaption><b>Spennumælir</b><span>tengdur samhliða yfir íhlut</span></figcaption></figure><figure class="sym"><svg viewBox="0 0 240 120" role="img" aria-label="Straummælir"><line x1="20" y1="60" x2="88" y2="60" class="sw"/><line x1="152" y1="60" x2="220" y2="60" class="sw"/><circle cx="120" cy="60" r="32" class="sw nofill"/><text x="120" y="72" class="symletter">A</text></svg><figcaption><b>Straummælir</b><span>tengdur í röð í rásinni</span></figcaption></figure></div>
+</div>
+
+<main class="wrap">
+  <p>Viðnám er teiknað á tvo vegu: sem rétthyrningur (evrópskur staðall, IEC) eða sem sikksakk-lína (bandarískur staðall). Bæði táknin þýða það sama og þú sérð þau bæði í bókum og á netinu.</p>
+
+  <h3>Kennistærðir úr gagnablaði</h3>
+  <p>Framleiðendur gefa upp kennistærðir hverrar díóðu í <b>gagnablaði</b>. Þessi gildi eru dæmigerð fyrir venjulega 5 mm LED. Gagnablað framleiðandans gildir alltaf fyrir hverja díóðu.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Stærð</th><th>Tákn</th><th>Dæmigert gildi</th><th>Merking</th></tr></thead>
+    <tbody>
+      <tr><td>Forspenna</td><td><span class="var">V</span><sub>F</sub></td><td class="num">1,8–3,4 V</td><td>Spennufall yfir LED sem lýsir</td></tr>
+      <tr><td>Málstraumur</td><td><span class="var">I</span><sub>F</sub></td><td class="num">20 mA</td><td>Gefur uppgefna birtu</td></tr>
+      <tr><td>Hámarksstraumur</td><td><span class="var">I</span><sub>F,max</sub></td><td class="num">20–30 mA</td><td>Samfelldur straumur sem hún þolir</td></tr>
+      <tr><td>Toppstraumur</td><td><span class="var">I</span><sub>FP</sub></td><td class="num">um 100 mA</td><td>Aðeins í mjög stuttum púlsum</td></tr>
+      <tr><td>Hámarks bakspenna</td><td><span class="var">V</span><sub>R</sub></td><td class="num">5 V</td><td>Meiri bakspenna getur eyðilagt hana</td></tr>
+      <tr><td>Hámarksafl</td><td><span class="var">P</span><sub>D</sub></td><td class="num">60–100 mW</td><td>Varmi sem hún þolir</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box think"><span class="bt">Hugsaðu</span>Hvað segir <span class="var">V</span><sub>R</sub> = 5 V þér um það að tengja díóðu öfugt við 9 V rafhlöðu?</div>
+
+  <h2 id="vidnam"><span class="num">7</span>Af hverju viðnám?</h2>
+  <p><b>LED stjórnar ekki straumnum sjálf.</b> Undir forspennunni fer nær enginn straumur. Yfir henni vex straumurinn svo hratt að lítil breyting á spennu getur tvöfaldað hann.</p>
+  <figure style="max-width:520px"><svg viewBox="0 0 560 380" role="img" aria-label="Skýringarmynd af straumi sem falli af spennu: nær enginn straumur undir forspennu, svo vex hann mjög hratt">
+<defs><marker id="axh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="axhead"/></marker></defs>
+<line x1="60" y1="330" x2="530" y2="330" class="ax" marker-end="url(#axh)"/><line x1="60" y1="330" x2="60" y2="24" class="ax" marker-end="url(#axh)"/>
+<line x1="330" y1="330" x2="330" y2="40" class="dash"/>
+<path d="M60 327 L280 321 C320 315 345 240 370 34" class="curve"/>
+<text x="36" y="36" class="axlab">I</text><text x="522" y="362" class="axlab">V</text>
+<text x="322" y="362" class="axlab">V<tspan class="sub" dy="6">F</tspan></text>
+</svg><figcaption><b>Straumur sem fall af spennu.</b> Skýringarmynd, ekki mæld kennilína.</figcaption></figure>
+  <p>Hér er svarið við spurningunni í upphafi: Ef LED er tengd beint við 9 V er ekkert sem takmarkar strauminn. Hann verður margfalt meiri en <span class="var">I</span><sub>F,max</sub> og díóðan brennur á augabragði.</p>
+  <p>Þess vegna er alltaf sett <b>viðnám í röð</b> við LED. Samkvæmt lögmáli Kirchhoffs um spennu tekur viðnámið þá spennu sem LED tekur ekki, og lögmál Ohms ræður þá straumnum:</p>
+  <div class="eq" role="math" aria-label="R jafnt og V s mínus V F, deilt með I F">
+    <span class="var">R</span> =
+    <span class="frac"><span class="n"><span class="var">V</span><sub>s</sub> − <span class="var">V</span><sub>F</sub></span><span class="d"><span class="var">I</span><sub>F</sub></span></span>
+  </div>
+  <p><span class="var">V</span><sub>s</sub> er spenna spennugjafans, <span class="var">V</span><sub>F</sub> er forspenna LED og <span class="var">I</span><sub>F</sub> er straumurinn sem við viljum að fari í gegnum hana.</p>
+  <details>
+    <summary>Hvert er viðnám LED sjálfrar?</summary>
+    <p>LED hefur ekki eitt fast viðnám. Ef reiknað er <span class="var">V</span>/<span class="var">I</span> fæst um 2,0 V / 20 mA = 100 Ω við 20 mA en um 1,9 V / 10 mA = 190 Ω við 10 mA. Það breytist sem sagt með straumnum. Þess vegna er best að hugsa um LED sem fast spennufall, <span class="var">V</span><sub>F</sub>, en ekki sem viðnám.</p>
+  </details>
+
+  <h2 id="daemi"><span class="num">8</span>Sýnidæmi</h2>
+  <p><b>Rauð LED á að lýsa við 9 V rafhlöðu með um 10 mA straumi. Hvaða viðnám þarf?</b></p>
+  <ol class="steps">
+    <li>Forspenna rauðrar LED er um <span class="var">V</span><sub>F</sub> = 1,8 V.</li>
+    <li>Spennan sem viðnámið þarf að taka: 9 V − 1,8 V = 7,2 V.</li>
+    <li><span class="var">R</span> = 7,2 V / 0,010 A = <span class="result">720 Ω</span>.</li>
+    <li>Í pakkanum er næsta stærra gildi <span class="result">1 kΩ</span> (brúnn–svartur–rauður–gull). Við veljum alltaf stærra gildi frekar en minna, svo straumurinn fari ekki yfir það sem við ætluðum.</li>
+    <li>Straumurinn verður þá <span class="var">I</span> = 7,2 V / 1000 Ω = <span class="result">7,2 mA</span>. Díóðan lýsir aðeins daufar en hún er örugg.</li>
+    <li>Afl í viðnáminu: <span class="var">P</span> = <span class="var">V</span>·<span class="var">I</span> = 7,2 V · 7,2 mA ≈ <span class="result">52 mW</span>, vel undir ¼ W sem venjulegt viðnám þolir.</li>
+  </ol>
+
+  <h2 id="prof"><span class="num">9</span>Sjálfspróf</h2>
+  <p>Smelltu á svarið sem þú telur rétt. Þú getur reynt aftur.</p>
+  <div id="quiz"></div>
+  <p class="score" id="score" aria-live="polite"></p>
+
+  <section class="next">
+    <h2 style="margin-top:.6em">Verkefni í hermunum</h2>
+    <h3>Í brauðbrettisherminum</h3>
+    <p>Opnaðu <a href="https://elinadda.github.io/EDLI3RS05/Brau%C3%B0brettishermir%20%E2%80%93%20rafhla%C3%B0a%2C%20vi%C3%B0n%C3%A1m%20og%20d%C3%AD%C3%B3%C3%B0a.html">brauðbrettisherminn</a>. Hann hefur fjölmæli sem mælir bæði spennu og straum.</p>
+    <ol>
+      <li>Veldu rétt tengdu rásina. Mældu spennuna yfir viðnámið, díóðuna og rafhlöðuna. Hvert er sambandið á milli þeirra?</li>
+      <li>Mældu strauminn í gegnum viðnámið og reiknaðu viðnámið með lögmáli Ohms.</li>
+      <li>Skoðaðu villudæmin. Spáðu fyrst hvað er að, finndu svo villuna og lagaðu hana. Í einu þeirra snýr díóðan öfugt.</li>
+    </ol>
+    <h3>Í UNO-herminum</h3>
+    <p>Opnaðu <a href="https://claude.ai/artifact/HhAQcawR5iZmRCZsyfqgsi">UNO-herminn</a> og veldu <i>Opna dæmi → 1 · LED og 9 V rafhlaða</i>. Í öllum verkefnunum reiknar þú fyrst, mælir svo og útskýrir síðan muninn.</p>
+    <ol>
+      <li>Teiknaðu rásarteikningu af rásinni með réttum táknum.</li>
+      <li>Reiknaðu strauminn, mældu svo spennuna yfir viðnámið og LED með spennumælinum.</li>
+      <li>Snúðu díóðunni við. Hvað gerist og hvers vegna?</li>
+      <li>Settu 100 Ω í stað 1 kΩ. Reiknaðu straum og afl og lestu athugasemdir hermisins.</li>
+      <li>Áskorun: Hve margar rauðar LED er hægt að hafa í röð við 9 V og 1 kΩ svo þær lýsi enn?</li>
+    </ol>
+    <p>Skilaðu í Canvas: rásarteikningunni, útreikningum og mælingum, og stuttum svörum við spurningunum.</p>
+  </section>
+  <div class="pager"><a class="nx" href="kafli2-forritun.html"><span>Næsti kafli</span>2. Fyrstu skrefin í forritun</a></div><p class="foot">EÐLI3RS05 · Menntaskólinn á Egilsstöðum · Elín Adda Steinarsdóttir</p>
+</main>
+
+<script>
+(function(){
+  /* Holu-skref */
+  var slots=[].slice.call(document.querySelectorAll('#track .slot'));
+  var start=5, hole=start;
+  function draw(moved){
+    slots.forEach(function(s,i){
+      s.className='slot '+(i===hole?'h':'e')+(i===moved?' moved':'');
+    });
+  }
+  function status(n){
+    var el=document.getElementById('hstatus');
+    if(hole===0){el.textContent='Skref '+n+': rafeindaholan er komin lengst til vinstri. Allar rafeindirnar hafa færst til hægri.';}
+    else{el.textContent='Skref '+n+': rafeind stökk til hægri og rafeindaholan færðist í sæti '+(hole+1)+'.';}
+  }
+  var n=0;
+  document.getElementById('hstep').addEventListener('click',function(){
+    if(hole===0)return;
+    var from=hole-1; hole=from; n++;
+    draw(from+1);
+    status(n);
+    this.disabled=(hole===0);
+  });
+  document.getElementById('hreset').addEventListener('click',function(){
+    hole=start;n=0;draw(-1);
+    document.getElementById('hstep').disabled=false;
+    document.getElementById('hstatus').textContent='Skref 0: rafeindaholan er í sæti 6.';
+  });
+  draw(-1);
+
+  /* Sjálfspróf */
+  var Q=[
+    {q:'Hvað þýðir n í „n-gerð“?',o:['Efnið er neikvætt hlaðið','Lausu hleðsluberarnir eru rafeindir','Það eru fleiri nifteindir í efninu'],a:1,
+     e:'Rétt. n segir hvaða hleðsluberar eru lausir. Efnið sjálft er rafhlutlaust.'},
+    {q:'Rafeindir í kristal stökkva hver af annarri til hægri í rafeindaholu. Í hvaða átt færist rafeindaholan?',o:['Til hægri, með rafeindunum','Til vinstri','Hún færist ekki'],a:1,
+     e:'Rétt. Rafeindaholan færist í öfuga átt við rafeindirnar, eins og loftbóla í vatni.'},
+    {q:'LED er tengd þannig að langi fóturinn snýr að − á rafhlöðunni. Hvað gerist?',o:['Hún lýsir veikt','Hún lýsir ekki, því enginn straumur fer í bakátt','Hún lýsir og hitnar'],a:1,
+     e:'Rétt. Langi fóturinn er forskautið (+). Snúi hann að − er díóðan í bakátt og ekkert gerist, svo lengi sem bakspennan fer ekki yfir <i>V</i><sub>R</sub>.'},
+    {q:'Hvít LED er í raun blá LED með gulu dufti. Hver er líkleg forspenna hennar?',o:['Um 1,8 V, eins og rauð','Um 3 V, eins og blá','Um 9 V'],a:1,
+     e:'Rétt. Ljósið myndast í bláa kubbnum, svo forspennan er sú sama og í blárri LED.'},
+    {q:'Blá LED á að lýsa við 5 V frá Arduino með 10 mA. <i>V</i><sub>F</sub> = 3,0 V. Hvaða viðnám þarf?',o:['500 Ω','300 Ω','200 Ω'],a:2,
+     e:'Rétt. R = (5 V − 3,0 V) / 0,010 A = 200 Ω.'},
+    {q:'Af hverju má ekki tengja LED beint við 9 V rafhlöðu?',o:['Hún þolir ekki spennu yfir 5 V í leiðsluátt','Ekkert takmarkar strauminn, svo hann verður allt of mikill','Hún lýsir of skært'],a:1,
+     e:'Rétt. LED stjórnar ekki straumnum sjálf. Viðnám í röð þarf að gera það.'}
+  ];
+  var box=document.getElementById('quiz'), right=new Array(Q.length).fill(false);
+  Q.forEach(function(it,qi){
+    var d=document.createElement('div');d.className='q';
+    var p=document.createElement('p');p.className='qt';p.innerHTML=(qi+1)+'. '+it.q;d.appendChild(p);
+    var opts=document.createElement('div');opts.className='opts';
+    var fb=document.createElement('p');fb.className='fb';fb.setAttribute('aria-live','polite');
+    it.o.forEach(function(t,oi){
+      var b=document.createElement('button');b.type='button';b.id='q'+qi+'o'+oi;b.textContent=t;
+      b.addEventListener('click',function(){
+        [].forEach.call(opts.children,function(x){x.classList.remove('right','wrong');});
+        if(oi===it.a){b.classList.add('right');fb.className='fb ok';fb.innerHTML=it.e;right[qi]=true;}
+        else{b.classList.add('wrong');fb.className='fb no';fb.textContent='Ekki alveg. Lestu kaflann aftur og reyndu annað svar.';}
+        var c=right.filter(Boolean).length;
+        document.getElementById('score').textContent='Rétt svarað: '+c+' af '+Q.length+(c===Q.length?'. Vel gert, þú ert tilbúin(n) í verkefnin.':'');
+      });
+      opts.appendChild(b);
+    });
+    d.appendChild(opts);d.appendChild(fb);box.appendChild(d);
+  });
+})();
+</script>
+<script>
+(function(){
+  /* Ef síðan er inni í Canvas (iframe): segja Canvas hve há hún er, og opna ytri hlekki í nýjum flipa */
+  var inFrame=false; try{inFrame=window.self!==window.top;}catch(e){inFrame=true;}
+  [].forEach.call(document.querySelectorAll('a[href^="http"]'),function(a){a.target='_blank';a.rel='noopener';});
+  if(!inFrame) return;
+  var last=0;
+  function send(){
+    var h=Math.ceil(document.documentElement.scrollHeight);
+    if(Math.abs(h-last)<4) return; last=h;
+    try{window.parent.postMessage(JSON.stringify({subject:'lti.frameResize',height:h}),'*');}catch(e){}
+  }
+  window.addEventListener('load',send); window.addEventListener('resize',send);
+  document.addEventListener('toggle',send,true); document.addEventListener('click',function(){setTimeout(send,350);});
+  if(window.ResizeObserver){new ResizeObserver(send).observe(document.body);}
+  setTimeout(send,300);
+})();
+</script>
+</body>
+</html>
