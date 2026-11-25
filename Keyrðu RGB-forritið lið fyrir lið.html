@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keyrðu RGB-forritið lið fyrir lið</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 10px; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #1a202c; background: #eef2f7; font-size: 14px; max-width: 1060px; margin: 0 auto; }
+  h1 { font-size: 15px; margin: 0 0 2px; }
+  .sub { margin: 0 0 8px; color: #4a5568; font-size: 13px; }
+  .top { display: grid; grid-template-columns: minmax(0,1fr) 220px; gap: 10px; }
+  .panel { background: #f8fafc; border-radius: 8px; padding: 8px; }
+  .panel svg { display: block; width: 100%; height: auto; }
+  .ledbox { display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+  .ledbox h2 { font-size: 13px; margin: 2px 0 0; color: #4a5568; font-weight: 600; }
+  .eye { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 4px 0 2px; }
+  .sw { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e0; }
+  .caption { font-size: 13px; margin: 6px 2px; color: #2d3748; }
+  .bottom { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 10px; }
+  .code { background: #f8fafc; border-radius: 8px; padding: 8px 6px; font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55; }
+  .ln { display: flex; border: 2px solid transparent; border-radius: 4px; padding: 0 4px; white-space: pre; }
+  .ln .no { width: 24px; color: #a0aec0; text-align: right; margin-right: 12px; user-select: none; }
+  .ln.cur { border-color: #2b6cb0; background: #ebf4ff; }
+  .kw { color: #2b6cb0; } .fn { color: #805ad5; } .cst { color: #2c7a7b; } .num { color: #c05621; } .com { color: #718096; font-style: italic; }
+  .info { padding: 4px 2px; }
+  .meta { display: flex; gap: 16px; font-size: 13px; margin-bottom: 6px; }
+  table.pins { border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+  table.pins td { padding: 2px 8px 2px 0; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+  .badge { display: inline-block; min-width: 72px; text-align: center; border-radius: 10px; padding: 1px 8px; font-size: 12px; font-weight: 600; }
+  .b-in { background: #e2e8f0; color: #4a5568; } .b-low { background: #2d3748; color: #fff; } .b-high { background: #f6e05e; color: #1a202c; }
+  .explain { background: #fff; border-left: 4px solid #2b6cb0; border-radius: 4px; padding: 8px 10px; min-height: 92px; font-size: 14px; line-height: 1.45; }
+  .note { display: block; margin-top: 6px; color: #9c4221; font-size: 13px; }
+  .btns { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 4px; border: 1px solid #cbd5e0; background: #fff; cursor: pointer; }
+  button.primary { background: #1f5fae; border-color: #1f5fae; color: #fff; font-weight: 600; }
+  button:disabled { opacity: .45; cursor: default; }
+  .hint { font-size: 12px; color: #718096; margin-top: 6px; }
+  @media (max-width: 760px) { .top, .bottom { grid-template-columns: 1fr; } .ledbox { flex-direction: row; } }
+</style>
+</head>
+<body>
+<h1>Keyrðu forritið lið fyrir lið</h1>
+<p class="sub">Ýttu á <b>Næsta skref</b> og fylgstu með rofunum inni í Arduino, straumnum í hverjum lit og litnum sem augað sér.</p>
+
+<div class="top">
+  <div class="panel"><svg id="circ" viewBox="0 0 700 400" aria-label="Rásarteikning: þrír pinnar, þrjú 1 kΩ viðnám og RGB-ljósdíóða með sameiginlegu bakskauti"></svg></div>
+  <div class="panel ledbox">
+    <h2>RGB-ljósdíóðan</h2>
+    <svg id="led" viewBox="0 0 200 420" style="width:170px;max-width:100%" aria-label="Mynd af RGB-ljósdíóðu"></svg>
+    <div class="eye"><span class="sw" id="sw"></span><span>Augað sér: <b id="mixname">ekkert ljós</b></span></div>
+  </div>
+</div>
+<div class="caption" id="caption"></div>
+
+<div class="bottom">
+  <div class="code" id="code"></div>
+  <div class="info">
+    <div class="meta"><span>Tími: <b id="time">0,0 s</b></span><span>Umferð í loop(): <b id="pass">–</b></span></div>
+    <table class="pins" id="pins"></table>
+    <div class="explain" id="explain">Ýttu á <b>Næsta skref</b> til að byrja.</div>
+    <div class="btns">
+      <button id="prev">◀ Fyrra skref</button>
+      <button id="next" class="primary">Næsta skref ▶</button>
+      <button id="reset">Byrja aftur</button>
+    </div>
+    <div class="hint">Þú getur líka notað örvatakkana ← og →.</div>
+  </div>
+</div>
+
+<script>
+const CODE = [
+  "const int RAUTT = 9;",
+  "const int GRAENT = 10;",
+  "const int BLATT = 11;",
+  "",
+  "void setup() {",
+  "  pinMode(RAUTT, OUTPUT);",
+  "  pinMode(GRAENT, OUTPUT);",
+  "  pinMode(BLATT, OUTPUT);",
+  "}",
+  "",
+  "void loop() {",
+  "  digitalWrite(RAUTT, HIGH);   // gulur = rautt + grænt",
+  "  digitalWrite(GRAENT, HIGH);",
+  "  digitalWrite(BLATT, LOW);",
+  "  delay(1000);",
+  "",
+  "  digitalWrite(RAUTT, LOW);    // blágrænn = grænt + blátt",
+  "  digitalWrite(GRAENT, HIGH);",
+  "  digitalWrite(BLATT, HIGH);",
+  "  delay(1000);",
+  "}"
+];
+
+const CH = {
+  R: { name: "RAUTT",  pin: 9,  y: 110, col: "#d62828", I: "3,0", Inum: 3.0, short: "rautt",  nom: "rauði liturinn",  dat: "rauðu", lbl: "R" },
+  G: { name: "GRAENT", pin: 10, y: 210, col: "#2a9d3c", I: "2,6", Inum: 2.6, short: "grænt",  nom: "græni liturinn",  dat: "grænu", lbl: "G" },
+  B: { name: "BLATT",  pin: 11, y: 310, col: "#2b5fd9", I: "2,4", Inum: 2.4, short: "blátt",  nom: "blái liturinn",   dat: "bláu",  lbl: "B" }
+};
+const KEYS = ["R", "G", "B"];
+
+const SETUP = [
+  { line: 1, op: "const", ch: "R" },
+  { line: 2, op: "const", ch: "G" },
+  { line: 3, op: "const", ch: "B" },
+  { line: 5, op: "setupStart" },
+  { line: 6, op: "pinMode", ch: "R" },
+  { line: 7, op: "pinMode", ch: "G" },
+  { line: 8, op: "pinMode", ch: "B" },
+  { line: 9, op: "setupEnd" }
+];
+const LOOP = [
+  { line: 11, op: "loopStart" },
+  { line: 12, op: "dw", ch: "R", v: "HIGH" },
+  { line: 13, op: "dw", ch: "G", v: "HIGH" },
+  { line: 14, op: "dw", ch: "B", v: "LOW" },
+  { line: 15, op: "delay" },
+  { line: 17, op: "dw", ch: "R", v: "LOW" },
+  { line: 18, op: "dw", ch: "G", v: "HIGH" },
+  { line: 19, op: "dw", ch: "B", v: "HIGH" },
+  { line: 20, op: "delay" },
+  { line: 21, op: "loopEnd" }
+];
+const PROG = SETUP.concat(LOOP);
+const LOOP_START = SETUP.length;
+
+function fresh() {
+  return { pc: -1, line: 0, t: 0, pass: 0, mode: { R: "in", G: "in", B: "in" }, named: {}, text: "Ýttu á <b>Næsta skref</b> til að byrja." };
+}
+let S = fresh();
+let history = [];
+
+const MIX = {
+  "000": ["ekkert ljós", "#ffffff"],
+  "100": ["rauður", "#ff2a2a"],
+  "010": ["grænn", "#22d340"],
+  "001": ["blár", "#3a6bff"],
+  "110": ["gulur", "#ffe600"],
+  "011": ["blágrænn", "#1fe5e0"],
+  "101": ["blárauður (magenta)", "#ff33e0"],
+  "111": ["hvítur", "#fff3b0"]
+};
+function mixKey(st) { return KEYS.map(k => st.mode[k] === "HIGH" ? "1" : "0").join(""); }
+function mixName(st) { return MIX[mixKey(st)][0]; }
+
+function nextIndex(pc) { return pc + 1 < PROG.length ? pc + 1 : LOOP_START; }
+
+// Run one statement on a state object (mutates it). Returns explanation HTML.
+function exec(st, step, quiet) {
+  const c = step.ch ? CH[step.ch] : null;
+  switch (step.op) {
+    case "const":
+      st.named[step.ch] = true;
+      return `Nafnið <b>${c.name}</b> stendur nú fyrir pinna ${c.pin}. Ekkert breytist í rásinni – þetta er bara nafn sem gerir kóðann læsilegri.` +
+        (step.ch === "B" ? " Nú hefur hver litur sitt nafn." : "");
+    case "setupStart":
+      return "<b>setup()</b> byrjar. Það keyrir aðeins einu sinni, þegar Arduino fær straum eða er endurræst. Allir pinnarnir eru enn inngangar og ekki tengdir við neitt.";
+    case "pinMode":
+      st.mode[step.ch] = "LOW";
+      return `Pinni ${c.pin} (${c.name}) verður <b>útgangur</b>. Útgangur byrjar LOW, þ.e. 0 V. Báðir endar ${c.dat} díóðunnar eru því á 0 V og ${c.nom} logar ekki.`;
+    case "setupEnd":
+      return "<b>setup()</b> er búið og keyrir ekki aftur. Nú tekur <b>loop()</b> við.";
+    case "loopStart":
+      st.pass += 1;
+      if (st.pass === 1) return "<b>loop()</b> byrjar. Allt á milli slaufusviganna endurtekur sig aftur og aftur, svo lengi sem Arduino hefur straum.";
+      return `<b>loop()</b> byrjar í ${st.pass}. sinn. Pinnarnir halda stöðunni úr síðustu umferð, svo augað sér enn <b>${mixName(st)}</b>.`;
+    case "dw": {
+      const before = st.mode[step.ch];
+      st.mode[step.ch] = step.v;
+      let txt;
+      if (before === step.v) {
+        txt = `Pinni ${c.pin} (${c.name}) á að fara í ${step.v} en var það þegar. Ekkert breytist í rásinni.` +
+          (step.v === "HIGH" ? ` ${cap(c.nom)} logar áfram.` : ` Línan tryggir samt að ${c.nom} sé slökktur, sama hvað gerðist á undan.`);
+      } else if (step.v === "HIGH") {
+        txt = `Pinni ${c.pin} (${c.name}) fer í <b>HIGH = 5 V</b>. Forskaut ${c.dat} díóðunnar fær 5 V en bakskautið er á 0 V. Um ${c.I} mA renna í gegnum viðnámið og ${c.nom} kviknar.`;
+      } else {
+        txt = `Pinni ${c.pin} (${c.name}) fer í <b>LOW = 0 V</b>. Nú eru báðir endar ${c.dat} díóðunnar á 0 V, enginn straumur rennur og ${c.nom} slokknar.`;
+      }
+      txt += `<br>Díóðan sýnir nú: <b>${mixName(st)}</b>.`;
+      if (!quiet) {
+        const steady = mixAtNextDelay(st);
+        if (steady !== mixKey(st)) {
+          txt += `<span class="note">` + (mixKey(st) === "111" ? "Allir þrír litir loga og díóðan er hvít! " : "") +
+            `Þessi staða varir þó aðeins í örfáar míkrósekúndur, þangað til næstu línur keyra – allt of stutt til að augað taki eftir henni.</span>`;
+        }
+      }
+      return txt;
+    }
+    case "delay":
+      st.t += 1;
+      return `Arduino bíður í 1000 ms = 1 s og gerir ekkert á meðan. Pinnarnir halda stöðu sinni, svo augað sér <b>${mixName(st)}</b> í heila sekúndu.`;
+    case "loopEnd":
+      return "Komið að lokum <b>loop()</b>. Arduino hoppar strax aftur upp í byrjun loop() – án nokkurrar biðar.";
+  }
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// Simulate ahead to the next delay() to find the colour the eye will actually see.
+function mixAtNextDelay(st) {
+  const tmp = JSON.parse(JSON.stringify(st));
+  let pc = tmp.pc;
+  for (let i = 0; i < 30; i++) {
+    pc = nextIndex(pc);
+    const step = PROG[pc];
+    if (step.op === "delay") return mixKey(tmp);
+    if (step.op === "dw") tmp.mode[step.ch] = step.v;
+  }
+  return mixKey(tmp);
+}
+
+function step() {
+  history.push(JSON.parse(JSON.stringify(S)));
+  const pc = nextIndex(S.pc);
+  S.pc = pc;
+  const st = PROG[pc];
+  S.line = st.line;
+  S.text = exec(S, st, false);
+  render();
+}
+function back() {
+  if (!history.length) return;
+  S = history.pop();
+  render();
+}
+function reset() { S = fresh(); history = []; render(); }
+
+// ---------- drawing ----------
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function highlight(line) {
+  let code = line, com = "";
+  const i = line.indexOf("//");
+  if (i >= 0) { code = line.slice(0, i); com = line.slice(i); }
+  code = esc(code)
+    .replace(/\b(const|int|void)\b/g, '<span class="kw">$1</span>')
+    .replace(/\b(pinMode|digitalWrite|delay|setup|loop)\b/g, '<span class="fn">$1</span>')
+    .replace(/\b(HIGH|LOW|OUTPUT)\b/g, '<span class="cst">$1</span>')
+    .replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+  return code + (com ? `<span class="com">${esc(com)}</span>` : "");
+}
+function renderCode() {
+  document.getElementById("code").innerHTML = CODE.map((l, i) =>
+    `<div class="ln${S.line === i + 1 ? " cur" : ""}"><span class="no">${i + 1}</span><span>${highlight(l)}</span></div>`).join("");
+}
+
+function renderCircuit() {
+  let s = "";
+  s += `<rect x="20" y="20" width="230" height="365" rx="16" fill="#e6edf7" stroke="#4a5568" stroke-width="3"/>`;
+  s += `<text x="135" y="55" text-anchor="middle" font-size="21" font-weight="700" fill="#1a202c">Inni í Arduino</text>`;
+  let total = 0;
+  for (const k of KEYS) {
+    const c = CH[k], y = c.y, m = S.mode[k], on = m === "HIGH";
+    if (on) total += c.Inum;
+    // switch dots
+    s += `<circle cx="150" cy="${y - 28}" r="6" fill="#1a202c"/><text x="92" y="${y - 23}" font-size="14" fill="#1a202c">5 V</text>`;
+    s += `<circle cx="150" cy="${y + 28}" r="6" fill="#1a202c"/><text x="92" y="${y + 33}" font-size="14" fill="#1a202c">0 V</text>`;
+    const end = m === "HIGH" ? [150, y - 28] : m === "LOW" ? [150, y + 28] : [168, y];
+    s += `<line x1="225" y1="${y}" x2="${end[0]}" y2="${end[1]}" stroke="#1a202c" stroke-width="5" stroke-linecap="round"/>`;
+    if (m === "in") s += `<text x="150" y="${y + 5}" font-size="11" fill="#718096" text-anchor="end">inng.</text>`;
+    const wcol = on ? c.col : "#1a202c";
+    s += `<line x1="225" y1="${y}" x2="330" y2="${y}" stroke="${wcol}" stroke-width="4"/>`;
+    s += `<circle cx="225" cy="${y}" r="7" fill="#1a202c"/>`;
+    s += `<text x="290" y="${y - 12}" text-anchor="middle" font-size="15" font-weight="700" fill="#1a202c">D${c.pin}</text>`;
+    const vtxt = m === "HIGH" ? "5 V" : m === "LOW" ? "0 V" : "?";
+    s += `<text x="290" y="${y + 24}" text-anchor="middle" font-size="15" font-weight="700" fill="${on ? c.col : "#4a5568"}">${vtxt}</text>`;
+    // resistor
+    const zz = [330, 340, 350, 360, 370, 380, 390, 400, 410];
+    const pts = zz.map((x, i) => `${x},${i === 0 || i === zz.length - 1 ? y : y + (i % 2 ? -12 : 12)}`).join(" ");
+    s += `<polyline points="${pts}" fill="none" stroke="${wcol}" stroke-width="3.5" stroke-linejoin="round"/>`;
+    s += `<text x="370" y="${y - 20}" text-anchor="middle" font-size="13" fill="#1a202c">1 kΩ</text>`;
+    s += `<line x1="410" y1="${y}" x2="465" y2="${y}" stroke="${wcol}" stroke-width="4"/>`;
+    // diode
+    s += `<polygon points="465,${y - 18} 465,${y + 18} 500,${y}" fill="${on ? c.col : "none"}" stroke="${c.col}" stroke-width="3.5" stroke-linejoin="round"/>`;
+    s += `<line x1="500" y1="${y - 18}" x2="500" y2="${y + 18}" stroke="${c.col}" stroke-width="4"/>`;
+    if (on) {
+      for (const dx of [0, 12]) {
+        s += `<line x1="${480 + dx}" y1="${y - 22}" x2="${490 + dx}" y2="${y - 36}" stroke="${c.col}" stroke-width="2.5"/>`;
+        s += `<polygon points="${490 + dx},${y - 36} ${484 + dx},${y - 32} ${491 + dx},${y - 29}" fill="${c.col}"/>`;
+      }
+    }
+    s += `<text x="482" y="${y + 36}" text-anchor="middle" font-size="12" fill="#4a5568">${c.lbl}</text>`;
+    s += `<line x1="500" y1="${y}" x2="580" y2="${y}" stroke="${on ? c.col : "#1a202c"}" stroke-width="4"/>`;
+    if (on) s += `<text x="540" y="${y + 20}" text-anchor="middle" font-size="13" font-weight="700" fill="${c.col}">${c.I} mA →</text>`;
+  }
+  // common cathode bus and ground
+  s += `<line x1="580" y1="110" x2="580" y2="355" stroke="#1a202c" stroke-width="4"/>`;
+  s += `<circle cx="580" cy="210" r="5" fill="#1a202c"/><circle cx="580" cy="310" r="5" fill="#1a202c"/>`;
+  s += `<line x1="555" y1="355" x2="605" y2="355" stroke="#1a202c" stroke-width="4"/>`;
+  s += `<line x1="565" y1="364" x2="595" y2="364" stroke="#1a202c" stroke-width="4"/>`;
+  s += `<line x1="575" y1="373" x2="585" y2="373" stroke="#1a202c" stroke-width="4"/>`;
+  s += `<text x="615" y="370" font-size="18" fill="#1a202c">GND</text>`;
+  s += `<text x="590" y="90" font-size="12" fill="#4a5568" text-anchor="middle">sameiginlegt bakskaut (−)</text>`;
+  if (total > 0) s += `<text x="592" y="335" font-size="13" font-weight="700" fill="#1a202c">${total.toFixed(1).replace(".", ",")} mA</text>`;
+  document.getElementById("circ").innerHTML = s;
+}
+
+function renderLed() {
+  const key = mixKey(S), anyOn = key !== "000";
+  const col = MIX[key][1];
+  let s = `<defs>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+    <radialGradient id="dome" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="${anyOn ? "#ffffff" : "#f7f9fb"}"/>
+      <stop offset="55%" stop-color="${anyOn ? col : "#e6eaf0"}" stop-opacity="${anyOn ? 0.85 : 1}"/>
+      <stop offset="100%" stop-color="${anyOn ? col : "#d5dbe3"}" stop-opacity="${anyOn ? 0.7 : 1}"/>
+    </radialGradient></defs>`;
+  if (anyOn) s += `<circle cx="100" cy="125" r="85" fill="${col}" opacity="0.55" filter="url(#blur)"/>`;
+  // legs: R, −, G, B  (longest leg = common cathode)
+  const legs = [
+    { x: 70, end: 335, k: "R", top: "R", bot: "D9" },
+    { x: 90, end: 370, k: null, top: "−", bot: "GND" },
+    { x: 110, end: 335, k: "G", top: "G", bot: "D10" },
+    { x: 130, end: 325, k: "B", top: "B", bot: "D11" }
+  ];
+  for (const L of legs) {
+    const hot = L.k && S.mode[L.k] === "HIGH";
+    s += `<line x1="${L.x}" y1="212" x2="${L.x}" y2="${L.end}" stroke="${hot ? CH[L.k].col : "#a0aab6"}" stroke-width="${hot ? 5 : 4}" stroke-linecap="round"/>`;
+    s += `<text x="${L.x}" y="${L.end + 18}" text-anchor="middle" font-size="14" font-weight="700" fill="${L.k ? CH[L.k].col : "#1a202c"}">${L.top}</text>`;
+    s += `<text x="${L.x}" y="${L.end + 32}" text-anchor="middle" font-size="9.5" fill="#4a5568">${L.bot}</text>`;
+  }
+  // dome + flange
+  s += `<path d="M55 200 L55 92 A45 45 0 0 1 145 92 L145 200 Z" fill="url(#dome)" stroke="#9aa5b1" stroke-width="2"/>`;
+  s += `<rect x="47" y="198" width="106" height="15" rx="3" fill="${anyOn ? col : "#dde2e9"}" fill-opacity="${anyOn ? 0.6 : 1}" stroke="#9aa5b1" stroke-width="2"/>`;
+  // internal chips on the cathode cup
+  s += `<path d="M80 178 L120 178 L116 190 L84 190 Z" fill="#b8c0ca"/>`;
+  [["R", 86], ["G", 97], ["B", 108]].forEach(([k, x]) => {
+    const on = S.mode[k] === "HIGH";
+    s += `<rect x="${x}" y="170" width="7" height="8" fill="${on ? CH[k].col : "#8a94a0"}"/>`;
+    if (on) s += `<circle cx="${x + 3.5}" cy="172" r="9" fill="${CH[k].col}" opacity="0.5" filter="url(#blur)"/>`;
+  });
+  s += `<text x="100" y="20" text-anchor="middle" font-size="11" fill="#4a5568">lengsti fóturinn = −</text>`;
+  document.getElementById("led").innerHTML = s;
+  document.getElementById("mixname").textContent = MIX[key][0];
+  const sw = document.getElementById("sw");
+  sw.style.background = anyOn ? col : "#e2e8f0";
+  sw.style.boxShadow = anyOn ? `0 0 10px ${col}` : "none";
+}
+
+function modeTxt(m) { return m === "HIGH" ? "HIGH (5 V)" : m === "LOW" ? "LOW (0 V)" : "inngangur"; }
+function renderInfo() {
+  document.getElementById("time").textContent = S.t.toFixed(1).replace(".", ",") + " s";
+  document.getElementById("pass").textContent = S.pass ? S.pass : "–";
+  document.getElementById("pins").innerHTML = KEYS.map(k => {
+    const c = CH[k], m = S.mode[k];
+    const cls = m === "HIGH" ? "b-high" : m === "LOW" ? "b-low" : "b-in";
+    return `<tr><td><span class="dot" style="background:${c.col}"></span>${S.named[k] ? c.name : "–"}</td><td>D${c.pin}</td><td><span class="badge ${cls}">${modeTxt(m)}</span></td></tr>`;
+  }).join("");
+  document.getElementById("explain").innerHTML = S.text;
+  document.getElementById("caption").textContent = KEYS.map(k => `D${CH[k].pin} (${CH[k].short}): ${modeTxt(S.mode[k])}`).join("  ·  ");
+  document.getElementById("prev").disabled = history.length === 0;
+}
+function render() { renderCircuit(); renderLed(); renderCode(); renderInfo(); }
+
+document.getElementById("next").onclick = step;
+document.getElementById("prev").onclick = back;
+document.getElementById("reset").onclick = reset;
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") step();
+  if (e.key === "ArrowLeft") back();
+});
+render();
+</script>
+</body>
+</html>
